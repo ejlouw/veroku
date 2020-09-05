@@ -7,14 +7,13 @@ REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
 
 setuptools.setup(
     name="veroku",
-    version="0.0.4",
     author="EJ Louw",
     author_email="ejlouw00@gmail.com",
     description="An open source library for building and performing inference with probabilistic graphical models.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="BSD 3-Clause License",
-    url="https://github.com/EJLouw/veroku",
+    url="https://github.com/ejlouw/veroku",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/EJLouw/veroku/master/veroku_logo.png?token=AIQKMQUV5LIPTGAFOOEEOE27KPZA2">
+  <img src="veroku_logo.png">
 </div>
 
 ### Overview

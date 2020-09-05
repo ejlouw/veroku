@@ -25,10 +25,22 @@ jobs:
           pip install -r requirements
           echo test, and deploy your project.
 
+      # Update version number
+      - name: SetupAndTest
+        run: |
+          echo GITHUB_RUN_ID
+          echo $GITHUB_RUN_ID
+          sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_ID\"/" veroku/__init__.py
+          echo "version in init:"
+          head veroku/__init__.py
       # Package and Upload
       - name: SetupAndTest
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           pip install twine
           python setup.py sdist bdist_wheel
-#          python -m twine upload --verbose -u $PYPI_USER -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
+          ls -la ./dist
+#         python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
 
