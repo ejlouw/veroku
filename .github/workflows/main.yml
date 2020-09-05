@@ -43,6 +43,7 @@ jobs:
           echo "version in init:"
           head veroku/__init__.py
       # Package and Upload
+      # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
       - name: SetupAndTest
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -52,6 +53,5 @@ jobs:
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           ls -la ./dist
-        # TODO: Add error handling (for instance for the case that this is run more than once with same package number)
           python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
 
