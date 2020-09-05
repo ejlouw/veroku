@@ -1,0 +1,8 @@
+jupyterlab==2.2.1
+numpy==1.16.3
+pandas==0.23.4
+networkx==1.11
+tqdm==4.48.1
+graphviz==0.10.1
+Pillow==6.0.0
+ipython==7.5.0
