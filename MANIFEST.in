@@ -1,0 +1,4 @@
+include requirements.txt
+include veroku/veroku_logo.png
+
+prune veroku/tests/

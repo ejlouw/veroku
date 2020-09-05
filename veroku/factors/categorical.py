@@ -12,8 +12,8 @@ import scipy.misc
 import itertools
 
 # Local imports
-from veroku.factor import Factor
-from veroku.factor_template import FactorTemplate
+from veroku.factors.factor import Factor
+from veroku.factors.factor_template import FactorTemplate
 
 
 # TODO: consider removing some unused functions

@@ -12,8 +12,8 @@ import numpy as np
 from scipy import integrate
 
 # Local imports
-from veroku.gaussian import Gaussian
-from veroku import factor_utils
+from veroku.factors.gaussian import Gaussian
+from veroku.factors import factor_utils
 
 
 # pylint: disable=too-many-public-methods

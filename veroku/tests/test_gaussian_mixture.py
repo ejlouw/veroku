@@ -8,8 +8,7 @@ import unittest
 import numpy as np
 
 # Local imports
-from veroku.gaussian_mixture import GaussianMixture
-from veroku.gaussian import Gaussian
+from veroku.factors.gaussian import Gaussian, GaussianMixture
 
 
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):

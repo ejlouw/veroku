@@ -5,7 +5,7 @@ This module contains an abstract parent class, defining the minimum functions th
 from abc import ABCMeta, abstractmethod
 import copy
 
-from veroku import factor_utils
+from veroku.factors import factor_utils
 
 
 class Factor:
