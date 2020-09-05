@@ -22,7 +22,7 @@ jobs:
       # Setup and Test
       - name: SetupAndTest
         run: |
-          pip install -r --verbose requirements.txt
+          pip install --verbose -r requirements.txt
           echo test, and deploy your project.
 
       # Update version number
