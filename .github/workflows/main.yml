@@ -1,6 +1,6 @@
 # Actions workflow
 
-name: CI
+name: CI_PIPELINE
 
 # Workflow Triggers
 on:
@@ -22,7 +22,7 @@ jobs:
       # Setup and Test
       - name: SetupAndTest
         run: |
-          pip install -r requirements
+          pip install -r requirements.txt
           echo test, and deploy your project.
 
       # Update version number
