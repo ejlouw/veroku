@@ -39,7 +39,7 @@ jobs:
         run: |
           echo GITHUB_RUN_ID
           echo $GITHUB_RUN_ID
-          sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_ID\"/" veroku/__init__.py
+          sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           echo "version in init:"
           head veroku/__init__.py
       # Package and Upload
@@ -49,7 +49,9 @@ jobs:
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           pip install twine
+          pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           ls -la ./dist
-#         python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
+        # TODO: Add error handling (for instance for the case that this is run more than once with same package number)
+          python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
 
