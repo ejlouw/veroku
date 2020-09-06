@@ -69,6 +69,7 @@ def split_gaussian(gaussian):
     gm = GaussianMixture(gaussians)
     return gm
 
+
 class Gaussian(Factor):
     """
     A class for instantiating and performing operations om multivariate Gaussian distributions.

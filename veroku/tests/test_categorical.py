@@ -217,7 +217,3 @@ class TestCategorical(unittest.TestCase):
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
 
 
-
-
-
-

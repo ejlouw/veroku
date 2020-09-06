@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="veroku_logo.png">
+  <img src="logo.png">
 </div>
 
 ### Overview
@@ -9,6 +9,7 @@ provide a framework for performing efficient probabilistic inference with very h
 example of a well-known type of PGM is the Kalman filter that can be used to obtain probabilistic estimates of a hidden
 state of a process or system, given noisy measurements. PGMs can in principle be used for any problem that involves
 uncertainty and is therefore applicable to many problems.</div> 
+
 Veroku currently supports the following distributions:
 * Multivariate Gaussian
 * Multivariate Gaussian mixture

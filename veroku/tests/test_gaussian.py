@@ -630,10 +630,4 @@ class TestGaussian(unittest.TestCase):
         self.assertAlmostEqual(log_pot_canform, log_pot_covform, places=1)
 
     # TODO: add tests for vacuous Gaussians.
-
-
 # pylint: enable=too-many-public-methods
-
-
-if __name__ == '__main__':
-    unittest.main()
