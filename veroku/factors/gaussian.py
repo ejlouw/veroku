@@ -29,7 +29,6 @@ def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     :param cov_range: (float list)The range between which a covariance will the uniformly sampled.
     :return: The random Gaussian object.
     """
-
     assert var_names, 'Error: var_names list cannot be empty.'
     dim = len(var_names)
     cov = np.random.uniform(cov_range[0], cov_range[1], [dim, dim]) * np.eye(dim, dim)
@@ -44,7 +43,6 @@ def make_std_gaussian(var_names):
     :param var_names: (string list) The variable name of the factor
     :return: The standard Gaussian object.
     """
-
     assert var_names, 'Error: var_names list cannot be empty.'
     dim = len(var_names)
     cov = np.eye(dim, dim)
@@ -52,13 +50,22 @@ def make_std_gaussian(var_names):
     random_gaussian = Gaussian(cov=cov, mean=mean, log_weight=0.0, var_names=var_names)
     return random_gaussian
 
+
 def split_gaussian(gaussian):
+    """
+    Split a Gaussian into a three component Gaussian Mixture, with different means.
+    :param gaussian: The Gaussian distribution to split.
+    :
+    :return: The split Gaussian Mixture.
+    """
+    if gaussian.dim != 1:
+        raise NotImplementedError('Gaussian must be one dimensional.')
     weights = [1/3, 1/3, 1/3]
     full_cov = gaussian.get_cov()
     full_mean = gaussian.get_mean()
 
     covs = [w*full_cov for w in weights]
-    means = [full_mean - np.sqrt(full_cov), full_mean , full_mean + np.sqrt(full_cov)]
+    means = [full_mean - np.sqrt(full_cov), full_mean, full_mean + np.sqrt(full_cov)]
 
     gaussians = []
     for mean, cov, weight in zip(means, covs, weights):
@@ -99,8 +106,8 @@ class Gaussian(Factor):
                [u_y]] in terms of the individual variable components)
         log_weight = 0.0 (normalised)
         var_names_dict={'x':0, 'y':1}
-
         """
+
         super().__init__(var_names=var_names)
         self.is_vacuous = False
         if all(v is None for v in [K, h, g]):
@@ -160,7 +167,6 @@ class Gaussian(Factor):
         Reorder the values in the matrix and vector parameters according to the order of new_order_vars
         :param new_order_vars: The same variable names as in self.var_names, in a different order
         """
-        # print('reorder params')
         if new_order_vars == self._var_names:
             return
         assert set(new_order_vars) == set(self._var_names), \
@@ -204,7 +210,6 @@ class Gaussian(Factor):
         if not np.allclose(self.K, gaussian.get_K(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         return True
-
     # pylint: enable=protected-access
 
     # pylint: disable=protected-access
@@ -220,7 +225,6 @@ class Gaussian(Factor):
         if not np.allclose(self.cov, gaussian.get_cov(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         return True
-
     # pylint: enable=protected-access
 
     def equals(self, factor, rtol=1e-05, atol=1e-05):
@@ -275,7 +279,6 @@ class Gaussian(Factor):
         if self.h is not None:
             return self.h.copy()
         return None
-
     # pylint: enable=invalid-name
 
     # pylint: disable=invalid-name
@@ -286,7 +289,6 @@ class Gaussian(Factor):
         """
         self._update_canform()
         return self.g
-
     # pylint: enable=invalid-name
 
     def cov_exists(self):
@@ -309,7 +311,6 @@ class Gaussian(Factor):
         if self.cov is not None:
             return self.cov.copy()
         return None
-
     # pylint: enable=invalid-name
 
     def get_mean(self):
@@ -448,8 +449,6 @@ class Gaussian(Factor):
         if self.is_vacuous:
             raise ValueError('cannot marginalise vacuous Gaussian.')
 
-        # marginal_cov = self.cov[indices_to_keep, indices_to_keep]
-        # marginal_mean = self.mean[indices_to_keep, 0]
         marginal_cov = self.cov[np.ix_(indices_to_keep, indices_to_keep)]
         marginal_mean = self.mean[np.ix_(indices_to_keep, [0])]
         return Gaussian(cov=marginal_cov, mean=marginal_mean, log_weight=self.log_weight,
@@ -471,8 +470,6 @@ class Gaussian(Factor):
         try:
             self.K = np.linalg.inv(self.cov)
         except np.linalg.LinAlgError as e:
-            #with open('/Users/everhardlouw/Desktop/sing_mat.pkl', 'wb') as file:
-            #    pickle.dump(self.cov, file)
             print('self.cov = ', self.cov)
             raise e
         self.h = self.K.dot(self.mean)
@@ -546,9 +543,6 @@ class Gaussian(Factor):
         :return: the resulting GaussianMixture
         """
         # pylint: disable=invalid-name
-        #if isinstance(factor, factorised_factor.FactorisedFactor):
-        #    processed_factors = [self._absorb_or_cancel(factor.copy(), operator_function) for factor in factor.factors]
-        #    return factorised_factor.FactorisedFactor(processed_factors)
         K_a = self.get_K()
         K_b = factor.get_K()
         assert len(K_a.shape) == 2
@@ -604,7 +598,6 @@ class Gaussian(Factor):
             (observed_vec.transpose()).dot(K_YY)).dot(observed_vec)
 
         return K_reduced, h_reduced, g_reduced
-
     # pylint: enable=invalid-name
 
     # pylint: disable=invalid-name
@@ -660,15 +653,13 @@ class Gaussian(Factor):
         if self.equals(factor):
             return 0.0
 
-        inv_cov_q = factor.get_K()  # g
-        # cov_q = factor.get_cov()  # g
-        inv_cov_p = self.get_K()  # f
-        cov_p = self.get_cov()  # f
+        inv_cov_q = factor.get_K()
+        inv_cov_p = self.get_K()
+        cov_p = self.get_cov()
 
         u_q = factor.get_mean()
         u_p = self.get_mean()
 
-        # det_term = 0.5 * np.log(np.linalg.det(inv_cov_p) / np.linalg.det(inv_cov_q))
         det_inv_cov_q = np.linalg.det(inv_cov_q)
         det_inv_cov_p = np.linalg.det(inv_cov_p)
         if det_inv_cov_q == 0.0:
@@ -682,7 +673,7 @@ class Gaussian(Factor):
         mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
         dim_term = 0.5 * self.dim
         kld = det_term + trace_term + mahalanobis_term - dim_term
-        # return kld[0][0]
+        #TODO: Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
 
     def copy(self):

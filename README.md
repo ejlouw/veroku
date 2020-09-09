@@ -2,6 +2,10 @@
   <img src="logo.png">
 </div>
 
+### Disclaimer
+This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
+but will be made public soon.
+
 ### Overview
 <div style="text-align: justify">
 Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs). PGMs

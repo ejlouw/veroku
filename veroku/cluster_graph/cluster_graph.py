@@ -510,7 +510,7 @@ class ClusterGraph(object):
 
     def make_message_passing_animation_gif(self):
 
-        self.message_passing_animation_frames[0].save(fp='//Users/everhardlouw/Desktop/graph_animation.gif',
+        self.message_passing_animation_frames[0].save(fp='./graph_animation.gif',
                                                       format='GIF',
                                                       append_images=self.message_passing_animation_frames[1:],
                                                       save_all=True, duration=400, loop=0)
