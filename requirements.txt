@@ -1,13 +1,23 @@
-jupyterlab==2.2.1
+# documentation
+Sphinx==3.2.1
+autodoc==0.5.0
+
+# plotting and visualisation
 matplotlib==3.0.3
 seaborn==0.7.1
-tqdm==4.48.1
 graphviz==0.10.1
 Pillow==6.0.0
-ipython==7.5.0
+
+# misc
+tqdm==4.48.1
 pandas==0.23.4
+ipython==7.5.0
+
+# math
 numpy==1.16.3
 networkx==1.11
 numdifftools==0.9.20
 scipy==1.2.1
+
+# testing
 mockito==1.1.0
