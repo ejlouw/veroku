@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.cluster_graph.animation module &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="veroku.cluster_graph.cluster module" href="veroku.cluster_graph.cluster.html" />
+    <link rel="prev" title="veroku.cluster_graph package" href="veroku.cluster_graph.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-veroku.cluster_graph.animation">
+<span id="veroku-cluster-graph-animation-module"></span><h1>veroku.cluster_graph.animation module<a class="headerlink" href="#module-veroku.cluster_graph.animation" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.add_message_pass_animation_frames">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">add_message_pass_animation_frames</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">frames</span></em>, <em class="sig-param"><span class="n">node_a_name</span></em>, <em class="sig-param"><span class="n">node_b_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#add_message_pass_animation_frames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.add_message_pass_animation_frames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.change_cluster_graph_edge_color">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">change_cluster_graph_edge_color</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">node_a_name</span></em>, <em class="sig-param"><span class="n">node_b_name</span></em>, <em class="sig-param"><span class="n">new_color</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#change_cluster_graph_edge_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.change_cluster_graph_edge_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the color of an edge in a cluster graph graphviz object. Note that the cluster graph has cluster and sepset nodes.
+The ‘edge’ of which the color is changed in this function is actually two edges in the graphviz object
+(the edge between node_a and the sepset node and the edge between the sepset node and node_b).
+:param graph: The graphviz graph
+:param node_a_name:
+:param node_b_name:
+:param new_color:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.change_graph_edge_color">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">change_graph_edge_color</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">node_a_name</span></em>, <em class="sig-param"><span class="n">node_b_name</span></em>, <em class="sig-param"><span class="n">new_color</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#change_graph_edge_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.change_graph_edge_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the edge color of the edge between two nodes in a graphviz object.
+:param graph: The graphviz graph
+:param node_a_name: The one node
+:param node_b_name: The other node
+:param new_color: The new color of the edge (i.e ‘green’, ‘blue’, ‘red’)
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.change_graph_node_color">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">change_graph_node_color</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em>, <em class="sig-param"><span class="n">node_name</span></em>, <em class="sig-param"><span class="n">new_color</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#change_graph_node_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.change_graph_node_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the fill color of a node in a cluster graph graphviz object.
+:param graph:  The graphviz graph
+:param node_name: The name of the node which colour should be changed.
+:param new_color: The new fill color of the node (i.e ‘green’, ‘blue’, ‘red’)
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.check_non_overlapping_substring_presence">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">check_non_overlapping_substring_presence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">substring_a</span></em>, <em class="sig-param"><span class="n">substring_b</span></em>, <em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#check_non_overlapping_substring_presence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.check_non_overlapping_substring_presence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that both sub-strings can be found in seperate locations in strings
+Examples:</p>
+<blockquote>
+<div><p>substring_a = abc
+substring_b = 123
+string = abc123 – def
+returns False</p>
+<p>substring_a = abc
+substring_b = 123
+string = abc – 123
+returns True</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>substring_a</strong> – The one substring to check for.</p></li>
+<li><p><strong>substring_b</strong> – The other substring to check for.</p></li>
+<li><p><strong>string</strong> – The string to check in.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Result of check for independent string presence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.graph_to_pil_image">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">graph_to_pil_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">graph</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#graph_to_pil_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.graph_to_pil_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.animation.make_sepset_node_name">
+<code class="sig-prename descclassname">veroku.cluster_graph.animation.</code><code class="sig-name descname">make_sepset_node_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_a_name</span></em>, <em class="sig-param"><span class="n">node_b_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/animation.html#make_sepset_node_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.animation.make_sepset_node_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">veroku</a><ul>
+  <li><a href="veroku.html">veroku package</a><ul>
+  <li><a href="veroku.cluster_graph.html">veroku.cluster_graph package</a><ul>
+      <li>Previous: <a href="veroku.cluster_graph.html" title="previous chapter">veroku.cluster_graph package</a></li>
+      <li>Next: <a href="veroku.cluster_graph.cluster.html" title="next chapter">veroku.cluster_graph.cluster module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/veroku.cluster_graph.animation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

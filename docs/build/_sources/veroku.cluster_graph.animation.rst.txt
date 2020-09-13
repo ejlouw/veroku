@@ -1,0 +1,7 @@
+veroku.cluster\_graph.animation module
+======================================
+
+.. automodule:: veroku.cluster_graph.animation
+   :members:
+   :undoc-members:
+   :show-inheritance:

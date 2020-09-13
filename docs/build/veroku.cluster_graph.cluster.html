@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.cluster_graph.cluster module &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="veroku.cluster_graph.cluster_graph module" href="veroku.cluster_graph.cluster_graph.html" />
+    <link rel="prev" title="veroku.cluster_graph.animation module" href="veroku.cluster_graph.animation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-veroku.cluster_graph.cluster">
+<span id="veroku-cluster-graph-cluster-module"></span><h1>veroku.cluster_graph.cluster module<a class="headerlink" href="#module-veroku.cluster_graph.cluster" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="veroku.cluster_graph.cluster.Cluster">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.cluster.</code><code class="sig-name descname">Cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">cluster_name_prefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for instantiating clusters for use in ClusterGraph objects.</p>
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.add_neighbour">
+<code class="sig-name descname">add_neighbour</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other_cluster</span></em>, <em class="sig-param"><span class="n">sepset</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.add_neighbour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.add_neighbour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a neighbour to this cluster’s list of neighbours.
+:param other_cluster: (Cluster) The cluster to add as a neighbour
+:param sepset: The sepset between the neighbours (can be smaller than the scope intersection in order</p>
+<blockquote>
+<div><p>to enforce the running intersection property)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.add_neighbour_if_appropriate">
+<code class="sig-name descname">add_neighbour_if_appropriate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other_cluster</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.add_neighbour_if_appropriate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.add_neighbour_if_appropriate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a neighbour to this cluster’s list of neighbours, if the sepset (overlap between the scope of this cluster
+and the other) length is greater than 0.
+:param other_cluster: (Cluster) The cluster to potentially add as a neighbour
+:return: (bool) Whether the other cluster was added as a neighbour or not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.cluster_id">
+<em class="property">property </em><code class="sig-name descname">cluster_id</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.cluster_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>This cluster’s id.
+:return: The cluster_id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.get_sepset">
+<code class="sig-name descname">get_sepset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">neighbour_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.get_sepset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.get_sepset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sepset between this cluster and another.
+:param neighbour_id: The id of the other cluster.
+:return: (list) The sepset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.make_message">
+<code class="sig-name descname">make_message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">neighbour_id</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.make_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.make_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a Message to send to the neighbour with a specified id.
+:param neighbour_id: The specified id corresponding to the neighbour cluster.
+:return: (Message) The Message</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.neighbour_ids">
+<em class="property">property </em><code class="sig-name descname">neighbour_ids</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.neighbour_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of ids corresponding to the cluster’s neigbours.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.receive_message">
+<code class="sig-name descname">receive_message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.receive_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.receive_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive Message.
+:param message: (Message) The received Message</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.remove_all_neighbours">
+<code class="sig-name descname">remove_all_neighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Cluster.remove_all_neighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.remove_all_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Cluster.var_names">
+<em class="property">property </em><code class="sig-name descname">var_names</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Cluster.var_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The variable names associated with the cluster factor.
+:return: the var_names</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="veroku.cluster_graph.cluster.Message">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.cluster.</code><code class="sig-name descname">Message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">sender_id</span></em>, <em class="sig-param"><span class="n">receiver_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for instantiating Message objects.</p>
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.distance_from_other">
+<code class="sig-name descname">distance_from_other</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other_message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Message.distance_from_other"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.distance_from_other" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Kullback-Leibler (KL) divergence between the message factor and another message’s factor.
+:param other_message: The other message of which the factor will be used to compare to this message’s factor.
+:return: The KL-divergence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.distance_from_vacuous">
+<code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph/cluster.html#Message.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous version of it.
+:return: The KL-divergence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.factor">
+<em class="property">property </em><code class="sig-name descname">factor</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Message’s factor
+:return: The factor</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.receiver_id">
+<em class="property">property </em><code class="sig-name descname">receiver_id</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.receiver_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Message’s receiver id
+:return: The receiver_id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.sender_id">
+<em class="property">property </em><code class="sig-name descname">sender_id</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.sender_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Message’s sender id
+:return: The sender_id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.cluster.Message.var_names">
+<em class="property">property </em><code class="sig-name descname">var_names</code><a class="headerlink" href="#veroku.cluster_graph.cluster.Message.var_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The variable names associated with the cluster factor.
+:return: the var_names</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">veroku</a><ul>
+  <li><a href="veroku.html">veroku package</a><ul>
+  <li><a href="veroku.cluster_graph.html">veroku.cluster_graph package</a><ul>
+      <li>Previous: <a href="veroku.cluster_graph.animation.html" title="previous chapter">veroku.cluster_graph.animation module</a></li>
+      <li>Next: <a href="veroku.cluster_graph.cluster_graph.html" title="next chapter">veroku.cluster_graph.cluster_graph module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/veroku.cluster_graph.cluster.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

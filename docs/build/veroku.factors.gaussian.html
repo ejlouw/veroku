@@ -1,0 +1,547 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.factors.gaussian module &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="veroku.factors.factor_utils module" href="veroku.factors.factor_utils.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-veroku.factors.gaussian">
+<span id="veroku-factors-gaussian-module"></span><h1>veroku.factors.gaussian module<a class="headerlink" href="#module-veroku.factors.gaussian" title="Permalink to this headline">¶</a></h1>
+<p>A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.</p>
+<dl class="py class">
+<dt id="veroku.factors.gaussian.Gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="veroku.factors.factor.html#veroku.factors.factor.Factor" title="veroku.factors.factor.Factor"><code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors.factor.Factor</span></code></a></p>
+<p>A class for instantiating and performing operations om multivariate Gaussian distributions.</p>
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.absorb">
+<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.absorb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this Gaussian with another factor.
+:param factor: the factor to multiply with
+:return: the resulting factor</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.add_log_weight">
+<code class="sig-name descname">add_log_weight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_weight_to_add</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.add_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.add_log_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add log value to the log weight.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.cancel">
+<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this Gaussian by another facotr.
+:param factor: the factor to divide by
+:return: the resulting factor</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a copy of this Gaussian
+:return: the copied Gaussian</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.cov_exists">
+<code class="sig-name descname">cov_exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.cov_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.cov_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.distance_from_vacuous">
+<code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.equals">
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">1e-05</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.equals" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – Gaussian
+The Gaussian object to compare self with.</p></li>
+<li><p><strong>rtol</strong> – float
+The absolute tolerance parameter (see numpy Notes for allclose function).</p></li>
+<li><p><strong>atol</strong> – float
+The absolute tolerance parameter (see numpy Notes for allclose function).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool
+Result of equals comparison between self and gaussian</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.fix_non_psd_matrices">
+<code class="sig-name descname">fix_non_psd_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.fix_non_psd_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.fix_non_psd_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_K">
+<code class="sig-name descname">get_K</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_K" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the K matrix (after ensuring that the canonical form is updated.)
+:return: The K parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_complex_log_weight">
+<code class="sig-name descname">get_complex_log_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_complex_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_complex_log_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log weight even in cases where the determinant of the covariance matrix is negative. In such cases the
+log_weight no longer corresponds to the integral and the log of the weight will have a imaginary component.
+Computing the complex log-weight can however still be useful: it is used, for example, in the (experimental)
+Gaussian mixture division function (_gm_division_m2).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_complex_weight">
+<code class="sig-name descname">get_complex_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_complex_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_complex_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get (possibly complex) weight parameter.
+:return: weight parameter</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_cov">
+<code class="sig-name descname">get_cov</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the covariance matrix (after ensuring that the covariance form is updated.)
+:return: The cov parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_g">
+<code class="sig-name descname">get_g</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_g"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the g scalar (after ensuring that the canonical form is updated.)
+:return: The g parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_h">
+<code class="sig-name descname">get_h</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log h vector (after ensuring that the canonical form is updated.)
+:return: The h parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_log_weight">
+<code class="sig-name descname">get_log_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_log_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log weight (after ensuring that the covariance form is updated.)
+:return: The log_weight parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_mean">
+<code class="sig-name descname">get_mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mean vector (after ensuring that the covariance form is updated.)
+:return: The mean parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_weight">
+<code class="sig-name descname">get_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.
+:return: the weight</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.invert">
+<code class="sig-name descname">invert</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.invert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.invert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invert this Gaussian (1/Gaussian). This is used in the approximate Gaussian mixture division algorithms.
+:return: the inverted Gaussian</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.joint_distribution">
+<em class="property">property </em><code class="sig-name descname">joint_distribution</code><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.joint_distribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.kl_divergence">
+<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalise_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.kl_divergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get D_KL(self||factor).
+D_KL(P|Q) = sum(P*log(P/Q))
+:param factor: The other factor
+:return: The Kullback-Leibler divergence</p>
+<p>Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.log_potential">
+<code class="sig-name descname">log_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_val</span></em>, <em class="sig-param"><span class="n">vrs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.log_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.log_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log of the value of the Gaussian potential at <a href="#id1"><span class="problematic" id="id2">x_</span></a>.
+:param x_val: the vector (or vector-like object) to evaluate the GaussianMixture at
+:return: log of the value of the GaussianMixture potential at x</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.make_vacuous">
+<em class="property">classmethod </em><code class="sig-name descname">make_vacuous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.make_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.make_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make an vacuous Gaussian distribution with a zero precision matrix and zero h vector and zero g value.
+This ‘Gaussian’ is effectively a constant function (it has infinite variance and infinite mass) with value
+exp(g)
+:return: The vacuous Gaussian</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.marginalise">
+<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.marginalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate out variables from this Gaussian.
+:param vrs: (list) a subset of variables in the factor’s scope
+:param keep: Whether to keep or sum out vrs
+:return: the resulting Gaussian marginal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.normalise">
+<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.normalise" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.observe">
+<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.
+:param vrs: the names of the observed variable (list)
+:param values: the values of the observed variables (list or vector-like object)
+:return: the resulting Gaussian</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">xlim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ylim</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the Gaussian mixture potential function (only for 1d and 2d functions)
+:param log: if this is True, the log-potential will be plotted
+:param xlim: the x limits to plot the function over (optional)
+:param ylim: the y limits to plot the function over (optional and only used in 2d case)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.potential">
+<code class="sig-name descname">potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_val</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of the Gaussian potential at <a href="#id3"><span class="problematic" id="id4">x_</span></a>.
+:param x_val: the vector (or vector-like object) to evaluate the Gaussian at
+:return: the value of the Gaussian potential at <a href="#id5"><span class="problematic" id="id6">x_</span></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_samples</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw samples from the Gaussian distribution.
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">update_covform</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_canform</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the parameters of the Gaussian distribution</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.show_vis">
+<code class="sig-name descname">show_vis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">10, 8</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.show_vis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.show_vis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualise the parameters with plots.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.subtract_log_weight">
+<code class="sig-name descname">subtract_log_weight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_weight_to_subtract</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.subtract_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.subtract_log_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtract log value to the log weight.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="veroku.factors.gaussian.GaussianMixture">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">GaussianMixture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">cancel_method</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="veroku.factors.factor.html#veroku.factors.factor.Factor" title="veroku.factors.factor.Factor"><code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors.factor.Factor</span></code></a></p>
+<p>A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</p>
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.absorb">
+<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.absorb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this GaussianMixture with another factor.
+:param factor: the factor to multiply with
+:return: the resulting GaussianMixture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.argmax">
+<code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.argmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the input vector that maximises the potential function of the Gaussian mixture
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.cancel">
+<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this GaussianMixture by another factor.
+:param factor: the factor divide by
+:return: the resulting GaussianMixture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a copy of this Gaussian mixture
+:return: the copied GaussianMixture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.equals">
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.equals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this Gaussian mixture is the same as another factor
+:param factor: The factor to compare to.
+:return: (bool) The result of the comparison.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_component">
+<code class="sig-name descname">get_component</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_component"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Gaussian component at an index
+:param index: the index of teh component to return
+:return: the component at index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_covs">
+<code class="sig-name descname">get_covs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_covs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_covs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the covariance matrices of the Gaussian components.
+:return: the covariance matrices</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_log_weight">
+<code class="sig-name descname">get_log_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_log_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total log weight of the Gaussian mixture.
+:return: the total log weights</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_log_weights">
+<code class="sig-name descname">get_log_weights</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_log_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_log_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log weights of the Gaussian mixture components.
+:return: the log weights</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_means">
+<code class="sig-name descname">get_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_means"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_means" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the means of the Gaussian components.
+:return: the mean vectors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.get_weights">
+<code class="sig-name descname">get_weights</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.get_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.get_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the weights of the Gaussian mixture components.
+:return: the log weights</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.is_vacuous">
+<em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.is_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.log_potential">
+<code class="sig-name descname">log_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.log_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.log_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the log of the value of the Gaussian mixture potential at X.
+:param x: the vector (or vector-like object) to evaluate the GaussianMixture at
+:return: log of the value of the GaussianMixture potential at X</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.marginalise">
+<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.marginalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate out variables from this Gaussian mixture.
+:param vrs: (list) a subset of variables in the factor’s scope
+:param keep: Whether to keep or sum out vrs
+:return: the resulting Gaussian mixture marginal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.moment_match_to_single_gaussian">
+<code class="sig-name descname">moment_match_to_single_gaussian</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.moment_match_to_single_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.moment_match_to_single_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean and covariance of the Gaussian mixture and return a Gaussian
+with these parameters a Gaussian approximation of the Gaussian Mixture.
+:return: the Gaussian approximation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.normalise">
+<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.normalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise the Gaussian mixture.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.observe">
+<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.
+:param vrs: the names of the observed variable (list)
+:param values: the values of the observed variables (list or vector-like object)
+:return: the resulting GaussianMixture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">xlim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ylim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_individual_components</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the Gaussian mixture potential function (only for 1d and 2d functions)
+:param log: if this is True, the log-potential will be plotted
+:param xlim: the x limits to plot the function over (optional)
+:param ylim: the y limits to plot the function over (optional and only used in 2d case)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.potential">
+<code class="sig-name descname">potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_val</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of the Gaussian mixture potential at X.
+:param x_val: the vector (or vector-like object) to evaluate the GaussianMixture at
+:return: the value of the GaussianMixture potential at X</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_samples</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the parameters of the Gaussian mixture distribution</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.make_random_gaussian">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">[- 10, 10]</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">[1, 10]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
+distributions.
+:param var_names: (string list) The variable name of the factor
+:param mean_range: (float list) The range between which a mean will the uniformly sampled.
+:param cov_range: (float list)The range between which a covariance will the uniformly sampled.
+:return: The random Gaussian object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.make_std_gaussian">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_std_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_std_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_std_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a d dimensional standard Gaussian.
+:param var_names: (string list) The variable name of the factor
+:return: The standard Gaussian object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.split_gaussian">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">split_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#split_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.split_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a Gaussian into a three component Gaussian Mixture, with different means.
+:param gaussian: The Gaussian distribution to split.
+:
+:return: The split Gaussian Mixture.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">veroku</a><ul>
+  <li><a href="veroku.html">veroku package</a><ul>
+  <li><a href="veroku.factors.html">veroku.factors package</a><ul>
+      <li>Previous: <a href="veroku.factors.factor_utils.html" title="previous chapter">veroku.factors.factor_utils module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/veroku.factors.gaussian.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,22 @@
+factors package
+===============
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   factors.categorical
+   factors.factor
+   factors.factor_template
+   factors.factor_utils
+   factors.gaussian
+
+Module contents
+---------------
+
+.. automodule:: factors
+   :members:
+   :undoc-members:
+   :show-inheritance:

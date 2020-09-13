@@ -1,0 +1,7 @@
+veroku.factors.factor\_template module
+======================================
+
+.. automodule:: veroku.factors.factor_template
+   :members:
+   :undoc-members:
+   :show-inheritance:

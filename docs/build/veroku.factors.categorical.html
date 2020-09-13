@@ -1,0 +1,328 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.factors.categorical module &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="veroku.factors.factor module" href="veroku.factors.factor.html" />
+    <link rel="prev" title="veroku.factors package" href="veroku.factors.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-veroku.factors.categorical">
+<span id="veroku-factors-categorical-module"></span><h1>veroku.factors.categorical module<a class="headerlink" href="#module-veroku.factors.categorical" title="Permalink to this headline">¶</a></h1>
+<p>A module for instantiating sparse tables with log probabilities.</p>
+<dl class="py class">
+<dt id="veroku.factors.categorical.Categorical">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="veroku.factors.factor.html#veroku.factors.factor.Factor" title="veroku.factors.factor.Factor"><code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors.factor.Factor</span></code></a></p>
+<p>A class for instantiating sparse tables with log probabilities.</p>
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.absorb">
+<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.absorb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this factor with <cite>factor</cite> and return the result.
+:param factor: (SparseLogTable) The factor to multiply with.
+:return: (SparseLogTable) The resulting factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.apply_to_probs">
+<code class="sig-name descname">apply_to_probs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">include_assignment</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.apply_to_probs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.apply_to_probs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.argmax">
+<code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.argmax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.assert_consistent_cardinalities">
+<code class="sig-name descname">assert_consistent_cardinalities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.assert_consistent_cardinalities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.assert_consistent_cardinalities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that the variable cardinalities are consistent between two factors.
+:param factor:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.basic_table_operation">
+<em class="property">static </em><code class="sig-name descname">basic_table_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">larger_table_vars</span></em>, <em class="sig-param"><span class="n">larger_table</span></em>, <em class="sig-param"><span class="n">smaller_table_vars</span></em>, <em class="sig-param"><span class="n">smaller_table</span></em>, <em class="sig-param"><span class="n">_opperator</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.basic_table_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.basic_table_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficiently perform operations on corresponding (as indicted by the assignments and variables names)
+elements between larger_table_probs and smaller_table_probs. The smaller table variables must only
+contain variables that is also in the larger and must be sorted to have the same order as in the larger
+(although there can be variables in between in the larger). Also both can be sparse.</p>
+<dl class="simple">
+<dt>Note: the variables will have the same order as larger_table_vars and a new variable name list is therefore not</dt><dd><p>returned.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>larger_table</strong> – a dictionary of assignment tuples and corresponding probabilities</p></li>
+<li><p><strong>smaller_table</strong> – a dictionary of assignment tuples and corresponding probabilities</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<p>larger_table_vars = [‘a’, ‘b’, ‘c’]
+larger_table = {(0, 0, 0): 0.5,</p>
+<blockquote>
+<div><p>(0, 1, 1): 0.2,
+(1, 1, 0): 0.3}</p>
+</div></blockquote>
+<p>smaller_table_vars = [‘a’, c’]
+smaller_table = {(0, 0): 0.2,</p>
+<blockquote>
+<div><p>(0, 1): 0.5,
+(1, 1): 0.1}</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.cancel">
+<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this factor by <cite>factor</cite> and return the result.
+:param factor: (SparseLogTable) The factor to divide by.
+:return: (SparseLogTable) The resulting factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.complex_table_operation">
+<em class="property">static </em><code class="sig-name descname">complex_table_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vars_a</span></em>, <em class="sig-param"><span class="n">table_a</span></em>, <em class="sig-param"><span class="n">vars_b</span></em>, <em class="sig-param"><span class="n">table_b</span></em>, <em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.complex_table_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.complex_table_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
+:param vars_a:
+:param table_a:
+:param vars_b:
+:param table_b:
+:param func: The function to apply on pairs of corresponding probabilities in the two tables.
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a copy of this factor.
+:return: (SparseLogTable) The copy.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.distance_from_vacuous">
+<code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Kullback-Leibler divergence between this factor and a uniform copy of it.
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.equals">
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.equals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.from_table_factor">
+<em class="property">classmethod </em><code class="sig-name descname">from_table_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.from_table_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.from_table_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an equivalent SparseLogTable from a table factor
+:param table_factor:
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.get_nested_sorted_probs">
+<em class="property">static </em><code class="sig-name descname">get_nested_sorted_probs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_variables_order_outer</span></em>, <em class="sig-param"><span class="n">new_variables_order_inner</span></em>, <em class="sig-param"><span class="n">old_variable_order</span></em>, <em class="sig-param"><span class="n">old_assign_probs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.get_nested_sorted_probs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.get_nested_sorted_probs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder probs to a new order and sort assignments.
+:params old_assign_probs: A dictionary of assignment and coresponding probabilities.
+Example:
+old_variable_order = [a, b]
+new_variables_order_outer = [b]</p>
+<blockquote>
+<div><p>a  b  c   P(a,b)     return:       b    a  c  P(b,a)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>{(0, 0, 0): pa0b0c0                {(0):{(0, 0): pa0b0,</dt><dd><p>(0, 1, 0): pa0b1c0                      (1, 0): pa1b0}
+(1, 0, 1): pa1b0c1                 (1):{(0, 1): pa0b1,
+(1, 1, 1): pa1b1c1}                     (1, 1): pa1b1}}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.kl_divergence">
+<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalise_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get D_KL(self||factor).
+D_KL(P|Q) = sum(P*log(P/Q))
+:param factor: The other factor
+:return: The Kullback-Leibler divergence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.marginalise">
+<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum out variables from this factor.
+:param vrs: (list) a subset of variables in the factor’s scope
+:param keep: Whether to keep or sum out vrs
+:return: (SparseLogTable) the resulting factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.normalise">
+<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.normalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a normalised copy of the factor.
+:return: The normalised factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.observe">
+<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe variables to have certain values and return reduced table.
+:param vrs: (list) The variables.
+:param values: (tuple or list) Their values
+:return: (SparseLogTable) The resulting factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.potential">
+<code class="sig-name descname">potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">assignment</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of the factor for a specific assignment.
+:param assignment: The assignment
+:return: The value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exp_log_probs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the factor</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="veroku.factors.categorical.SparseLogTableTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">SparseLogTableTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#SparseLogTableTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.SparseLogTableTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="veroku.factors.factor_template.html#veroku.factors.factor_template.FactorTemplate" title="veroku.factors.factor_template.FactorTemplate"><code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors.factor_template.FactorTemplate</span></code></a></p>
+<dl class="py method">
+<dt id="veroku.factors.categorical.SparseLogTableTemplate.make_factor">
+<code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#SparseLogTableTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.SparseLogTableTemplate.make_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a factor with var_templates formatted by format_dict to create specific var names.
+:param format_dict:
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.categorical.reorder_probs">
+<code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">reorder_probs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_variable_order</span></em>, <em class="sig-param"><span class="n">old_variable_order</span></em>, <em class="sig-param"><span class="n">old_assign_probs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#reorder_probs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.reorder_probs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder probs to a new order and sort assignments.</p>
+<p>Example:
+old_variable_order = [a, b]
+new_variable_order = [b, a]</p>
+<p>a b P(a,b)  return    b a P(a,b)
+0 0  pa0b0            0 0  pa0b0
+0 1  pa0b1            0 1  pa1b0
+1 0  pa1b0            1 0  pa0b1
+1 1  pa1b1            1 1  pa1b1</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">veroku</a><ul>
+  <li><a href="veroku.html">veroku package</a><ul>
+  <li><a href="veroku.factors.html">veroku.factors package</a><ul>
+      <li>Previous: <a href="veroku.factors.html" title="previous chapter">veroku.factors package</a></li>
+      <li>Next: <a href="veroku.factors.factor.html" title="next chapter">veroku.factors.factor module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/veroku.factors.categorical.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

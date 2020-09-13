@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.factors.factor_utils &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for veroku.factors.factor_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module containing general functions to help with factor operations and transformations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># TODO: simplify make_square_matrix and make_column vector (maybe renam to make ____ from list - there is already ...</span>
+<span class="c1"># TODO: ... such a function for msquare matrix). These functions do not need al tie current functionality. ...</span>
+<span class="c1"># TODO: ... Ensure factor classes still work.</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<div class="viewcode-block" id="format_list_elements"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.format_list_elements">[docs]</a><span class="k">def</span> <span class="nf">format_list_elements</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">format_dict</span><span class="p">):</span>
+    <span class="n">formatted_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">formatted_list</span></div>
+
+
+<div class="viewcode-block" id="get_subset_evidence"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.get_subset_evidence">[docs]</a><span class="k">def</span> <span class="nf">get_subset_evidence</span><span class="p">(</span><span class="n">all_evidence_dict</span><span class="p">,</span> <span class="n">subset_vars</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Select evidence for certain variables only from a evidence_dict and return the variables for which there is evidence</span>
+<span class="sd">     and the corresponding values.</span>
+<span class="sd">    :param all_evidence_dict: (dict) The evidence dictionary.</span>
+<span class="sd">    :param subset_vars: (string list) the subset of variables for which to select evidence from all_evidence_dict.</span>
+<span class="sd">    :return: evidence variable names and values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">factor_scope_evidence</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">all_evidence_dict</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">subset_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">all_evidence_dict</span><span class="p">}</span>
+    <span class="n">evidence_vrs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">factor_scope_evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">evidence_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">factor_scope_evidence</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">evidence_vrs</span><span class="p">,</span> <span class="n">evidence_values</span></div>
+
+
+<div class="viewcode-block" id="get_closest_psd_from_symmetric_matrix"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.get_closest_psd_from_symmetric_matrix">[docs]</a><span class="k">def</span> <span class="nf">get_closest_psd_from_symmetric_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">V</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="n">Vp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">Dp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Vp</span><span class="p">)</span>
+    <span class="n">closest_psd_mat</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Dp</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">closest_psd_mat</span></div>
+
+
+<div class="viewcode-block" id="is_pos_def"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.is_pos_def">[docs]</a><span class="k">def</span> <span class="nf">is_pos_def</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if matrix is positive definite</span>
+<span class="sd">    :param matrix: the matrix to check</span>
+<span class="sd">    :return: (bool) whether the matrix is positive-definite or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="remove_duplicate_values"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.remove_duplicate_values">[docs]</a><span class="k">def</span> <span class="nf">remove_duplicate_values</span><span class="p">(</span><span class="n">array_like</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes duplicate values from list (when tol=0.0) or remove approximately duplicate</span>
+<span class="sd">    values if tol!=0.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unique_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">array_like</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">array_like</span><span class="p">:</span>
+        <span class="n">element_is_duplicate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">uval</span> <span class="ow">in</span> <span class="n">unique_values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">uval</span> <span class="o">-</span> <span class="n">element</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="n">element_is_duplicate</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">element_is_duplicate</span><span class="p">:</span>
+            <span class="n">unique_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unique_values</span></div>
+
+
+<div class="viewcode-block" id="make_list"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.make_list">[docs]</a><span class="k">def</span> <span class="nf">make_list</span><span class="p">(</span><span class="n">list_like_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a object to a list</span>
+<span class="sd">    :param list_like_object: a list like object (i.e string or 1d numpy array)</span>
+<span class="sd">    :return: the equivalent list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">list_like_object</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">list_like_object</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">lst</span>
+    <span class="k">return</span> <span class="n">list_like_object</span></div>
+
+
+<div class="viewcode-block" id="make_scalar"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.make_scalar">[docs]</a><span class="k">def</span> <span class="nf">make_scalar</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a list or numpy array containing a single element to a scalar.</span>
+<span class="sd">    :param scalar_like_object: a list or numpy array containing a single element (either int or float).</span>
+<span class="sd">    :return: the int or float contained in the scalar_like_object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;array must have length of one to be convertible to a scalar.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scalar_like_object</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;list must have length of one to be convertible to a scalar.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scalar_like_object</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">scalar_like_object</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">scalar_like_object</span><span class="p">)</span><span class="si">}</span><span class="s1"> is not supported&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="checked_colvector"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.checked_colvector">[docs]</a><span class="k">def</span> <span class="nf">checked_colvector</span><span class="p">(</span><span class="n">col_vector</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col_vector</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="s1">&#39;Error: col_vector not numpy array&#39;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Error: col_vector not 2d matrix.&#39;</span>
+    <span class="k">assert</span> <span class="n">col_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Error: col_vector not column vector&#39;</span></div>
+
+
+<div class="viewcode-block" id="make_column_vector"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.make_column_vector">[docs]</a><span class="k">def</span> <span class="nf">make_column_vector</span><span class="p">(</span><span class="n">vector_like_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function converts a vector like object into a standard</span>
+<span class="sd">    numpy column vector.</span>
+<span class="sd">    :param vector_like_object: an int, float, list or (one dimensional) array</span>
+<span class="sd">    :return: a numpy column vector (array)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">vector_like_object</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Error: array of shape </span><span class="si">{</span><span class="n">vector_like_object</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1"> cannot be convertes to column vector&#39;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vector_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">s</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">vector_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">]),</span> <span class="n">error_msg</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vector_like_object</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<span class="c1">#TODO: simplify this function like the one above</span>
+<span class="c1"># pylint: disable=inconsistent-return-statements</span>
+<div class="viewcode-block" id="list_to_square_matrix"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.list_to_square_matrix">[docs]</a><span class="k">def</span> <span class="nf">list_to_square_matrix</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a square matrix from a list.</span>
+<span class="sd">    :param matrix_like_object: a list containing a single int or float or n lists of length n</span>
+<span class="sd">    :return: an nxn numpy array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">len_list</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">len_list</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot make matrix from empty list.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">len_list</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">matrix_like_object</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot make square matrix from one dimensional list&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">!=</span> <span class="n">len_list</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot make square matrix from different length lists&#39;</span><span class="p">)</span>
+            <span class="c1"># if isinstance(element[0], list):</span>
+            <span class="c1">#    raise ValueError(&#39;cannot make square matrix from 3d list&#39;)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">)</span>
+    <span class="c1"># len_list == 1:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="c1"># matrix_like_object = [float or int]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">matrix_like_object</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="c1"># matrix_like_object = [[float or int]]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot convert matrix_like_object </span><span class="si">{</span><span class="n">matrix_like_object</span><span class="si">}</span><span class="s1"> to square matrix&#39;</span><span class="p">)</span></div>
+<span class="c1"># pylint: enable=inconsistent-return-statements</span>
+
+
+<span class="c1"># pylint: disable=inconsistent-return-statements</span>
+<div class="viewcode-block" id="make_square_matrix"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.make_square_matrix">[docs]</a><span class="k">def</span> <span class="nf">make_square_matrix</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function converts a matrix like object into a standard</span>
+<span class="sd">    numpy square matrix.</span>
+<span class="sd">    :param matrix_like_object: an int, float, list, list of lists or (square, two dimensional) array</span>
+<span class="sd">    :return: a numpy square matrix (array)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">matrix_like_object</span><span class="p">]])</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">list_to_square_matrix</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot convert higher (than 2) dimensional tensor to 2d matrix&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">matrix_like_object</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">matrix_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">matrix_like_object</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">matrix_like_object</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot convert matrix_like_object </span><span class="si">{</span><span class="n">matrix_like_object</span><span class="si">}</span><span class="s1"> to square matrix.&#39;</span><span class="p">)</span></div>
+<span class="c1"># pylint: enable=inconsistent-return-statements</span>
+
+
+<div class="viewcode-block" id="indexed_square_matrix_operation"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.indexed_square_matrix_operation">[docs]</a><span class="k">def</span> <span class="nf">indexed_square_matrix_operation</span><span class="p">(</span><span class="n">mat_a</span><span class="p">,</span> <span class="n">mat_b</span><span class="p">,</span> <span class="n">var_names_a</span><span class="p">,</span> <span class="n">var_names_b</span><span class="p">,</span> <span class="n">operator</span><span class="p">):</span>
+    <span class="c1"># TODO: update usages</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that performs element wise operations between square matrices where the corresponding indices in the</span>
+<span class="sd">    different matrices do not necessarily correspond to the same variables, but can be mapped to each other through the</span>
+<span class="sd">    variable name lists (var_names_a and var_names_b).</span>
+
+<span class="sd">    :param mat_a: A nxn numpy array to be used with the operator</span>
+<span class="sd">    :param mat_b:  A nxn numpy array to be used with the operator</span>
+<span class="sd">    :param var_names_a: the variable names corresponding to the values in mat_a</span>
+<span class="sd">    :param var_names_b: the variable names corresponding to the values in mat_b</span>
+<span class="sd">    :param operator: the operator to be applied to mat_a and mat_b</span>
+<span class="sd">    :return: the result of the operation</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        With:</span>
+<span class="sd">            mat_a =</span>
+<span class="sd">            [[11, 12, 13],</span>
+<span class="sd">             [21, 22, 23],</span>
+<span class="sd">             [31, 32, 33]]</span>
+<span class="sd">            var_names_a = [&#39;var1&#39;, &#39;var2&#39;]</span>
+<span class="sd">            mat_b =</span>
+<span class="sd">            [[11 , 13],</span>
+<span class="sd">             [31,  33]]</span>
+<span class="sd">            var_names_b = [&#39;var1&#39;, &#39;var3&#39;]</span>
+<span class="sd">            operator_str = &#39;-&#39;</span>
+<span class="sd">        the function returns:</span>
+<span class="sd">        [[0,  12, 0],</span>
+<span class="sd">         [21, 22, 23],</span>
+<span class="sd">         [0,  32, 0]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat_a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Error: matrix needs to be 2 dimensional&#39;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat_b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Error: matrix needs to be 2 dimensional&#39;</span>
+    <span class="k">assert</span> <span class="n">mat_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;Error: matrix needs to be square&#39;</span>
+    <span class="k">assert</span> <span class="n">mat_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;Error: matrix needs to be square&#39;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">)</span> <span class="o">!=</span> <span class="n">mat_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;var_names_a = &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mat_a = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">mat_a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;The number of variables in var_names_a does not match the dimensions of mat_a.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">)</span> <span class="o">!=</span> <span class="n">mat_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;var_names_b = &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mat_b = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">mat_b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;The number of variables in var_names_b does not match the dimensions of mat_b.&#39;</span><span class="p">)</span>
+    <span class="c1"># TODO: clean this up (also see todo in indexed_column_vector_operation)</span>
+    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">):</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="n">var_names_a</span>
+    <span class="k">elif</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">):</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="n">var_names_b</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span> <span class="o">+</span> <span class="n">var_names_a</span><span class="p">))</span>
+        <span class="n">new_vars</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">new_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_vars</span><span class="p">)</span>
+    <span class="n">new_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">new_dim</span><span class="p">,</span> <span class="n">new_dim</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var_i_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_vars</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">var_j_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_vars</span><span class="p">):</span>
+            <span class="n">val_a</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">var_i_name</span> <span class="ow">in</span> <span class="n">var_names_a</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">var_j_name</span> <span class="ow">in</span> <span class="n">var_names_a</span><span class="p">):</span>
+                <span class="n">val_a</span> <span class="o">=</span> <span class="n">mat_a</span><span class="p">[</span><span class="n">var_names_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_i_name</span><span class="p">),</span> <span class="n">var_names_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_j_name</span><span class="p">)]</span>
+            <span class="n">val_b</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">var_i_name</span> <span class="ow">in</span> <span class="n">var_names_b</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">var_j_name</span> <span class="ow">in</span> <span class="n">var_names_b</span><span class="p">):</span>
+                <span class="n">val_b</span> <span class="o">=</span> <span class="n">mat_b</span><span class="p">[</span><span class="n">var_names_b</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_i_name</span><span class="p">),</span> <span class="n">var_names_b</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_j_name</span><span class="p">)]</span>
+            <span class="n">new_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">operator</span><span class="p">(</span><span class="n">val_a</span><span class="p">,</span> <span class="n">val_b</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_matrix</span><span class="p">,</span> <span class="n">new_vars</span></div>
+
+
+<div class="viewcode-block" id="indexed_column_vector_operation"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.indexed_column_vector_operation">[docs]</a><span class="k">def</span> <span class="nf">indexed_column_vector_operation</span><span class="p">(</span><span class="n">colvec_a</span><span class="p">,</span> <span class="n">colvec_b</span><span class="p">,</span> <span class="n">var_names_a</span><span class="p">,</span> <span class="n">var_names_b</span><span class="p">,</span> <span class="n">operator</span><span class="p">):</span>
+    <span class="c1"># TODO: modify to match indexed_square_matrix_operation and update usages</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that performs element operations between column vectors, where the corresponding indices in the different</span>
+<span class="sd">    vectors do not necessarily correspond to the same variables, but can be mapped to each other through the variable</span>
+<span class="sd">    name lists (var_names_a and var_names_b).</span>
+
+<span class="sd">    :param colvec_a: A nx1 numpy array to be used with the operator</span>
+<span class="sd">    :param colvec_b:  A nx1 numpy array to be used with the operator</span>
+<span class="sd">    :param var_names_a: the variable names corresponding to the values in colvec_a</span>
+<span class="sd">    :param var_names_b: the variable names corresponding to the values in colvec_b</span>
+<span class="sd">    :param operator: the operator to be applied to colvec_a and colvec_b</span>
+<span class="sd">    :return: the result of the operation</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        With:</span>
+<span class="sd">            colvec_a =</span>
+<span class="sd">            [[11],</span>
+<span class="sd">             [21],</span>
+<span class="sd">             [31]]</span>
+<span class="sd">            var_names_a = [&#39;var1&#39;, &#39;var2&#39;]</span>
+<span class="sd">            colvec_b =</span>
+<span class="sd">            [[11],</span>
+<span class="sd">             [31]]</span>
+<span class="sd">            var_names_b = [var1&#39;, &#39;var3&#39;]</span>
+<span class="sd">            operator_str = &#39;-&#39;</span>
+<span class="sd">        the function returns:</span>
+<span class="sd">        [[0],</span>
+<span class="sd">         [21],</span>
+<span class="sd">         [0]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">colvec_a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Error: column vector needs to be 2 dimensional&#39;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">colvec_b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Error: column vector needs to be 2 dimensional&#39;</span>
+    <span class="k">assert</span> <span class="n">colvec_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Error: column vector array cannot have more than one column&#39;</span>
+    <span class="k">assert</span> <span class="n">colvec_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Error: column vector array cannot have more than one column&#39;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">)</span> <span class="o">==</span> <span class="n">colvec_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+        <span class="s1">&#39;Error: number of variables in var_names_a does not match the dimension of colvec_a.&#39;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">)</span> <span class="o">==</span> <span class="n">colvec_b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+        <span class="s1">&#39;Error: number of variables in var_names_a does not match the dimension of colvec_b.&#39;</span>
+    <span class="c1"># TODO: clean this up (also see todo in indexed_square_matrix_operation)</span>
+    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">):</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="n">var_names_a</span>
+    <span class="k">elif</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_a</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span><span class="p">):</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="n">var_names_b</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">var_names_b</span> <span class="o">+</span> <span class="n">var_names_a</span><span class="p">))</span>
+        <span class="n">new_vars</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">new_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_vars</span><span class="p">)</span>
+    <span class="n">new_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">new_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var_i_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_vars</span><span class="p">):</span>
+        <span class="n">val_a</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">var_i_name</span> <span class="ow">in</span> <span class="n">var_names_a</span><span class="p">:</span>
+            <span class="n">val_a</span> <span class="o">=</span> <span class="n">colvec_a</span><span class="p">[</span><span class="n">var_names_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_i_name</span><span class="p">),</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">val_b</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">var_i_name</span> <span class="ow">in</span> <span class="n">var_names_b</span><span class="p">:</span>
+            <span class="n">val_b</span> <span class="o">=</span> <span class="n">colvec_b</span><span class="p">[</span><span class="n">var_names_b</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_i_name</span><span class="p">),</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">new_vector</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">operator</span><span class="p">(</span><span class="n">val_a</span><span class="p">,</span> <span class="n">val_b</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_vector</span><span class="p">,</span> <span class="n">new_vars</span></div>
+
+
+<div class="viewcode-block" id="plot_2d"><a class="viewcode-back" href="../../../veroku.factors.factor_utils.html#veroku.factors.factor_utils.plot_2d">[docs]</a><span class="k">def</span> <span class="nf">plot_2d</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot a 2d function</span>
+<span class="sd">    :param xlim: the x limits to plot the function over.</span>
+<span class="sd">    :param ylim: the y limits to plot the function over.</span>
+<span class="sd">    :param func: the function to plot</span>
+<span class="sd">    :param xlim: the x limits over which to plot the function</span>
+<span class="sd">    :param ylim: the x limits over which to plot the function</span>
+<span class="sd">    :param xlabel: the x label for the plot</span>
+<span class="sd">    :param ylabel: the y label for the plot</span>
+<span class="sd">    :param figsize: the figure size</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x_space</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">y_space</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">x_mesh</span><span class="p">,</span> <span class="n">y_mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_space</span><span class="p">,</span> <span class="n">y_space</span><span class="p">)</span>
+    <span class="n">xx_mesh_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x_mesh</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y_mesh</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">z_mesh_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">func</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">for</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">xx_mesh_array</span><span class="p">])</span>
+    <span class="n">z_mesh</span> <span class="o">=</span> <span class="n">z_mesh_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_mesh</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">color_scale</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">x_mesh</span><span class="p">,</span> <span class="n">y_mesh</span><span class="p">,</span> <span class="n">z_mesh</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">color_scale</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">veroku</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

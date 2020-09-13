@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.factors.factor_utils module &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="veroku.factors.gaussian module" href="veroku.factors.gaussian.html" />
+    <link rel="prev" title="veroku.factors.factor_template module" href="veroku.factors.factor_template.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-veroku.factors.factor_utils">
+<span id="veroku-factors-factor-utils-module"></span><h1>veroku.factors.factor_utils module<a class="headerlink" href="#module-veroku.factors.factor_utils" title="Permalink to this headline">¶</a></h1>
+<p>A module containing general functions to help with factor operations and transformations.</p>
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.checked_colvector">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">checked_colvector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">col_vector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#checked_colvector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.checked_colvector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.format_list_elements">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">format_list_elements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lst</span></em>, <em class="sig-param"><span class="n">format_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#format_list_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.format_list_elements" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.get_closest_psd_from_symmetric_matrix">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">get_closest_psd_from_symmetric_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#get_closest_psd_from_symmetric_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.get_closest_psd_from_symmetric_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.get_subset_evidence">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">get_subset_evidence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_evidence_dict</span></em>, <em class="sig-param"><span class="n">subset_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#get_subset_evidence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.get_subset_evidence" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Select evidence for certain variables only from a evidence_dict and return the variables for which there is evidence</dt><dd><p>and the corresponding values.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_evidence_dict</strong> – (dict) The evidence dictionary.</p></li>
+<li><p><strong>subset_vars</strong> – (string list) the subset of variables for which to select evidence from all_evidence_dict.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>evidence variable names and values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.indexed_column_vector_operation">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">indexed_column_vector_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">colvec_a</span></em>, <em class="sig-param"><span class="n">colvec_b</span></em>, <em class="sig-param"><span class="n">var_names_a</span></em>, <em class="sig-param"><span class="n">var_names_b</span></em>, <em class="sig-param"><span class="n">operator</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#indexed_column_vector_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.indexed_column_vector_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that performs element operations between column vectors, where the corresponding indices in the different
+vectors do not necessarily correspond to the same variables, but can be mapped to each other through the variable
+name lists (var_names_a and var_names_b).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>colvec_a</strong> – A nx1 numpy array to be used with the operator</p></li>
+<li><p><strong>colvec_b</strong> – A nx1 numpy array to be used with the operator</p></li>
+<li><p><strong>var_names_a</strong> – the variable names corresponding to the values in colvec_a</p></li>
+<li><p><strong>var_names_b</strong> – the variable names corresponding to the values in colvec_b</p></li>
+<li><p><strong>operator</strong> – the operator to be applied to colvec_a and colvec_b</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the result of the operation</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><dl>
+<dt>With:</dt><dd><p>colvec_a =
+[[11],</p>
+<blockquote>
+<div><p>[21],
+[31]]</p>
+</div></blockquote>
+<p>var_names_a = [‘var1’, ‘var2’]
+colvec_b =
+[[11],</p>
+<blockquote>
+<div><p>[31]]</p>
+</div></blockquote>
+<p>var_names_b = [var1’, ‘var3’]
+operator_str = ‘-‘</p>
+</dd>
+</dl>
+<p>the function returns:
+[[0],</p>
+<blockquote>
+<div><p>[21],
+[0]]</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.indexed_square_matrix_operation">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">indexed_square_matrix_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat_a</span></em>, <em class="sig-param"><span class="n">mat_b</span></em>, <em class="sig-param"><span class="n">var_names_a</span></em>, <em class="sig-param"><span class="n">var_names_b</span></em>, <em class="sig-param"><span class="n">operator</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#indexed_square_matrix_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.indexed_square_matrix_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that performs element wise operations between square matrices where the corresponding indices in the
+different matrices do not necessarily correspond to the same variables, but can be mapped to each other through the
+variable name lists (var_names_a and var_names_b).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat_a</strong> – A nxn numpy array to be used with the operator</p></li>
+<li><p><strong>mat_b</strong> – A nxn numpy array to be used with the operator</p></li>
+<li><p><strong>var_names_a</strong> – the variable names corresponding to the values in mat_a</p></li>
+<li><p><strong>var_names_b</strong> – the variable names corresponding to the values in mat_b</p></li>
+<li><p><strong>operator</strong> – the operator to be applied to mat_a and mat_b</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the result of the operation</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><dl>
+<dt>With:</dt><dd><p>mat_a =
+[[11, 12, 13],</p>
+<blockquote>
+<div><p>[21, 22, 23],
+[31, 32, 33]]</p>
+</div></blockquote>
+<p>var_names_a = [‘var1’, ‘var2’]
+mat_b =
+[[11 , 13],</p>
+<blockquote>
+<div><p>[31,  33]]</p>
+</div></blockquote>
+<p>var_names_b = [‘var1’, ‘var3’]
+operator_str = ‘-‘</p>
+</dd>
+</dl>
+<p>the function returns:
+[[0,  12, 0],</p>
+<blockquote>
+<div><p>[21, 22, 23],
+[0,  32, 0]]</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.is_pos_def">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">is_pos_def</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">matrix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#is_pos_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.is_pos_def" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if matrix is positive definite
+:param matrix: the matrix to check
+:return: (bool) whether the matrix is positive-definite or not</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.list_to_square_matrix">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">list_to_square_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">matrix_like_object</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#list_to_square_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.list_to_square_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a square matrix from a list.
+:param matrix_like_object: a list containing a single int or float or n lists of length n
+:return: an nxn numpy array.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.make_column_vector">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">make_column_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vector_like_object</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#make_column_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.make_column_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function converts a vector like object into a standard
+numpy column vector.
+:param vector_like_object: an int, float, list or (one dimensional) array
+:return: a numpy column vector (array)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.make_list">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">make_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">list_like_object</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#make_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.make_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a object to a list
+:param list_like_object: a list like object (i.e string or 1d numpy array)
+:return: the equivalent list</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.make_scalar">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">make_scalar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scalar_like_object</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#make_scalar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.make_scalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a list or numpy array containing a single element to a scalar.
+:param scalar_like_object: a list or numpy array containing a single element (either int or float).
+:return: the int or float contained in the scalar_like_object</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.make_square_matrix">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">make_square_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">matrix_like_object</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#make_square_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.make_square_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function converts a matrix like object into a standard
+numpy square matrix.
+:param matrix_like_object: an int, float, list, list of lists or (square, two dimensional) array
+:return: a numpy square matrix (array)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.plot_2d">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">plot_2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">xlim</span></em>, <em class="sig-param"><span class="n">ylim</span></em>, <em class="sig-param"><span class="n">xlabel</span></em>, <em class="sig-param"><span class="n">ylabel</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#plot_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.plot_2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a 2d function
+:param xlim: the x limits to plot the function over.
+:param ylim: the y limits to plot the function over.
+:param func: the function to plot
+:param xlim: the x limits over which to plot the function
+:param ylim: the x limits over which to plot the function
+:param xlabel: the x label for the plot
+:param ylabel: the y label for the plot
+:param figsize: the figure size</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.factor_utils.remove_duplicate_values">
+<code class="sig-prename descclassname">veroku.factors.factor_utils.</code><code class="sig-name descname">remove_duplicate_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">array_like</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/factor_utils.html#remove_duplicate_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.factor_utils.remove_duplicate_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes duplicate values from list (when tol=0.0) or remove approximately duplicate
+values if tol!=0.0</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">veroku</a><ul>
+  <li><a href="veroku.html">veroku package</a><ul>
+  <li><a href="veroku.factors.html">veroku.factors package</a><ul>
+      <li>Previous: <a href="veroku.factors.factor_template.html" title="previous chapter">veroku.factors.factor_template module</a></li>
+      <li>Next: <a href="veroku.factors.gaussian.html" title="next chapter">veroku.factors.gaussian module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/veroku.factors.factor_utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

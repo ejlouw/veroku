@@ -1,0 +1,22 @@
+veroku.factors package
+======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   veroku.factors.categorical
+   veroku.factors.factor
+   veroku.factors.factor_template
+   veroku.factors.factor_utils
+   veroku.factors.gaussian
+
+Module contents
+---------------
+
+.. automodule:: veroku.factors
+   :members:
+   :undoc-members:
+   :show-inheritance:
