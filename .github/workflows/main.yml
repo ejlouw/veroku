@@ -5,9 +5,9 @@ name: CI_PIPELINE
 # Workflow Triggers
 on:
   push:
-    branches: [ master ]
+    branches: [ none ]
   pull_request:
-    branches: [ master ]
+    branches: [ none ]
 
 # Workflow Jobs
 jobs:
