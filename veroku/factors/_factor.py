@@ -5,7 +5,7 @@ This module contains an abstract parent class, defining the minimum functions th
 from abc import ABCMeta, abstractmethod
 import copy
 
-from veroku.factors import factor_utils
+from veroku.factors import _factor_utils
 
 
 class Factor:
@@ -22,7 +22,7 @@ class Factor:
         """
         if len(set(var_names)) != len(var_names):
             raise ValueError('duplicate variables in var_names: ', var_names)
-        self._var_names = factor_utils.make_list(var_names)
+        self._var_names = _factor_utils.make_list(var_names)
         self._dim = len(var_names)
 
     @property

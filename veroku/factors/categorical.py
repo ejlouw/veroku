@@ -12,8 +12,8 @@ import scipy.misc
 import itertools
 
 # Local imports
-from veroku.factors.factor import Factor
-from veroku.factors.factor_template import FactorTemplate
+from veroku.factors._factor import Factor
+from veroku.factors._factor_template import FactorTemplate
 
 
 # TODO: consider removing some unused functions
@@ -47,24 +47,6 @@ class Categorical(Factor):
             elif not np.isclose(factor.log_probs_table[assign], prob):
                 return False
         return True
-
-    @classmethod
-    def from_table_factor(cls, table_factor):
-        """
-        Construct an equivalent SparseLogTable from a table factor
-        :param table_factor:
-        :return:
-        """
-        factor_df = table_factor.get_table_as_dataframe()
-        log_probs_table = dict()
-        for assign, prob_ in factor_df.iterrows():
-            prob = prob_.values[0]
-            if prob != 0.0:
-                log_prob = np.log(prob)
-                log_probs_table[assign] = log_prob
-        cards = factor_df.index.levshape
-        var_names = factor_df.index.names
-        return cls(var_names=var_names, log_probs_table=log_probs_table, cardinalities=cards)
 
     def copy(self):
         """
@@ -109,10 +91,10 @@ class Categorical(Factor):
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
-        nested_table, nested_table_vars = Categorical.get_nested_sorted_probs(new_variables_order_outer=vars_to_keep,
-                                                                              new_variables_order_inner=vars_to_sum_out,
-                                                                              old_variable_order=self.var_names,
-                                                                              old_assign_probs=self.log_probs_table)
+        nested_table, nested_table_vars = Categorical._get_nested_sorted_probs(new_variables_order_outer=vars_to_keep,
+                                                                               new_variables_order_inner=vars_to_sum_out,
+                                                                               old_variable_order=self.var_names,
+                                                                               old_assign_probs=self.log_probs_table)
         result_table = dict()
         for l1_assign, log_probs_table in nested_table.items():
             prob = scipy.misc.logsumexp(list(log_probs_table.values()))
@@ -134,10 +116,10 @@ class Categorical(Factor):
         """
 
         vars_unobserved = [v for v in self.var_names if v not in vrs]
-        nested_table, nested_table_vars = Categorical.get_nested_sorted_probs(new_variables_order_outer=vrs,
-                                                                              new_variables_order_inner=vars_unobserved,
-                                                                              old_variable_order=self.var_names,
-                                                                              old_assign_probs=self.log_probs_table)
+        nested_table, nested_table_vars = Categorical._get_nested_sorted_probs(new_variables_order_outer=vrs,
+                                                                               new_variables_order_inner=vars_unobserved,
+                                                                               old_variable_order=self.var_names,
+                                                                               old_assign_probs=self.log_probs_table)
         result_table = nested_table[tuple(values)]
         result_var_cards = copy.deepcopy(self.var_cards)
         for v in vrs:
@@ -146,7 +128,7 @@ class Categorical(Factor):
         return Categorical(var_names=vars_unobserved, log_probs_table=result_table,
                            cardinalities=result_var_cards.values())
 
-    def assert_consistent_cardinalities(self, factor):
+    def _assert_consistent_cardinalities(self, factor):
         """
         Assert that the variable cardinalities are consistent between two factors.
         :param factor:
@@ -164,10 +146,10 @@ class Categorical(Factor):
         """
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        self.assert_consistent_cardinalities(factor)
-        result_table, result_vars = Categorical.complex_table_operation(self.var_names, self.log_probs_table,
-                                                                        factor.var_names, factor.log_probs_table,
-                                                                        operator.add)
+        self._assert_consistent_cardinalities(factor)
+        result_table, result_vars = Categorical._complex_table_operation(self.var_names, self.log_probs_table,
+                                                                         factor.var_names, factor.log_probs_table,
+                                                                         operator.add)
         result_var_cards = copy.deepcopy(self.var_cards)
         result_var_cards.update(factor.var_cards)
         return Categorical(var_names=result_vars, log_probs_table=result_table,
@@ -181,10 +163,10 @@ class Categorical(Factor):
         """
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        self.assert_consistent_cardinalities(factor)
-        result_table, result_vars = Categorical.complex_table_operation(self.var_names, self.log_probs_table,
-                                                                        factor.var_names, factor.log_probs_table,
-                                                                        operator.sub)
+        self._assert_consistent_cardinalities(factor)
+        result_table, result_vars = Categorical._complex_table_operation(self.var_names, self.log_probs_table,
+                                                                         factor.var_names, factor.log_probs_table,
+                                                                         operator.sub)
         result_var_cards = copy.deepcopy(self.var_cards)
         result_var_cards.update(factor.var_cards)
         return Categorical(var_names=result_vars, log_probs_table=result_table,
@@ -194,9 +176,9 @@ class Categorical(Factor):
         return max(self.log_probs_table.items(), key=operator.itemgetter(1))[0]
 
     @staticmethod
-    def get_nested_sorted_probs(new_variables_order_outer,
-                                new_variables_order_inner,
-                                old_variable_order, old_assign_probs):
+    def _get_nested_sorted_probs(new_variables_order_outer,
+                                 new_variables_order_inner,
+                                 old_variable_order, old_assign_probs):
         """
         Reorder probs to a new order and sort assignments.
         :params old_assign_probs: A dictionary of assignment and coresponding probabilities.
@@ -225,7 +207,7 @@ class Categorical(Factor):
         return new_assign_probs, new_variable_order
 
     @staticmethod
-    def complex_table_operation(vars_a, table_a, vars_b, table_b, func):
+    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func):
         """
         Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
         :param vars_a:
@@ -251,16 +233,16 @@ class Categorical(Factor):
         remaining_smaller_vars = list(set(smaller_table_vars) - set(shared_order_smaller_vars))
 
         new_order_smaller_table_vars = remaining_smaller_vars + shared_order_smaller_vars
-        smaller_table, smaller_table_vars = Categorical.get_nested_sorted_probs(remaining_smaller_vars,
-                                                                                shared_order_smaller_vars,
-                                                                                smaller_table_vars, smaller_table)
+        smaller_table, smaller_table_vars = Categorical._get_nested_sorted_probs(remaining_smaller_vars,
+                                                                                 shared_order_smaller_vars,
+                                                                                 smaller_table_vars, smaller_table)
         smaller_table_vars = copy.deepcopy(new_order_smaller_table_vars)
 
         # use the nested dictionary (of sub-assignment prob dictionaries)
         result_table = dict()
         for assign_l1, l2_table in smaller_table.items():
-            result_l2_table = Categorical.basic_table_operation(larger_table_vars, larger_table,
-                                                                smaller_table_vars, l2_table, func)
+            result_l2_table = Categorical._basic_table_operation(larger_table_vars, larger_table,
+                                                                 smaller_table_vars, l2_table, func)
             for results_assign, prob in result_l2_table.items():
                 # TODO: get better solution than this:
                 if (func == operator.sub) and switched:
@@ -270,11 +252,11 @@ class Categorical(Factor):
         return result_table, result_vars
 
     @staticmethod
-    def basic_table_operation(larger_table_vars,
-                              larger_table,
-                              smaller_table_vars,
-                              smaller_table,
-                              _opperator):
+    def _basic_table_operation(larger_table_vars,
+                               larger_table,
+                               smaller_table_vars,
+                               smaller_table,
+                               _opperator):
         """
         Efficiently perform operations on corresponding (as indicted by the assignments and variables names)
         elements between larger_table_probs and smaller_table_probs. The smaller table variables must only
@@ -312,7 +294,7 @@ class Categorical(Factor):
 
         return result_probs
 
-    def apply_to_probs(self, func, include_assignment=False):
+    def _apply_to_probs(self, func, include_assignment=False):
         for assign, prob in self.log_probs_table.items():
             if include_assignment:
                 self.log_probs_table[assign] = func(prob, assign)
@@ -344,13 +326,13 @@ class Categorical(Factor):
             normalised_factor = factor.normalise()
         # TODO: check that this is correct. esp with zeroes.
         logPdivQ = normalised_self.cancel(normalised_factor)
-        normalised_self.apply_to_probs(np.exp)
+        normalised_self._apply_to_probs(np.exp)
 
-        PlogPdivQ_table, _ = Categorical.complex_table_operation(normalised_self.var_names,
-                                                                 normalised_self.log_probs_table,
-                                                                 logPdivQ.var_names,
-                                                                 logPdivQ.log_probs_table,
-                                                                 operator.mul)
+        PlogPdivQ_table, _ = Categorical._complex_table_operation(normalised_self.var_names,
+                                                                  normalised_self.log_probs_table,
+                                                                  logPdivQ.var_names,
+                                                                  logPdivQ.log_probs_table,
+                                                                  operator.mul)
         kld = np.sum(list(PlogPdivQ_table.values()))
         if kld < 0.0:
             if np.isclose(kld, 0.0, atol=1e-5):
@@ -366,14 +348,15 @@ class Categorical(Factor):
 
     def distance_from_vacuous(self):
         """
-        Get the Kullback-Leibler divergence between this factor and a uniform copy of it.
-        :return:
+        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
+        :return: The KL divergence.
+        :rtype: float
         """
         # make uniform copy
         uniform_factor = self.copy()
         cards = list(uniform_factor.var_cards.values())
         uniform_log_prob = -np.log(np.product(cards))
-        uniform_factor.apply_to_probs(lambda x: uniform_log_prob)
+        uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
 
         return self.kl_divergence(uniform_factor, normalise_factor=False)
 
@@ -390,7 +373,7 @@ class Categorical(Factor):
 
     def show(self, exp_log_probs=True):
         """
-        Print the factor
+        Print the factor.
         """
         prob_string = 'log(prob)'
         if exp_log_probs:
@@ -429,21 +412,28 @@ class SparseLogTableTemplate(FactorTemplate):
                            var_names=var_names, cardinalities=self.var_cards.values())
 
 
-# Note: this function is old and still uses the list (instead of dictionary) format for probs
-def reorder_probs(new_variable_order, old_variable_order, old_assign_probs):
+def _reorder_probs(new_variable_order, old_variable_order, old_assign_probs):
     """
-    Reorder probs to a new order and sort assignments.
+    Reorder categorical table variables to a new order and reorder the associated probabilities
+    accordingly.
+    :param new_variable_order: The new variable order.
+    :type new_variable_order: string list
+    :param old_variable_order: The old vriable order (corresponding to old_assign_probs)
+    :type old_variable_order: string list
+    :param old_assign_probs: The assignment probability list
+    :type old_assign_probs: string, float nested list
 
     Example:
-    old_variable_order = [a, b]
-    new_variable_order = [b, a]
+        old_variable_order = [a, b]
+        new_variable_order = [b, a]
 
-    a b P(a,b)  return    b a P(a,b)
-    0 0  pa0b0            0 0  pa0b0
-    0 1  pa0b1            0 1  pa1b0
-    1 0  pa1b0            1 0  pa0b1
-    1 1  pa1b1            1 1  pa1b1
+        a b P(a,b)  return    b a P(a,b)
+        0 0  pa0b0            0 0  pa0b0
+        0 1  pa0b1            0 1  pa1b0
+        1 0  pa1b0            1 0  pa0b1
+        1 1  pa1b1            1 1  pa1b1
     """
+    # TODO This function is old and still uses the list (instead of dictionary) format for probs. Update it.
     new_order_indices = [new_variable_order.index(var) for var in old_variable_order]
     new_assign_probs = []
     for old_assign_prob_i in old_assign_probs:

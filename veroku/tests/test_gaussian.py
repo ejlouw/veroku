@@ -13,7 +13,7 @@ from scipy import integrate
 
 # Local imports
 from veroku.factors.gaussian import Gaussian
-from veroku.factors import factor_utils
+from veroku.factors import _factor_utils
 
 
 # pylint: disable=too-many-public-methods
@@ -51,8 +51,8 @@ class TestGaussian(unittest.TestCase):
         cov_mat_array = np.array(cov_mat_list)
         mean_vec_list = [[2.0], [4.0]]
         mean_vec_array = np.array(mean_vec_list)
-        when(factor_utils).make_square_matrix(cov_mat_list).thenReturn(cov_mat_array)
-        when(factor_utils).make_column_vector(mean_vec_list).thenReturn(mean_vec_array)
+        when(_factor_utils).make_square_matrix(cov_mat_list).thenReturn(cov_mat_array)
+        when(_factor_utils).make_column_vector(mean_vec_list).thenReturn(mean_vec_array)
 
         gaussian_a = Gaussian(cov=cov_mat_list, mean=mean_vec_list, log_weight=0.0, var_names=['a', 'b'])
         self.assertEqual(gaussian_a.var_names, ['a', 'b'])
@@ -73,8 +73,8 @@ class TestGaussian(unittest.TestCase):
         K_mat_array = np.array(K_mat_list)
         h_vec_list = [[2.0], [4.0]]
         h_vec_array = np.array(h_vec_list)
-        when(factor_utils).make_square_matrix(K_mat_list).thenReturn(K_mat_array)
-        when(factor_utils).make_column_vector(h_vec_list).thenReturn(h_vec_array)
+        when(_factor_utils).make_square_matrix(K_mat_list).thenReturn(K_mat_array)
+        when(_factor_utils).make_column_vector(h_vec_list).thenReturn(h_vec_array)
 
         gaussian_a = Gaussian(K=K_mat_list, h=h_vec_list, g=0.0, var_names=['a', 'b'])
         # pylint: enable=invalid-name

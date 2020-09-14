@@ -7,9 +7,9 @@ import time
 import pandas as pd
 from graphviz import Source
 
-from veroku.cluster_graph.cluster import Cluster
-import veroku.cluster_graph.animation as cg_animation
-from veroku.factors.factor_utils import get_subset_evidence
+from veroku._cg_helper_modules._cluster import Cluster
+import veroku._cg_helper_modules._animation as cg_animation
+from veroku.factors._factor_utils import get_subset_evidence
 import matplotlib.pyplot as plt
 
 

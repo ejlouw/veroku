@@ -58,6 +58,7 @@ def check_non_overlapping_substring_presence(substring_a, substring_b, string):
             return True
     return (substring_a in string) and (substring_b in string)
 
+
 def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     """
     Change the edge color of the edge between two nodes in a graphviz object.

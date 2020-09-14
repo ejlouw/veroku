@@ -94,13 +94,6 @@ def make_scalar(scalar_like_object):
         return scalar_like_object
     raise ValueError(f'{type(scalar_like_object)} is not supported')
 
-
-def checked_colvector(col_vector):
-    assert isinstance(col_vector, np.ndarray), 'Error: col_vector not numpy array'
-    assert len(col_vector.shape) == 2, 'Error: col_vector not 2d matrix.'
-    assert col_vector.shape[1] == 1, 'Error: col_vector not column vector'
-
-
 def make_column_vector(vector_like_object):
     """
     This function converts a vector like object into a standard
