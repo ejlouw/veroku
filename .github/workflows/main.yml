@@ -5,9 +5,9 @@ name: CI_PIPELINE
 # Workflow Triggers
 on:
   push:
-    branches: [ none ]
+    branches: [ master ]
   pull_request:
-    branches: [ none ]
+    branches: [ master ]
 
 # Workflow Jobs
 jobs:
@@ -66,5 +66,10 @@ jobs:
           with:
             ref: gh-pages
       - run: |
+          cd docs
+          sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
+          make html
+          git branch
+          ls -la
           
 
