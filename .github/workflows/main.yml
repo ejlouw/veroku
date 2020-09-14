@@ -63,8 +63,8 @@ jobs:
 
       - name: checkout-pages-branch
         uses: actions/checkout@v2
-          with:
-            ref: gh-pages
+        with:
+          ref: gh-pages
       - run: |
           cd docs
           git branch
