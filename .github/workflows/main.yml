@@ -66,8 +66,8 @@ jobs:
         with:
           ref: gh-pages
       - run: |
-          cd docs
-          git branch
-          ls -la
+          git add docs
+          git commit -m 'Update documentation.'
+          git push
           
 
