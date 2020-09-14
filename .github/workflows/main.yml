@@ -16,7 +16,10 @@ jobs:
     # Runner Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      # Checkout
+      - name: checkout
+        uses: actions/checkout@v2
+      # Python Installation
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -39,6 +42,7 @@ jobs:
         run: |
           sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           python -m unittest discover -s ./veroku/tests -t ./ -p 'test_*.py'
+
       # Package and Upload
       # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
       - name: SetupAndTest
@@ -50,4 +54,17 @@ jobs:
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
+
+      # Create and publish documentation
+      - run: |
+          cd ./docs
+          sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
+          make html
+
+      - name: checkout-pages-branch
+        uses: actions/checkout@v2
+          with:
+            ref: gh-pages
+      - run: |
+          
 

@@ -541,7 +541,7 @@ class TestGaussian(unittest.TestCase):
 
     def test_get_complex_log_weight(self):
         """
-        Test that the get_complex_log_weight returns the correct value.
+        Test that the _get_complex_log_weight returns the correct value.
         """
         gaussian_ab = Gaussian(K=[[-1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
         actual_complex_weight = gaussian_ab.get_complex_weight()
@@ -550,12 +550,12 @@ class TestGaussian(unittest.TestCase):
 
     def test_invert(self):
         """
-        Test that the invert method returns a Gaussian with the negated parameters.
+        Test that the _invert method returns a Gaussian with the negated parameters.
         :return:
         """
         gaussian = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[4.0, 5.0], g=6.0, var_names=['a', 'b'])
         expected_inv_gaussian = Gaussian(K=[[-1.0, -2.0], [-2.0, -3.0]], h=[-4.0, -5.0], g=-6.0, var_names=['a', 'b'])
-        actual_inv_gaussian = gaussian.invert()
+        actual_inv_gaussian = gaussian._invert()
         self.assertTrue(actual_inv_gaussian.equals(expected_inv_gaussian))
 
     def test_weight_and_integration_1d(self):

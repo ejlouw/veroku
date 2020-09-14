@@ -46,7 +46,7 @@ def make_std_gaussian(var_names):
     :param var_names: The variable name of the factor.
     :type var_names: string list
     :return: The standard Gaussian
-    :type: Gaussian
+    :rtype: Gaussian
     """
     assert var_names, 'Error: var_names list cannot be empty.'
     dim = len(var_names)
@@ -94,15 +94,15 @@ class Gaussian(Factor):
         General constructor that can use either covariance form or canonical form parameters to construct a
         d-dimensional multivariate Gaussian object.
         :param cov: The covariance matrix (or variance scalar in 1-dimensional case).
-        :type cov: dxd np.ndarray or float
+        :type cov: dxd numpy.ndarray or float
         :param mean: The mean vector (or mean scalar in 1-dimensional case).
-        :type mean: dx1 np.ndarray or float
+        :type mean: dx1 numpy.ndarray or float
         :param log_weight: the log of the weight (the Gaussian function integrates to the weight value)
         :type log_weight: float
         :param K: the precision matrix (or precision scalar in 1-dimensional case).
-        :type K: dxd np.ndarray or float
+        :type K: dxd numpy.ndarray or float
         :param h: the h vector  (or h scalar in 1-dimensional case).
-        :type h: dx1 np.ndarray or float
+        :type h: dx1 numpy.ndarray or float
         :param g: the g parameter
         :type g: float
         :param var_names: a list of variable names where the order of the names correspond to the order in the
@@ -270,7 +270,7 @@ class Gaussian(Factor):
         """
         Get the K parameter.
         :return: The K parameter.
-        :type K: dxd np.ndarray or float
+        :type K: dxd numpy.ndarray or float
         """
         self._update_canform()
         if self.K is not None:
@@ -284,7 +284,7 @@ class Gaussian(Factor):
         """
         Get the h vector.
         :return: The h parameter.
-        
+        :rtypw: float
         """
         self._update_canform()
         if self.h is not None:
@@ -295,8 +295,9 @@ class Gaussian(Factor):
     # pylint: disable=invalid-name
     def get_g(self):
         """
-        Get the g scalar (after ensuring that the canonical form is updated.)
+        Get the g paramter.
         :return: The g parameter.
+        :rtype: float
         """
         self._update_canform()
         return self.g
@@ -315,8 +316,9 @@ class Gaussian(Factor):
     # pylint: disable=invalid-name
     def get_cov(self):
         """
-        Get the covariance matrix (after ensuring that the covariance form is updated.)
+        Get the covariance parameter.
         :return: The cov parameter.
+        :rtype: numpy.ndarray
         """
         self._update_covform()
         if self.cov is not None:
@@ -328,6 +330,7 @@ class Gaussian(Factor):
         """
         Get the mean vector (after ensuring that the covariance form is updated.)
         :return: The mean parameter.
+        :rtype: numpy.ndarray
         """
         self._update_covform()
         if self.mean is not None:
@@ -336,8 +339,9 @@ class Gaussian(Factor):
 
     def get_log_weight(self):
         """
-        Get the log weight (after ensuring that the covariance form is updated.)
+        Get the log weight parameter.
         :return: The log_weight parameter.
+        :rtype: numpy.ndarray
         """
         self._update_covform()
         return self.log_weight
@@ -353,9 +357,9 @@ class Gaussian(Factor):
         Get (possibly complex) weight parameter.
         :return: weight parameter
         """
-        return cmath.exp(self.get_complex_log_weight())
+        return cmath.exp(self._get_complex_log_weight())
 
-    def get_complex_log_weight(self):
+    def _get_complex_log_weight(self):
         """
         Get the log weight even in cases where the determinant of the covariance matrix is negative. In such cases the
         log_weight no longer corresponds to the integral and the log of the weight will have a imaginary component.
@@ -371,7 +375,7 @@ class Gaussian(Factor):
         return log_weight
         # pylint: enable=invalid-name
 
-    def invert(self):
+    def _invert(self):
         """
         Invert this Gaussian (1/Gaussian). This is used in the approximate Gaussian mixture division algorithms.
         :return: the inverted Gaussian
@@ -383,15 +387,15 @@ class Gaussian(Factor):
         gaussian_copy.g = (-1.0) * self.g
         return gaussian_copy
 
-    def subtract_log_weight(self, log_weight_to_subtract):
+    def _subtract_log_weight(self, log_weight_to_subtract):
         """
         Subtract log value to the log weight.
         """
-        # TODO: replace with add_log_weight
+        # TODO: replace with _add_log_weight
         self._update_covform()
         self.log_weight -= log_weight_to_subtract
 
-    def add_log_weight(self, log_weight_to_add):
+    def _add_log_weight(self, log_weight_to_add):
         """
         Add log value to the log weight.
         """
@@ -404,10 +408,11 @@ class Gaussian(Factor):
         """
         Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.
         :return: the weight
+        :rtype: float
         """
         return np.exp(self.get_log_weight())
 
-    def fix_non_psd_matrices(self):
+    def _fix_non_psd_matrices(self):
         if self.COVFORM:
             if not _factor_utils.is_pos_def(self.cov):
                 self.cov = _factor_utils.get_closest_psd_from_symmetric_matrix(self.cov)
@@ -418,9 +423,12 @@ class Gaussian(Factor):
     def marginalise(self, vrs, keep=False):
         """
         Integrate out variables from this Gaussian.
-        :param vrs: (list) a subset of variables in the factor's scope
+        :param vrs: a subset of variables in the factor's scope
+        :type vrs: str list
         :param keep: Whether to keep or sum out vrs
+        :type keep: bool
         :return: the resulting Gaussian marginal
+        :rtype: Gaussian
         """
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_integrate_out = list(set(self.var_names) - set(vars_to_keep))
@@ -575,7 +583,10 @@ class Gaussian(Factor):
     def sample(self, num_samples):
         """
         Draw samples from the Gaussian distribution.
-        :return:
+        :param num_samples: The number of samples to draw.
+        :type num_samples:
+        :return: The samples.
+        :rtype: int
         """
         std_gaussian_samples = np.random.normal(0, 1, [self.dim, num_samples])
         Xs = std_gaussian_samples
@@ -589,8 +600,11 @@ class Gaussian(Factor):
         """
         A helper function for observe.
         :param observed_indices: The observed variable indices
+        :type observed_indices: int list
         :param unobserved_indices: The unobserved variable indices
+        :type unobserved_indices: int list
         :return: the reduced parameters K_observed, h_observed, g_observed
+        :rtype: numpy.ndarray, numpy.ndarray, float
         """
         K = self.get_K()
         h = self.get_h()
@@ -616,8 +630,11 @@ class Gaussian(Factor):
         """
         Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.
         :param vrs: the names of the observed variable (list)
-        :param values: the values of the observed variables (list or vector-like object)
+        :type vrs: str list
+        :param values: the values of the observed variables
+        :type values: vector-like
         :return: the resulting Gaussian
+        :rtype: Gaussian
         """
 
         observed_vec = _factor_utils.make_column_vector(values)
@@ -640,6 +657,11 @@ class Gaussian(Factor):
         # pylint: enable=invalid-name
 
     def distance_from_vacuous(self):
+        """
+        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
+        :return: The KL divergence.
+        :rtype: float
+        """
         if self.is_vacuous:
             return 0.0
         else:
@@ -647,12 +669,14 @@ class Gaussian(Factor):
 
     def kl_divergence(self, factor, normalise_factor=True):
         """
-        Get D_KL(self||factor).
-        D_KL(P|Q) = sum(P*log(P/Q))
-        :param factor: The other factor
-        :return: The Kullback-Leibler divergence
-
+        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
+        :param factor: The other factor
+        :type factor: Gaussian
+        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.
+        :type normalise_factor: bool
+        :return: The Kullback-Leibler divergence
+        :rtype: float
         """
         if self.dim != factor.dim:
             raise ValueError('cannot get KL-divergence between Gaussians of different dimensionalities.')
@@ -663,13 +687,16 @@ class Gaussian(Factor):
 
         if self.equals(factor):
             return 0.0
+        normalised_self = self.normalise()
+        factor_ = factor
+        if normalise_factor:
+            factor_ = factor.normalise()
+        inv_cov_q = factor_.get_K()
+        inv_cov_p = normalised_self.get_K()
+        cov_p = normalised_self.get_cov()
 
-        inv_cov_q = factor.get_K()
-        inv_cov_p = self.get_K()
-        cov_p = self.get_cov()
-
-        u_q = factor.get_mean()
-        u_p = self.get_mean()
+        u_q = factor_.get_mean()
+        u_p = normalised_self.get_mean()
 
         det_inv_cov_q = np.linalg.det(inv_cov_q)
         det_inv_cov_p = np.linalg.det(inv_cov_p)
@@ -682,15 +709,16 @@ class Gaussian(Factor):
             det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
         trace_term = 0.5 * np.trace(inv_cov_q.dot(cov_p))
         mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
-        dim_term = 0.5 * self.dim
+        dim_term = 0.5 * normalised_self.dim
         kld = det_term + trace_term + mahalanobis_term - dim_term
-        #TODO: Add warning or error if this is negative and remove abs below
+        # TODO:Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
 
     def copy(self):
         """
-        Make a copy of this Gaussian
-        :return: the copied Gaussian
+        Make a copy of this Gaussian.
+        :return: The copied Gaussian.
+        :rtype: Gaussian
         """
         if self.COVFORM:
             return Gaussian(cov=self.cov.copy(),
@@ -706,22 +734,29 @@ class Gaussian(Factor):
 
     def potential(self, x_val):
         """
-        Get the value of the Gaussian potential at x_.
-        :param x_val: the vector (or vector-like object) to evaluate the Gaussian at
-        :return: the value of the Gaussian potential at x_
+        Get the value of the Gaussian potential at x_val.
+        :param x_val: The vector (or vector-like object) to evaluate the Gaussian at
+        :type x_val: numpy.ndarray
+        :return: The value of the Gaussian potential at x_val.
         """
         return np.exp(self.log_potential(x_val))
 
     # pylint: disable=invalid-name
     def log_potential(self, x_val, vrs=None):
         """
-        Get the log of the value of the Gaussian potential at x_.
+        Get the log of the value of the Gaussian potential at x_val.
         :param x_val: the vector (or vector-like object) to evaluate the GaussianMixture at
-        :return: log of the value of the GaussianMixture potential at x
+        :type x_val: vector-like
+        :param vrs: The variables corresponding to the values in x_val.
+        :type vrs: str list
+        :return: The log of the value of the GaussianMixture potential at x_val.
         """
         if vrs is not None:
             assert set(vrs) == set(self.var_names)
+            if isinstance(x_val, np.ndarray):
+                x_val = x_val.ravel()
             x_val_list = list(x_val)
+            assert len(x_val_list) == len(self.var_names)
             x_val = [x_val_list[vrs.index(v)] for v in self.var_names]
         x_vec = _factor_utils.make_column_vector(x_val)
         if self.COVFORM:
@@ -764,6 +799,8 @@ class Gaussian(Factor):
     def show_vis(self, figsize=(10, 8)):
         """
         Visualise the parameters with plots.
+        :param figsize: The figure size.
+        :type figsize: 2 element int tuple.
         """
         # TODO: find a way of making cov matrix square.
         f, [ax_cov, ax_mean] = plt.subplots(nrows=2, figsize=figsize)  # ,sharex=True)
@@ -816,9 +853,11 @@ class Gaussian(Factor):
         Plot the Gaussian mixture potential function (only for 1d and 2d functions)
         :param log: if this is True, the log-potential will be plotted
         :param xlim: the x limits to plot the function over (optional)
+        :type xlim: 2 element float list
         :param ylim: the y limits to plot the function over (optional and only used in 2d case)
+        :type ylim: 2 element float list
         """
-
+        # TODO: Replace with gaussian mixture plot.
         if self.dim == 1:
             if xlim is None:
                 stddev = np.sqrt(self.get_cov()[0, 0])
@@ -848,14 +887,16 @@ class GaussianMixture(Factor):
 
     def __init__(self, factors, cancel_method=0):
         """
-        A GaussianMixture constructor
+        A GaussianMixture constructor.
         :param factors: a list of Gaussian type objects with the same dimensionality.
+        :type factors: Gaussian list
         :param cancel_method: The method of performing approximate division.
                               This is only applicable if the factor is a Gaussian mixture with more than one component.
                               0: moment match denominator to single Gaussian and divide
                               1: approximate modes of quotient as Gaussians
                               2: Use complex moment matching on inverse mixture sets (s_im) and approximate the inverse
                                  of each s_im as a Gaussian
+        :type cancel_method: int
         """
         assert factors, 'Error: empty list passed to constructor.'
         self.cancel_method = cancel_method
@@ -873,7 +914,9 @@ class GaussianMixture(Factor):
         """
         Check if this Gaussian mixture is the same as another factor
         :param factor: The factor to compare to.
-        :return: (bool) The result of the comparison.
+        :type factor: GaussianMixture
+        :return: The result of the comparison.
+        :rtype: bool
         """
         if not isinstance(factor, GaussianMixture):
             return False
@@ -891,16 +934,18 @@ class GaussianMixture(Factor):
 
     def get_component(self, index):
         """
-        Get the Gaussian component at an index
-        :param index: the index of teh component to return
-        :return: the component at index
+        Get the Gaussian component at an index.
+        :param index: The index of teh component to return.
+        :type index: int
+        :return: The component at the given index.
+        :rtype: Gaussian
         """
         return self.components[index]
 
     def copy(self):
         """
-        Make a copy of this Gaussian mixture
-        :return: the copied GaussianMixture
+        Make a copy of this Gaussian mixture.
+        :return: The copied GaussianMixture.
         """
         component_copies = []
         for gauss in self.components:
@@ -910,8 +955,10 @@ class GaussianMixture(Factor):
     def absorb(self, factor):
         """
         Multiply this GaussianMixture with another factor.
-        :param factor: the factor to multiply with
-        :return: the resulting GaussianMixture
+        :param factor: The factor to multiply with.
+        :type factor: Gaussian or Gaussian Mixture
+        :return: The factor product.
+        :rtype: GaussianMixture
         """
         new_componnents = []
         if isinstance(factor, Gaussian):
@@ -928,8 +975,11 @@ class GaussianMixture(Factor):
     def cancel(self, factor):
         """
         Divide this GaussianMixture by another factor.
-        :param factor: the factor divide by
-        :return: the resulting GaussianMixture
+        :param factor: The factor divide by.
+        :type factor: Gaussian or Gaussian Mixture
+        :return: The resulting factor quotient (approximate in the case of where both the numerator and denominator are
+        GaussianMixtures with more than one component).
+        :rtype: GaussianMixture
         """
         if isinstance(factor, Gaussian):
             single_gaussian = factor
@@ -954,8 +1004,11 @@ class GaussianMixture(Factor):
         """
         Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.
         :param vrs: the names of the observed variable (list)
+        :type vrs: str list
         :param values: the values of the observed variables (list or vector-like object)
-        :return: the resulting GaussianMixture
+        :type values: vactor-like
+        :return: the observation reduced factor.
+        :rtype: GaussianMixture
         """
         new_componnents = []
         for gauss in self.components:
@@ -965,9 +1018,12 @@ class GaussianMixture(Factor):
     def marginalise(self, vrs, keep=False):
         """
         Integrate out variables from this Gaussian mixture.
-        :param vrs: (list) a subset of variables in the factor's scope
-        :param keep: Whether to keep or sum out vrs
-        :return: the resulting Gaussian mixture marginal
+        :param vrs: A subset of variables in the factor's scope.
+        :type vrs: str list
+        :param keep: Whether to keep or sum out vrs.
+        :type keep: bool
+        :return: the resulting marginal factor.
+        :rtype: GaussianMixture
         """
         new_componnents = []
         for gauss in self.components:
@@ -978,8 +1034,10 @@ class GaussianMixture(Factor):
     def log_potential(self, x):
         """
         Get the log of the value of the Gaussian mixture potential at X.
-        :param x: the vector (or vector-like object) to evaluate the GaussianMixture at
-        :return: log of the value of the GaussianMixture potential at X
+        :param x: The point to evaluate the GaussianMixture at.
+        :type x: vector-like
+        :return: log of the value of the GaussianMixture potential at x.
+        :rtype: float
         """
         log_potentials = []
         for gauss in self.components:
@@ -990,26 +1048,27 @@ class GaussianMixture(Factor):
 
     def potential(self, x_val):
         """
-        Get the value of the Gaussian mixture potential at X.
-        :param x_val: the vector (or vector-like object) to evaluate the GaussianMixture at
-        :return: the value of the GaussianMixture potential at X
+        Get the value of the Gaussian mixture potential at x_val.
+        :param x_val: The point to evaluate the GaussianMixture at.
+        :type x_val: vector-like
+        :return: log of the value of the GaussianMixture potential at x_val.
+        :rtype: float
         """
         total_potx = 0.0
         for gauss in self.components:
             total_potx += gauss.potential(x_val)
         return total_potx
 
-    #TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components are vacuous?
-    # Maybe make a contains vacuous fubction aswell.
     @property
     def is_vacuous(self):
+        # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
+        #  are vacuous? Maybe make a contains vacuous function as well.
         for gauss in self.components:
             if not gauss.is_vacuous:
                 return False
         return True
 
-
-    def get_means(self):
+    def _get_means(self):
         """
         Get the means of the Gaussian components.
         :return: the mean vectors
@@ -1019,7 +1078,7 @@ class GaussianMixture(Factor):
             means.append(gauss.get_mean())
         return means
 
-    def get_covs(self):
+    def _get_covs(self):
         """
         Get the covariance matrices of the Gaussian components.
         :return: the covariance matrices
@@ -1029,7 +1088,7 @@ class GaussianMixture(Factor):
             covs.append(gauss.get_cov())
         return covs
 
-    def get_log_weights(self):
+    def _get_log_weights(self):
         """
         Get the log weights of the Gaussian mixture components.
         :return: the log weights
@@ -1039,7 +1098,7 @@ class GaussianMixture(Factor):
             log_weights.append(gauss.get_log_weight())
         return log_weights
 
-    def get_weights(self):
+    def _get_weights(self):
         """
         Get the weights of the Gaussian mixture components.
         :return: the log weights
@@ -1052,24 +1111,34 @@ class GaussianMixture(Factor):
     def get_log_weight(self):
         """
         Get the total log weight of the Gaussian mixture.
-        :return: the total log weights
+        :return: The log weight
+        :rtype: float
         """
-        return scipy.misc.logsumexp(self.get_log_weights())
+        return scipy.misc.logsumexp(self._get_log_weights())
 
     def normalise(self):
         """
         Normalise the Gaussian mixture.
+        :return: The normalised factor.
+        :rtype: GaussianMixture
         """
         unnormalised_log_weight = self.get_log_weight()
         new_components = []
         for gauss in self.components:
             gauss_copy = gauss.copy()
-            gauss_copy.subtract_log_weight(unnormalised_log_weight)
+            gauss_copy._subtract_log_weight(unnormalised_log_weight)
             new_components.append(gauss_copy)
         return GaussianMixture(new_components)
 
     def sample(self, num_samples):
-        weights = self.get_weights()
+        """
+        Sample from this Gaussian mixture
+        :param num_samples: The number of sample to draw.
+        :type num_samples: int
+        :return: The samples
+        :rtype: float list
+        """
+        weights = self._get_weights()
         component_choice_samples = np.random.choice(range(len(weights)), size=num_samples,  p=weights / np.sum(weights))
         samples = []
         for comp_index in component_choice_samples:
@@ -1096,8 +1165,11 @@ class GaussianMixture(Factor):
         """
         Plot the Gaussian mixture potential function (only for 1d and 2d functions)
         :param log: if this is True, the log-potential will be plotted
+        :type log: bool
         :param xlim: the x limits to plot the function over (optional)
+        :type xlim: 2 element float list
         :param ylim: the y limits to plot the function over (optional and only used in 2d case)
+        :type ylim: 2 element float list
         """
         if self.dim == 1:
             if xlim is None:
@@ -1134,8 +1206,9 @@ class GaussianMixture(Factor):
     def moment_match_to_single_gaussian(self):
         """
         Calculate the mean and covariance of the Gaussian mixture and return a Gaussian
-        with these parameters a Gaussian approximation of the Gaussian Mixture.
-        :return: the Gaussian approximation
+        with these parameters as an approximation of the Gaussian Mixture.
+        :return: The Gaussian approximation.
+        :rtype: Gaussian
         """
         new_mean = np.zeros([self.dim, 1])
         log_weights = []
@@ -1158,7 +1231,8 @@ class GaussianMixture(Factor):
     def argmax(self):
         """
         Find the input vector that maximises the potential function of the Gaussian mixture
-        :return:
+        :return: The argmax assignment.
+        :rtype: numpy.ndarray
         """
         global_maximum_potential = -float('inf')
         global_argmax = None
@@ -1374,7 +1448,7 @@ class GaussianMixture(Factor):
                 count += 1
                 # raise ValueError(' precision is negative definite.')
                 print('Warning: precision is negative definite.')
-            gaussian_approx = inverse_gaussian_approx.invert()
+            gaussian_approx = inverse_gaussian_approx._invert()
             resulting_gaussian_components.append(gaussian_approx)
         print('num pos def = ', count, '/', len(gma.components))
         resulting_gm = GaussianMixture(resulting_gaussian_components)
