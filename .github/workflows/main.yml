@@ -67,8 +67,6 @@ jobs:
             ref: gh-pages
       - run: |
           cd docs
-          sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
-          make html
           git branch
           ls -la
           
