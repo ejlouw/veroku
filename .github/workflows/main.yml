@@ -68,7 +68,12 @@ jobs:
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add docs
+          echo gitstatus
+          git status
+          echo adddocs
+          git add docs/
+          echo gitstatus2
+          git status
           git commit -m 'Update documentation.'
           git push
           
