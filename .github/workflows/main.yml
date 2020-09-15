@@ -60,6 +60,7 @@ jobs:
           cd ./docs
           sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
           make html
+          cd ../
 
       - name: checkout-pages-branch
         uses: actions/checkout@v2
@@ -68,6 +69,7 @@ jobs:
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+          ls -la
           echo gitstatus
           git status
           echo adddocs
