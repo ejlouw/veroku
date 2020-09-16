@@ -1,7 +1,0 @@
-factors.factor\_template module
-===============================
-
-.. automodule:: factors.factor_template
-   :members:
-   :undoc-members:
-   :show-inheritance:

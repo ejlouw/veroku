@@ -1,7 +1,0 @@
-factors.categorical module
-==========================
-
-.. automodule:: factors.categorical
-   :members:
-   :undoc-members:
-   :show-inheritance:

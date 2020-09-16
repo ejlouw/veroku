@@ -1,7 +1,0 @@
-factors.gaussian module
-=======================
-
-.. automodule:: factors.gaussian
-   :members:
-   :undoc-members:
-   :show-inheritance:
