@@ -23,10 +23,13 @@ class Categorical(Factor):
     """
     def __init__(self, var_names, log_probs_table, cardinalities):
         """
-        Construct a SparseLogTable
-        :param var_names: (list) The variable names.
-        :param probs: (dictionary) A dictionary with assignments (tuples) as keys and log probabilities as values.
+        Construct a SparseLogTable.
+
+        :param var_names: The variable names.
+        :type var_names: str list
+        :param probs: A dictionary with assignments (tuples) as keys and log probabilities as values.
                       Missing assignments are assumed to have zero probability.
+        :type probs: tuple float dict
         """
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
@@ -37,6 +40,14 @@ class Categorical(Factor):
     # TODO: improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor when probs turn to 0
     # TODO: Add variable order sorting
     def equals(self, factor):
+        """
+        Check if this factor is the same as another factor.
+
+        :param factor: The other factor to compare to.
+        :type factor: Categorical
+        :return: The result of the comparison.
+        :rtype: bool
+        """
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
         if self.var_names != factor.var_names:
@@ -51,7 +62,8 @@ class Categorical(Factor):
     def copy(self):
         """
         Make a copy of this factor.
-        :return: (SparseLogTable) The copy.
+        :return: The copy of this factor.
+        :rtype: Categorical
         """
         return Categorical(var_names=self.var_names.copy(),
                            log_probs_table=copy.deepcopy(self.log_probs_table),
@@ -86,7 +98,8 @@ class Categorical(Factor):
         Sum out variables from this factor.
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
-        :return: (SparseLogTable) the resulting factor.
+        :return: The resulting factor.
+        :rtype: Categorical
         """
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
@@ -112,7 +125,8 @@ class Categorical(Factor):
         Observe variables to have certain values and return reduced table.
         :param vrs: (list) The variables.
         :param values: (tuple or list) Their values
-        :return: (SparseLogTable) The resulting factor.
+        :return: The resulting factor.
+        :rtype: Categorical
         """
 
         vars_unobserved = [v for v in self.var_names if v not in vrs]
@@ -131,6 +145,7 @@ class Categorical(Factor):
     def _assert_consistent_cardinalities(self, factor):
         """
         Assert that the variable cardinalities are consistent between two factors.
+
         :param factor:
         """
         for var in self.var_names:
@@ -141,6 +156,7 @@ class Categorical(Factor):
     def absorb(self, factor):
         """
         Multiply this factor with another factor and return the result.
+
         :param factor: The factor to multiply with.
         :rtype factor: Categorical
         :return: The factor product.
@@ -160,7 +176,8 @@ class Categorical(Factor):
     def cancel(self, factor):
         """
         Divide this factor by another factor and return the result.
-        :param factor: (SparseLogTable) The factor to divide by.
+
+        :param factor: The factor to divide by.
         :rtype factor: Categorical
         :return: The factor quotient.
         :rtype: Categorical
@@ -179,6 +196,7 @@ class Categorical(Factor):
     def argmax(self):
         """
         Get the Categorical assignment (vector value) that maximises the factor potential.
+
         :return: The argmax assignment.
         :rtype: int list
         """
@@ -333,6 +351,7 @@ class Categorical(Factor):
         """
         Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
+
         :param factor: The other factor
         :type factor: Gaussian
         :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.
@@ -369,6 +388,7 @@ class Categorical(Factor):
     def distance_from_vacuous(self):
         """
         Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
+
         :return: The KL divergence.
         :rtype: float
         """
@@ -383,6 +403,7 @@ class Categorical(Factor):
     def potential(self, vrs, assignment):
         """
         Get the value of the factor for a specific assignment.
+
         :param assignment: The assignment
         :return: The value
         """
@@ -394,6 +415,7 @@ class Categorical(Factor):
     def show(self, exp_log_probs=True):
         """
         Print the factor.
+
         :param exp_log_probs: Whether or no to exponentiate the log probabilities (to display probabilities instead of
         log-probabilities)
         :type exp_log_probs: bool
@@ -414,6 +436,7 @@ class CategoricalTemplate(FactorTemplate):
     def __init__(self, log_probs_table, var_templates):
         """
         Create a Categorical factor template.
+
         :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.
         :type log_probs_table: tuple:float dict
         :param var_templates: A list of formattable strings.
@@ -432,6 +455,7 @@ class CategoricalTemplate(FactorTemplate):
     def make_factor(self, format_dict=None, var_names=None):
         """
         Make a factor with var_templates formatted by format_dict to create specific var names.
+
         :param format_dict: The dictionary to be used to format the var_templates strings.
         :type format_dict: str dict
         :return: The instantiated factor.
@@ -448,12 +472,13 @@ def _reorder_probs(new_variable_order, old_variable_order, old_assign_probs):
     """
     Reorder categorical table variables to a new order and reorder the associated probabilities
     accordingly.
+
     :param new_variable_order: The new variable order.
-    :type new_variable_order: string list
+    :type new_variable_order: str list
     :param old_variable_order: The old vriable order (corresponding to old_assign_probs)
-    :type old_variable_order: string list
+    :type old_variable_order: str list
     :param old_assign_probs: The assignment probability list
-    :type old_assign_probs: string, float nested list
+    :type old_assign_probs: str, float nested list
 
     Example:
         old_variable_order = [a, b]

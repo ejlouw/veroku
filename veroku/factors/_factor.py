@@ -103,6 +103,10 @@ class Factor:
         An abstract function for printing the parameters of the factor that should be implemented in the base class.
         """
 
+    @property
+    def joint_distribution(self):
+        return self.copy()
+
     def __mul__(self, other):
         return self.absorb(other)
 

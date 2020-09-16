@@ -289,7 +289,7 @@ class TestGaussian(unittest.TestCase):
         """
         # Note these equations where written independently from the actuall implementation.
         # TODO: consider extending this test and hard-coding the expected parmeters
-        # TODO: Fix this test - it passes sometimes and sometimes not - something to do with the paramter order.
+        # TODO: Fix this test - it passes sometimes and sometimes not - something to do with the parameter order.
 
         Kmat = np.array([[6, 2, 1],
                          [2, 8, 3],
