@@ -69,21 +69,10 @@ jobs:
           ref: gh-pages
       - run: |
           rm -rf docs
-          mv ../docs_copy docs
+          mv ../docs_copy/build/html docs
           git config user.name github-actions
           git config user.email github-actions@github.com
-          echo branch_command
-          git branch -a
-          echo ls_command
-          ls -la
-          echo lsdocs_command
-          ls -la docs
-          echo git_status_command
-          git status
-          echo adddocs
           git add docs/
-          echo gitstatus2
-          git status
           git commit -m 'Update documentation.'
           git push
           
