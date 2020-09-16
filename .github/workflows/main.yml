@@ -69,10 +69,13 @@ jobs:
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          echo branch
+          echo branch_command
           git branch -a
+          echo ls_command
           ls -la
-          echo gitstatus
+          echo lsdocs_command
+          ls -la docs
+          echo git_status_command
           git status
           echo adddocs
           git add docs/
