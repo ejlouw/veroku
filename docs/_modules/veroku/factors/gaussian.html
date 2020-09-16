@@ -59,7 +59,7 @@
 <span class="sd">    Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform</span>
 <span class="sd">    distributions.</span>
 <span class="sd">    :param var_names: The variable name of the factor</span>
-<span class="sd">    :type var_names: string list</span>
+<span class="sd">    :type var_names: str list</span>
 <span class="sd">    :param mean_range: The range between which a mean will the uniformly sampled.</span>
 <span class="sd">    :type mean_range: float list</span>
 <span class="sd">    :param cov_range:The range between which a covariance will the uniformly sampled.</span>
@@ -78,7 +78,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a d dimensional standard Gaussian.</span>
 <span class="sd">    :param var_names: The variable name of the factor.</span>
-<span class="sd">    :type var_names: string list</span>
+<span class="sd">    :type var_names: str list</span>
 <span class="sd">    :return: The standard Gaussian</span>
 <span class="sd">    :rtype: Gaussian</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -127,6 +127,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        General constructor that can use either covariance form or canonical form parameters to construct a</span>
 <span class="sd">        d-dimensional multivariate Gaussian object.</span>
+
 <span class="sd">        :param cov: The covariance matrix (or variance scalar in 1-dimensional case).</span>
 <span class="sd">        :type cov: dxd numpy.ndarray or float</span>
 <span class="sd">        :param mean: The mean vector (or mean scalar in 1-dimensional case).</span>
@@ -207,6 +208,7 @@
     <span class="k">def</span> <span class="nf">_reorder_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_order_vars</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder the values in the matrix and vector parameters according to the order of new_order_vars</span>
+
 <span class="sd">        :param new_order_vars: The same variable names as in self.var_names, in a different order</span>
 <span class="sd">        :type new_order_vars: str list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -272,14 +274,16 @@
 
 <div class="viewcode-block" id="Gaussian.equals"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if this factor is the same as another factor.</span>
+
+<span class="sd">        :param factor: The factor to compare with.</span>
 <span class="sd">        :param factor: Gaussian</span>
-<span class="sd">                    The Gaussian object to compare self with.</span>
-<span class="sd">        :param rtol: float</span>
-<span class="sd">                    The absolute tolerance parameter (see numpy Notes for allclose function).</span>
-<span class="sd">        :param atol: float</span>
-<span class="sd">                    The absolute tolerance parameter (see numpy Notes for allclose function).</span>
-<span class="sd">        :return: bool</span>
-<span class="sd">                Result of equals comparison between self and gaussian</span>
+<span class="sd">        :param rtol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
+<span class="sd">        :type rtol: float</span>
+<span class="sd">        :param atol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
+<span class="sd">        :type atol: float</span>
+<span class="sd">        :return: Result of equals comparison between self and gaussian</span>
+<span class="sd">        rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if not isinstance(factor, Gaussian):</span>
         <span class="c1">#    return False</span>
@@ -303,6 +307,7 @@
 <div class="viewcode-block" id="Gaussian.get_K"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_K">[docs]</a>    <span class="k">def</span> <span class="nf">get_K</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the K parameter.</span>
+
 <span class="sd">        :return: The K parameter.</span>
 <span class="sd">        :type K: dxd numpy.ndarray or float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -317,8 +322,9 @@
 <div class="viewcode-block" id="Gaussian.get_h"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_h">[docs]</a>    <span class="k">def</span> <span class="nf">get_h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the h vector.</span>
+
 <span class="sd">        :return: The h parameter.</span>
-<span class="sd">        :rtypw: float</span>
+<span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_canform</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -329,7 +335,8 @@
     <span class="c1"># pylint: disable=invalid-name</span>
 <div class="viewcode-block" id="Gaussian.get_g"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_g">[docs]</a>    <span class="k">def</span> <span class="nf">get_g</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the g paramter.</span>
+<span class="sd">        Get the g parameter.</span>
+
 <span class="sd">        :return: The g parameter.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -351,6 +358,7 @@
 <div class="viewcode-block" id="Gaussian.get_cov"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_cov">[docs]</a>    <span class="k">def</span> <span class="nf">get_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the covariance parameter.</span>
+
 <span class="sd">        :return: The cov parameter.</span>
 <span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -362,7 +370,8 @@
 
 <div class="viewcode-block" id="Gaussian.get_mean"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_mean">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the mean vector (after ensuring that the covariance form is updated.)</span>
+<span class="sd">        Get the mean parameter.</span>
+
 <span class="sd">        :return: The mean parameter.</span>
 <span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -389,7 +398,9 @@
 <div class="viewcode-block" id="Gaussian.get_complex_weight"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_complex_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_complex_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get (possibly complex) weight parameter.</span>
-<span class="sd">        :return: weight parameter</span>
+
+<span class="sd">        :return: The weight parameter.</span>
+<span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">cmath</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_complex_log_weight</span><span class="p">())</span></div>
 
@@ -412,7 +423,8 @@
     <span class="k">def</span> <span class="nf">_invert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Invert this Gaussian (1/Gaussian). This is used in the approximate Gaussian mixture division algorithms.</span>
-<span class="sd">        :return: the inverted Gaussian</span>
+
+<span class="sd">        :return: The inverted Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span>
         <span class="n">gaussian_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -424,6 +436,9 @@
     <span class="k">def</span> <span class="nf">_subtract_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_weight_to_subtract</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Subtract log value to the log weight.</span>
+
+<span class="sd">        :param log_weight_to_subtract: The log value to subtract from the weight.</span>
+<span class="sd">        :type log_weight_to_subtract: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: replace with _add_log_weight</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
@@ -432,6 +447,9 @@
     <span class="k">def</span> <span class="nf">_add_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_weight_to_add</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add log value to the log weight.</span>
+
+<span class="sd">        :param log_weight_to_add: The log value to add to the weight.</span>
+<span class="sd">        :type log_weight_to_add: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">+=</span> <span class="n">log_weight_to_add</span>
@@ -441,7 +459,8 @@
 <div class="viewcode-block" id="Gaussian.get_weight"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.</span>
-<span class="sd">        :return: the weight</span>
+
+<span class="sd">        :return: The weight.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span></div>
@@ -457,11 +476,12 @@
 <div class="viewcode-block" id="Gaussian.marginalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.marginalise">[docs]</a>    <span class="k">def</span> <span class="nf">marginalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this Gaussian.</span>
-<span class="sd">        :param vrs: a subset of variables in the factor&#39;s scope</span>
+
+<span class="sd">        :param vrs: A subset of variables in the factor&#39;s scope.</span>
 <span class="sd">        :type vrs: str list</span>
-<span class="sd">        :param keep: Whether to keep or sum out vrs</span>
+<span class="sd">        :param keep: Whether to keep or sum out vrs.</span>
 <span class="sd">        :type keep: bool</span>
-<span class="sd">        :return: the resulting Gaussian marginal</span>
+<span class="sd">        :return: The resulting Gaussian marginal.</span>
 <span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">vars_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
@@ -506,11 +526,6 @@
         <span class="n">marginal_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices_to_keep</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
         <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="n">marginal_cov</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">marginal_mean</span><span class="p">,</span> <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
                         <span class="n">var_names</span><span class="o">=</span><span class="n">marginal_var_names</span><span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Note: this is just to have a common interface (this is required for more advanced factors - such as NLG)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_update_canform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -663,6 +678,7 @@
 <div class="viewcode-block" id="Gaussian.observe"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.</span>
+
 <span class="sd">        :param vrs: the names of the observed variable (list)</span>
 <span class="sd">        :type vrs: str list</span>
 <span class="sd">        :param values: the values of the observed variables</span>
@@ -693,6 +709,7 @@
 <div class="viewcode-block" id="Gaussian.distance_from_vacuous"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</span>
+
 <span class="sd">        :return: The KL divergence.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -705,6 +722,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.</span>
 <span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
+
 <span class="sd">        :param factor: The other factor</span>
 <span class="sd">        :type factor: Gaussian</span>
 <span class="sd">        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.</span>
@@ -751,6 +769,7 @@
 <div class="viewcode-block" id="Gaussian.copy"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make a copy of this Gaussian.</span>
+
 <span class="sd">        :return: The copied Gaussian.</span>
 <span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -769,6 +788,7 @@
 <div class="viewcode-block" id="Gaussian.potential"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the value of the Gaussian potential at x_val.</span>
+
 <span class="sd">        :param x_val: The vector (or vector-like object) to evaluate the Gaussian at</span>
 <span class="sd">        :type x_val: numpy.ndarray</span>
 <span class="sd">        :return: The value of the Gaussian potential at x_val.</span>
@@ -779,6 +799,7 @@
 <div class="viewcode-block" id="Gaussian.log_potential"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.log_potential">[docs]</a>    <span class="k">def</span> <span class="nf">log_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_val</span><span class="p">,</span> <span class="n">vrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log of the value of the Gaussian potential at x_val.</span>
+
 <span class="sd">        :param x_val: the vector (or vector-like object) to evaluate the GaussianMixture at</span>
 <span class="sd">        :type x_val: vector-like</span>
 <span class="sd">        :param vrs: The variables corresponding to the values in x_val.</span>
@@ -811,6 +832,11 @@
 <div class="viewcode-block" id="Gaussian.show"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_covform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_canform</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print the parameters of the Gaussian distribution</span>
+
+<span class="sd">        :param update_covform: Whether or not to update the covariance form before showing.</span>
+<span class="sd">        :type update_covform: bool</span>
+<span class="sd">        :param show_canform: Whether or not toshow the canonical form as well.</span>
+<span class="sd">        :type show_canform: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
@@ -833,8 +859,9 @@
 <div class="viewcode-block" id="Gaussian.show_vis"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.show_vis">[docs]</a>    <span class="k">def</span> <span class="nf">show_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualise the parameters with plots.</span>
+
 <span class="sd">        :param figsize: The figure size.</span>
-<span class="sd">        :type figsize: 2 element int tuple.</span>
+<span class="sd">        :type figsize: 2 element int tuple</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: find a way of making cov matrix square.</span>
         <span class="n">f</span><span class="p">,</span> <span class="p">[</span><span class="n">ax_cov</span><span class="p">,</span> <span class="n">ax_mean</span><span class="p">]</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>  <span class="c1"># ,sharex=True)</span>
@@ -862,6 +889,7 @@
     <span class="k">def</span> <span class="nf">_plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot a 2d Gaussian mixture potential function</span>
+
 <span class="sd">        :param log: if this is True, the log-potential will be plotted</span>
 <span class="sd">        :param xlim: the x limits to plot the function over (optional)</span>
 <span class="sd">        :param ylim: the y limits to plot the function over (optional)</span>
@@ -885,6 +913,7 @@
 <div class="viewcode-block" id="Gaussian.plot"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the Gaussian mixture potential function (only for 1d and 2d functions)</span>
+
 <span class="sd">        :param log: if this is True, the log-potential will be plotted</span>
 <span class="sd">        :param xlim: the x limits to plot the function over (optional)</span>
 <span class="sd">        :type xlim: 2 element float list</span>
@@ -922,6 +951,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">cancel_method</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A GaussianMixture constructor.</span>
+
 <span class="sd">        :param factors: a list of Gaussian type objects with the same dimensionality.</span>
 <span class="sd">        :type factors: Gaussian list</span>
 <span class="sd">        :param cancel_method: The method of performing approximate division.</span>
@@ -946,7 +976,8 @@
 
 <div class="viewcode-block" id="GaussianMixture.equals"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if this Gaussian mixture is the same as another factor</span>
+<span class="sd">        Check if this Gaussian mixture is the same as another factor.</span>
+
 <span class="sd">        :param factor: The factor to compare to.</span>
 <span class="sd">        :type factor: GaussianMixture</span>
 <span class="sd">        :return: The result of the comparison.</span>
@@ -969,6 +1000,7 @@
 <div class="viewcode-block" id="GaussianMixture.get_component"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.get_component">[docs]</a>    <span class="k">def</span> <span class="nf">get_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the Gaussian component at an index.</span>
+
 <span class="sd">        :param index: The index of teh component to return.</span>
 <span class="sd">        :type index: int</span>
 <span class="sd">        :return: The component at the given index.</span>
@@ -979,7 +1011,9 @@
 <div class="viewcode-block" id="GaussianMixture.copy"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make a copy of this Gaussian mixture.</span>
+
 <span class="sd">        :return: The copied GaussianMixture.</span>
+<span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">component_copies</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
@@ -989,6 +1023,7 @@
 <div class="viewcode-block" id="GaussianMixture.absorb"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.absorb">[docs]</a>    <span class="k">def</span> <span class="nf">absorb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this GaussianMixture with another factor.</span>
+
 <span class="sd">        :param factor: The factor to multiply with.</span>
 <span class="sd">        :type factor: Gaussian or Gaussian Mixture</span>
 <span class="sd">        :return: The factor product.</span>
@@ -1009,6 +1044,7 @@
 <div class="viewcode-block" id="GaussianMixture.cancel"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this GaussianMixture by another factor.</span>
+
 <span class="sd">        :param factor: The factor divide by.</span>
 <span class="sd">        :type factor: Gaussian or Gaussian Mixture</span>
 <span class="sd">        :return: The resulting factor quotient (approximate in the case of where both the numerator and denominator are</span>
@@ -1037,6 +1073,7 @@
 <div class="viewcode-block" id="GaussianMixture.observe"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.</span>
+
 <span class="sd">        :param vrs: the names of the observed variable (list)</span>
 <span class="sd">        :type vrs: str list</span>
 <span class="sd">        :param values: the values of the observed variables (list or vector-like object)</span>
@@ -1052,6 +1089,7 @@
 <div class="viewcode-block" id="GaussianMixture.marginalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.marginalise">[docs]</a>    <span class="k">def</span> <span class="nf">marginalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this Gaussian mixture.</span>
+
 <span class="sd">        :param vrs: A subset of variables in the factor&#39;s scope.</span>
 <span class="sd">        :type vrs: str list</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs.</span>
@@ -1068,6 +1106,7 @@
 <div class="viewcode-block" id="GaussianMixture.log_potential"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.log_potential">[docs]</a>    <span class="k">def</span> <span class="nf">log_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log of the value of the Gaussian mixture potential at X.</span>
+
 <span class="sd">        :param x: The point to evaluate the GaussianMixture at.</span>
 <span class="sd">        :type x: vector-like</span>
 <span class="sd">        :return: log of the value of the GaussianMixture potential at x.</span>
@@ -1083,6 +1122,7 @@
 <div class="viewcode-block" id="GaussianMixture.potential"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the value of the Gaussian mixture potential at x_val.</span>
+
 <span class="sd">        :param x_val: The point to evaluate the GaussianMixture at.</span>
 <span class="sd">        :type x_val: vector-like</span>
 <span class="sd">        :return: log of the value of the GaussianMixture potential at x_val.</span>
@@ -1105,6 +1145,7 @@
     <span class="k">def</span> <span class="nf">_get_means</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the means of the Gaussian components.</span>
+
 <span class="sd">        :return: the mean vectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">means</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1115,7 +1156,9 @@
     <span class="k">def</span> <span class="nf">_get_covs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the covariance matrices of the Gaussian components.</span>
+
 <span class="sd">        :return: the covariance matrices</span>
+<span class="sd">        :rtype: np.ndarray list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">covs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
@@ -1125,7 +1168,9 @@
     <span class="k">def</span> <span class="nf">_get_log_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log weights of the Gaussian mixture components.</span>
+
 <span class="sd">        :return: the log weights</span>
+<span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log_weights</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
@@ -1135,7 +1180,9 @@
     <span class="k">def</span> <span class="nf">_get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the weights of the Gaussian mixture components.</span>
+
 <span class="sd">        :return: the log weights</span>
+<span class="sd">        :rtype: float list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
@@ -1153,6 +1200,7 @@
 <div class="viewcode-block" id="GaussianMixture.normalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.normalise">[docs]</a>    <span class="k">def</span> <span class="nf">normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalise the Gaussian mixture.</span>
+
 <span class="sd">        :return: The normalised factor.</span>
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1167,6 +1215,7 @@
 <div class="viewcode-block" id="GaussianMixture.sample"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sample from this Gaussian mixture</span>
+
 <span class="sd">        :param num_samples: The number of sample to draw.</span>
 <span class="sd">        :type num_samples: int</span>
 <span class="sd">        :return: The samples</span>
@@ -1181,9 +1230,10 @@
 
     <span class="k">def</span> <span class="nf">_get_sensible_xlim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Helper function for plot function.</span>
-<span class="sd">        Get x limits that contain the majority of the Gaussian mass.</span>
-<span class="sd">        :return: (list) the x limits</span>
+<span class="sd">        Helper function for plot function to get the x limits that contain the majority of the Gaussian mass.</span>
+
+<span class="sd">        :return: The x limits.</span>
+<span class="sd">        :rtype: float list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x_lower_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">x_upper_candidates</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1197,7 +1247,8 @@
 
 <div class="viewcode-block" id="GaussianMixture.plot"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_individual_components</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plot the Gaussian mixture potential function (only for 1d and 2d functions)</span>
+<span class="sd">        Plot the Gaussian mixture potential function (only for 1d and 2d functions).</span>
+
 <span class="sd">        :param log: if this is True, the log-potential will be plotted</span>
 <span class="sd">        :type log: bool</span>
 <span class="sd">        :param xlim: the x limits to plot the function over (optional)</span>
@@ -1239,8 +1290,9 @@
     <span class="c1"># pylint: disable=invalid-name</span>
 <div class="viewcode-block" id="GaussianMixture.moment_match_to_single_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.moment_match_to_single_gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">moment_match_to_single_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the mean and covariance of the Gaussian mixture and return a Gaussian</span>
-<span class="sd">        with these parameters as an approximation of the Gaussian Mixture.</span>
+<span class="sd">        Calculate the mean and covariance of the Gaussian mixture and return a Gaussian with these parameters as an</span>
+<span class="sd">        approximation of the Gaussian Mixture.</span>
+
 <span class="sd">        :return: The Gaussian approximation.</span>
 <span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1264,7 +1316,8 @@
 
 <div class="viewcode-block" id="GaussianMixture.argmax"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.argmax">[docs]</a>    <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Find the input vector that maximises the potential function of the Gaussian mixture</span>
+<span class="sd">        Find the input vector that maximises the potential function of the Gaussian mixture.</span>
+
 <span class="sd">        :return: The argmax assignment.</span>
 <span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1290,8 +1343,11 @@
 
     <span class="k">def</span> <span class="nf">_argmin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Find the input vector that minimises the potential function of the Gaussian mixture with negative definite presicion matrices</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Find the input vector that minimises the potential function of the Gaussian mixture with negative definite</span>
+<span class="sd">        precision matrices.</span>
+
+<span class="sd">        :return: The point where the function has a global minimum.</span>
+<span class="sd">        :rtype: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">global_minimum_potential</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
         <span class="n">global_argmin</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1316,10 +1372,11 @@
     <span class="c1"># pylint: disable=invalid-name</span>
     <span class="k">def</span> <span class="nf">_moment_match_complex_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        THIS ONE WORKS!</span>
 <span class="sd">        Calculate the mean and covariance of the Gaussian mixture and return a Gaussian</span>
 <span class="sd">        with these parameters a Gaussian approximation of the Gaussian Mixture.</span>
-<span class="sd">        :return: the Gaussian approximation</span>
+
+<span class="sd">        :return: The Gaussian approximation.</span>
+<span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: check if the normal moment matching function can be replaced with this one.</span>
         <span class="n">new_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
