@@ -61,12 +61,15 @@ jobs:
           sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
           make html
           cd ../
+          cp -R docs ../docs_copy
 
       - name: checkout-pages-branch
         uses: actions/checkout@v2
         with:
           ref: gh-pages
       - run: |
+          rm -rf docs
+          mv ../docs_copy docs
           git config user.name github-actions
           git config user.email github-actions@github.com
           echo branch_command
