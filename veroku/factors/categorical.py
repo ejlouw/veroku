@@ -158,7 +158,7 @@ class Categorical(Factor):
         Multiply this factor with another factor and return the result.
 
         :param factor: The factor to multiply with.
-        :rtype factor: Categorical
+        :type factor: Categorical
         :return: The factor product.
         :rtype: Categorical
         """
@@ -178,7 +178,7 @@ class Categorical(Factor):
         Divide this factor by another factor and return the result.
 
         :param factor: The factor to divide by.
-        :rtype factor: Categorical
+        :type factor: Categorical
         :return: The factor quotient.
         :rtype: Categorical
         """

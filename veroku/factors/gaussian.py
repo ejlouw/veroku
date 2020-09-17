@@ -24,13 +24,15 @@ def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     """
     Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
     distributions.
+
     :param var_names: The variable name of the factor
     :type var_names: str list
     :param mean_range: The range between which a mean will the uniformly sampled.
     :type mean_range: float list
     :param cov_range:The range between which a covariance will the uniformly sampled.
     :type cov_range: float list
-    :return: The random Gaussian object.
+    :return: The random Gaussian.
+    :rtype: Gaussian
     """
     assert var_names, 'Error: var_names list cannot be empty.'
     dim = len(var_names)
@@ -43,6 +45,7 @@ def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
 def make_std_gaussian(var_names):
     """
     Make a d dimensional standard Gaussian.
+
     :param var_names: The variable name of the factor.
     :type var_names: str list
     :return: The standard Gaussian
@@ -59,6 +62,7 @@ def make_std_gaussian(var_names):
 def split_gaussian(gaussian):
     """
     Split a Gaussian into a three component Gaussian Mixture, with different means.
+
     :param gaussian: The Gaussian distribution to split.
     :type gaussian: Gaussian
     :return: The split Gaussian Mixture.
@@ -154,7 +158,7 @@ class Gaussian(Factor):
         """
         Make an vacuous Gaussian distribution with a zero precision matrix and zero h vector and zero g value.
         This 'Gaussian' is effectively a constant function (it has infinite variance and infinite mass) with value
-        exp(g)
+        exp(g).
 
         :param var_names: The variable names.
         :type var_names: str list
@@ -243,7 +247,7 @@ class Gaussian(Factor):
         Check if this factor is the same as another factor.
 
         :param factor: The factor to compare with.
-        :param factor: Gaussian
+        :type factor: Gaussian
         :param rtol: The absolute tolerance parameter (see numpy Notes for allclose function).
         :type rtol: float
         :param atol: The absolute tolerance parameter (see numpy Notes for allclose function).
