@@ -58,13 +58,15 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform</span>
 <span class="sd">    distributions.</span>
+
 <span class="sd">    :param var_names: The variable name of the factor</span>
 <span class="sd">    :type var_names: str list</span>
 <span class="sd">    :param mean_range: The range between which a mean will the uniformly sampled.</span>
 <span class="sd">    :type mean_range: float list</span>
 <span class="sd">    :param cov_range:The range between which a covariance will the uniformly sampled.</span>
 <span class="sd">    :type cov_range: float list</span>
-<span class="sd">    :return: The random Gaussian object.</span>
+<span class="sd">    :return: The random Gaussian.</span>
+<span class="sd">    :rtype: Gaussian</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">var_names</span><span class="p">,</span> <span class="s1">&#39;Error: var_names list cannot be empty.&#39;</span>
     <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names</span><span class="p">)</span>
@@ -77,6 +79,7 @@
 <div class="viewcode-block" id="make_std_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_std_gaussian">[docs]</a><span class="k">def</span> <span class="nf">make_std_gaussian</span><span class="p">(</span><span class="n">var_names</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a d dimensional standard Gaussian.</span>
+
 <span class="sd">    :param var_names: The variable name of the factor.</span>
 <span class="sd">    :type var_names: str list</span>
 <span class="sd">    :return: The standard Gaussian</span>
@@ -93,6 +96,7 @@
 <div class="viewcode-block" id="split_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.split_gaussian">[docs]</a><span class="k">def</span> <span class="nf">split_gaussian</span><span class="p">(</span><span class="n">gaussian</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Split a Gaussian into a three component Gaussian Mixture, with different means.</span>
+
 <span class="sd">    :param gaussian: The Gaussian distribution to split.</span>
 <span class="sd">    :type gaussian: Gaussian</span>
 <span class="sd">    :return: The split Gaussian Mixture.</span>
@@ -188,7 +192,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make an vacuous Gaussian distribution with a zero precision matrix and zero h vector and zero g value.</span>
 <span class="sd">        This &#39;Gaussian&#39; is effectively a constant function (it has infinite variance and infinite mass) with value</span>
-<span class="sd">        exp(g)</span>
+<span class="sd">        exp(g).</span>
 
 <span class="sd">        :param var_names: The variable names.</span>
 <span class="sd">        :type var_names: str list</span>
@@ -277,7 +281,7 @@
 <span class="sd">        Check if this factor is the same as another factor.</span>
 
 <span class="sd">        :param factor: The factor to compare with.</span>
-<span class="sd">        :param factor: Gaussian</span>
+<span class="sd">        :type factor: Gaussian</span>
 <span class="sd">        :param rtol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
 <span class="sd">        :type rtol: float</span>
 <span class="sd">        :param atol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
