@@ -38,26 +38,9 @@
 <p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.categorical.Categorical">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating sparse tables with log probabilities.</p>
-<dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.absorb">
-<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.absorb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multiply this factor with another factor and return the result.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to multiply with.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The factor product.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.argmax" title="Permalink to this definition">¶</a></dt>
@@ -68,23 +51,6 @@
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>int list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.cancel">
-<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.cancel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide this factor by another factor and return the result.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The factor quotient.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -112,6 +78,23 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.divide">
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this factor by another factor and return the result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor quotient.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.equals">
 <code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.equals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if this factor is the same as another factor.</p>
@@ -129,15 +112,23 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.is_vacuous">
+<em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.categorical.Categorical.is_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this factor is vacuous (i.e uniform).
+:return: Whether the factor is vacuous or not.
+:rtype: bool</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.kl_divergence">
-<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalise_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
+<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalize_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
 Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>factor</strong> (<a class="reference internal" href="veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p></li>
-<li><p><strong>normalise_factor</strong> (<em>bool</em>) – Whether or not to normalise the other factor before computing the KL-divergence.</p></li>
+<li><p><strong>normalize_factor</strong> (<em>bool</em>) – Whether or not to normalize the other factor before computing the KL-divergence.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -150,8 +141,8 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.marginalise">
-<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalise" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.categorical.Categorical.marginalize">
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum out variables from this factor.
 :param vrs: (list) a subset of variables in the factor’s scope
 :param keep: Whether to keep or sum out vrs
@@ -160,20 +151,27 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.normalise">
-<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.normalise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a normalised copy of the factor.
-:return: The normalised factor.</p>
+<dt id="veroku.factors.categorical.Categorical.multiply">
+<code class="sig-name descname">multiply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.multiply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this factor with another factor and return the result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to multiply with.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor product.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.observe">
-<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.observe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe variables to have certain values and return reduced table.
-:param vrs: (list) The variables.
-:param values: (tuple or list) Their values
-:return: The resulting factor.
-:rtype: Categorical</p>
+<dt id="veroku.factors.categorical.Categorical.normalize">
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a normalized copy of the factor.
+:return: The normalized factor.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -188,6 +186,16 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dd class="field-even"><p>The value</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.reduce">
+<code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe variables to have certain values and return reduced table.
+:param vrs: (list) The variables.
+:param values: (tuple or list) Their values
+:return: The resulting factor.
+:rtype: Categorical</p>
 </dd></dl>
 
 <dl class="py method">

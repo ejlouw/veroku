@@ -150,7 +150,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">g</span><span class="p">]):</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">[</span><span class="n">cov</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">log_weight</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;incomplete parameters&#39;</span><span class="p">)</span>
@@ -183,7 +183,7 @@
             <span class="c1"># Note: this is important to allow vacuous Gaussians (that arise, for exmaple, when Gaussians are divided by</span>
             <span class="c1"># identical distributions or with unconditioned nonlinear Gaussians) to be merginalised.</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">]),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># pylint: enable=invalid-name</span>
 
@@ -393,7 +393,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span></div>
 
-<div class="viewcode-block" id="Gaussian.normalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.normalise">[docs]</a>    <span class="k">def</span> <span class="nf">normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.normalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">gaussian_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -462,7 +462,7 @@
 
 <div class="viewcode-block" id="Gaussian.get_weight"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.</span>
+<span class="sd">        Get the weight of the distribution - the value of the integral of the (possibly unnormalized) distribution.</span>
 
 <span class="sd">        :return: The weight.</span>
 <span class="sd">        :rtype: float</span>
@@ -477,7 +477,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">get_closest_psd_from_symmetric_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Gaussian.marginalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.marginalise">[docs]</a>    <span class="k">def</span> <span class="nf">marginalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.marginalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this Gaussian.</span>
 
@@ -490,7 +490,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">vars_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
         <span class="n">vars_to_integrate_out</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vars_to_keep</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="c1"># TODO: check this (esp log_weight)</span>
             <span class="c1"># print(&#39;Warning: marginalising vacuous Gaussian&#39;)</span>
             <span class="k">return</span> <span class="n">Gaussian</span><span class="o">.</span><span class="n">make_vacuous</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">)</span>
@@ -523,8 +523,8 @@
         <span class="n">indices_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">vars_to_keep</span><span class="p">]</span>
         <span class="n">marginal_var_names</span> <span class="o">=</span> <span class="n">vars_to_keep</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot marginalise vacuous Gaussian.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot marginalize vacuous Gaussian.&#39;</span><span class="p">)</span>
 
         <span class="n">marginal_cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices_to_keep</span><span class="p">,</span> <span class="n">indices_to_keep</span><span class="p">)]</span>
         <span class="n">marginal_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices_to_keep</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
@@ -563,7 +563,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the covariance form parameters of the Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;cannot update covariance form for vacuous Gaussian.&#39;</span><span class="p">)</span>
         <span class="c1"># pylint: disable=invalid-name</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
@@ -588,17 +588,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># pylint: enable=invalid-name</span>
 
-<div class="viewcode-block" id="Gaussian.absorb"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.absorb">[docs]</a>    <span class="k">def</span> <span class="nf">absorb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.multiply"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this Gaussian with another factor.</span>
 <span class="sd">        :param factor: the factor to multiply with</span>
 <span class="sd">        :return: the resulting factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if isinstance(factor, NonLinearGaussian):</span>
-        <span class="c1">#    return factor.absorb(self)</span>
+        <span class="c1">#    return factor.multiply(self)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_absorb_or_cancel</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Gaussian.cancel"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.divide"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this Gaussian by another facotr.</span>
 <span class="sd">        :param factor: the factor to divide by</span>
@@ -651,7 +651,7 @@
     <span class="c1"># pylint: disable=invalid-name</span>
     <span class="k">def</span> <span class="nf">_get_observation_reduced_canonical_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_indices</span><span class="p">,</span> <span class="n">unobserved_indices</span><span class="p">,</span> <span class="n">observed_vec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A helper function for observe.</span>
+<span class="sd">        A helper function for reduce.</span>
 <span class="sd">        :param observed_indices: The observed variable indices</span>
 <span class="sd">        :type observed_indices: int list</span>
 <span class="sd">        :param unobserved_indices: The unobserved variable indices</span>
@@ -679,7 +679,7 @@
     <span class="c1"># pylint: enable=invalid-name</span>
 
     <span class="c1"># pylint: disable=invalid-name</span>
-<div class="viewcode-block" id="Gaussian.observe"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.reduce"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.</span>
 
@@ -717,42 +717,42 @@
 <span class="sd">        :return: The KL divergence.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Gaussian.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalise_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Gaussian.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.</span>
+<span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.</span>
 <span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
 
 <span class="sd">        :param factor: The other factor</span>
 <span class="sd">        :type factor: Gaussian</span>
-<span class="sd">        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.</span>
-<span class="sd">        :type normalise_factor: bool</span>
+<span class="sd">        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.</span>
+<span class="sd">        :type normalize_factor: bool</span>
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="n">factor</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot get KL-divergence between Gaussians of different dimensionalities.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="ow">and</span> <span class="n">factor</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="ow">and</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="ow">or</span> <span class="n">factor</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="ow">or</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
             <span class="k">return</span> <span class="mf">0.0</span>
-        <span class="n">normalised_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalise</span><span class="p">()</span>
+        <span class="n">normalized_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
         <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span>
-        <span class="k">if</span> <span class="n">normalise_factor</span><span class="p">:</span>
-            <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalise</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">normalize_factor</span><span class="p">:</span>
+            <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
         <span class="n">inv_cov_q</span> <span class="o">=</span> <span class="n">factor_</span><span class="o">.</span><span class="n">get_K</span><span class="p">()</span>
-        <span class="n">inv_cov_p</span> <span class="o">=</span> <span class="n">normalised_self</span><span class="o">.</span><span class="n">get_K</span><span class="p">()</span>
-        <span class="n">cov_p</span> <span class="o">=</span> <span class="n">normalised_self</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span>
+        <span class="n">inv_cov_p</span> <span class="o">=</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">get_K</span><span class="p">()</span>
+        <span class="n">cov_p</span> <span class="o">=</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span>
 
         <span class="n">u_q</span> <span class="o">=</span> <span class="n">factor_</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span>
-        <span class="n">u_p</span> <span class="o">=</span> <span class="n">normalised_self</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span>
+        <span class="n">u_p</span> <span class="o">=</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span>
 
         <span class="n">det_inv_cov_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">inv_cov_q</span><span class="p">)</span>
         <span class="n">det_inv_cov_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">inv_cov_p</span><span class="p">)</span>
@@ -765,7 +765,7 @@
             <span class="n">det_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">cmath</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">det_inv_cov_p</span> <span class="o">/</span> <span class="n">det_inv_cov_q</span><span class="p">)</span>
         <span class="n">trace_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">inv_cov_q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">cov_p</span><span class="p">))</span>
         <span class="n">mahalanobis_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_p</span> <span class="o">-</span> <span class="n">u_q</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">inv_cov_q</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_p</span> <span class="o">-</span> <span class="n">u_q</span><span class="p">)</span>
-        <span class="n">dim_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">normalised_self</span><span class="o">.</span><span class="n">dim</span>
+        <span class="n">dim_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">dim</span>
         <span class="n">kld</span> <span class="o">=</span> <span class="n">det_term</span> <span class="o">+</span> <span class="n">trace_term</span> <span class="o">+</span> <span class="n">mahalanobis_term</span> <span class="o">-</span> <span class="n">dim_term</span>
         <span class="c1"># TODO:Add warning or error if this is negative and remove abs below</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">kld</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span></div>
@@ -846,7 +846,7 @@
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">arrayprint</span><span class="o">.</span><span class="n">_line_width</span> <span class="o">=</span> <span class="mi">200</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="ow">and</span> <span class="n">update_covform</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="ow">and</span> <span class="n">update_covform</span><span class="p">:</span>
             <span class="n">self_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vars = &#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
@@ -858,7 +858,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;K = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;h = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;g = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;is_vacuous: &#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;is_vacuous: &#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Gaussian.show_vis"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.show_vis">[docs]</a>    <span class="k">def</span> <span class="nf">show_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1024,7 +1024,7 @@
             <span class="n">component_copies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">component_copies</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.absorb"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.absorb">[docs]</a>    <span class="k">def</span> <span class="nf">absorb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.multiply"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this GaussianMixture with another factor.</span>
 
@@ -1036,16 +1036,16 @@
         <span class="n">new_componnents</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">absorb</span><span class="p">(</span><span class="n">factor</span><span class="p">))</span>
+                <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">gauss_ai</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">gauss_bi</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                    <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_ai</span><span class="o">.</span><span class="n">absorb</span><span class="p">(</span><span class="n">gauss_bi</span><span class="p">))</span>
+                    <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_ai</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">gauss_bi</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;unsupported factor type.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_componnents</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.cancel"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.divide"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this GaussianMixture by another factor.</span>
 
@@ -1071,10 +1071,10 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;unsupported factor type.&#39;</span><span class="p">)</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">single_gaussian</span><span class="p">))</span>
+            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">single_gaussian</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.observe"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.reduce"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.</span>
 
@@ -1087,10 +1087,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_componnents</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+            <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_componnents</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.marginalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.marginalise">[docs]</a>    <span class="k">def</span> <span class="nf">marginalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.marginalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this Gaussian mixture.</span>
 
@@ -1103,7 +1103,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_componnents</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">marginalise</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">))</span>
+            <span class="n">new_componnents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_componnents</span><span class="p">)</span></div>
 
     <span class="c1"># pylint: disable=invalid-name</span>
@@ -1136,15 +1136,6 @@
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="n">total_potx</span> <span class="o">+=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total_potx</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components</span>
-        <span class="c1">#  are vacuous? Maybe make a contains vacuous function as well.</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">gauss</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_get_means</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1201,20 +1192,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_log_weights</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.normalise"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.normalise">[docs]</a>    <span class="k">def</span> <span class="nf">normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.normalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Normalise the Gaussian mixture.</span>
+<span class="sd">        normalize the Gaussian mixture.</span>
 
-<span class="sd">        :return: The normalised factor.</span>
+<span class="sd">        :return: The normalized factor.</span>
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">unnormalised_log_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">()</span>
+        <span class="n">unnormalized_log_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">()</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="n">gauss_copy</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">gauss_copy</span><span class="o">.</span><span class="n">_subtract_log_weight</span><span class="p">(</span><span class="n">unnormalised_log_weight</span><span class="p">)</span>
+            <span class="n">gauss_copy</span><span class="o">.</span><span class="n">_subtract_log_weight</span><span class="p">(</span><span class="n">unnormalized_log_weight</span><span class="p">)</span>
             <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_copy</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components</span>
+        <span class="c1">#  are vacuous? Maybe make a contains vacuous function as well.</span>
+        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">gauss</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="GaussianMixture.sample"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1446,7 +1446,7 @@
             <span class="n">inverse_components</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">inverse_gaussian_mixtures</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">g_b</span> <span class="ow">in</span> <span class="n">gaussian_mixture_b</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                <span class="n">inverse_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_b</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">g_a</span><span class="p">))</span>
+                <span class="n">inverse_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_b</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">g_a</span><span class="p">))</span>
             <span class="n">inverse_gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">inverse_components</span><span class="p">)</span>
             <span class="n">inverse_gaussian_mixtures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inverse_gaussian_mixture</span><span class="p">)</span>
 
@@ -1534,7 +1534,7 @@
         <span class="k">for</span> <span class="n">gaussian_a</span> <span class="ow">in</span> <span class="n">gma</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="n">inverse_components</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">gaussian_b</span> <span class="ow">in</span> <span class="n">gmb</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                <span class="n">conditional</span> <span class="o">=</span> <span class="n">gaussian_b</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">gaussian_a</span><span class="p">)</span>
+                <span class="n">conditional</span> <span class="o">=</span> <span class="n">gaussian_b</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">gaussian_a</span><span class="p">)</span>
                 <span class="n">inverse_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conditional</span><span class="p">)</span>
             <span class="n">inverse_gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">inverse_components</span><span class="p">)</span>
             <span class="n">inverse_gaussian_mixtures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inverse_gaussian_mixture</span><span class="p">)</span>

@@ -42,22 +42,6 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating and performing operations om multivariate Gaussian distributions.</p>
 <dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.absorb">
-<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.absorb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multiply this Gaussian with another factor.
-:param factor: the factor to multiply with
-:return: the resulting factor</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.cancel">
-<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.cancel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide this Gaussian by another facotr.
-:param factor: the factor to divide by
-:return: the resulting factor</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a copy of this Gaussian.</p>
@@ -88,6 +72,14 @@
 <dd class="field-even"><p>float</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.divide">
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this Gaussian by another facotr.
+:param factor: the factor to divide by
+:return: the resulting factor</p>
 </dd></dl>
 
 <dl class="py method">
@@ -201,7 +193,7 @@
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.get_weight">
 <code class="sig-name descname">get_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.</p>
+<dd><p>Get the weight of the distribution - the value of the integral of the (possibly unnormalized) distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The weight.</p>
@@ -214,14 +206,14 @@
 
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.kl_divergence">
-<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalise_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
+<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalize_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.kl_divergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
 Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p></li>
-<li><p><strong>normalise_factor</strong> (<em>bool</em>) – Whether or not to normalise the other factor before computing the KL-divergence.</p></li>
+<li><p><strong>normalize_factor</strong> (<em>bool</em>) – Whether or not to normalize the other factor before computing the KL-divergence.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -273,8 +265,8 @@ exp(g).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.marginalise">
-<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.marginalise" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.gaussian.Gaussian.marginalize">
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integrate out variables from this Gaussian.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -293,28 +285,18 @@ exp(g).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.normalise">
-<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.normalise" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="veroku.factors.gaussian.Gaussian.multiply">
+<code class="sig-name descname">multiply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.multiply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this Gaussian with another factor.
+:param factor: the factor to multiply with
+:return: the resulting factor</p>
+</dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.observe">
-<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.observe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>vrs</strong> (<em>str list</em>) – the names of the observed variable (list)</p></li>
-<li><p><strong>values</strong> (<em>vector-like</em>) – the values of the observed variables</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the resulting Gaussian</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian">Gaussian</a></p>
-</dd>
-</dl>
+<dt id="veroku.factors.gaussian.Gaussian.normalize">
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>An abstract function for performing factor normalization that should be implemented in the base class.
+:return: The normalized factor.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -342,6 +324,26 @@ exp(g).</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The value of the Gaussian potential at x_val.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.reduce">
+<code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> (<em>str list</em>) – the names of the observed variable (list)</p></li>
+<li><p><strong>values</strong> (<em>vector-like</em>) – the values of the observed variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the resulting Gaussian</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian">Gaussian</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -389,23 +391,6 @@ exp(g).</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</p>
 <dl class="py method">
-<dt id="veroku.factors.gaussian.GaussianMixture.absorb">
-<code class="sig-name descname">absorb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.absorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.absorb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multiply this GaussianMixture with another factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a><em> or </em><em>Gaussian Mixture</em>) – The factor to multiply with.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The factor product.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.factors.gaussian.GaussianMixture.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.argmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the input vector that maximises the potential function of the Gaussian mixture.</p>
@@ -420,22 +405,6 @@ exp(g).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.GaussianMixture.cancel">
-<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.cancel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide this GaussianMixture by another factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a><em> or </em><em>Gaussian Mixture</em>) – The factor divide by.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The resulting factor quotient (approximate in the case of where both the numerator and denominator are</p>
-</dd>
-</dl>
-<p>GaussianMixtures with more than one component).
-:rtype: GaussianMixture</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.factors.gaussian.GaussianMixture.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a copy of this Gaussian mixture.</p>
@@ -447,6 +416,22 @@ exp(g).</p>
 <dd class="field-even"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.divide">
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this GaussianMixture by another factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a><em> or </em><em>Gaussian Mixture</em>) – The factor divide by.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting factor quotient (approximate in the case of where both the numerator and denominator are</p>
+</dd>
+</dl>
+<p>GaussianMixtures with more than one component).
+:rtype: GaussianMixture</p>
 </dd></dl>
 
 <dl class="py method">
@@ -514,8 +499,8 @@ exp(g).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.GaussianMixture.marginalise">
-<code class="sig-name descname">marginalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.marginalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.marginalise" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.gaussian.GaussianMixture.marginalize">
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integrate out variables from this Gaussian mixture.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -549,35 +534,32 @@ approximation of the Gaussian Mixture.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.GaussianMixture.normalise">
-<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.normalise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalise the Gaussian mixture.</p>
+<dt id="veroku.factors.gaussian.GaussianMixture.multiply">
+<code class="sig-name descname">multiply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.multiply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply this GaussianMixture with another factor.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The normalised factor.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a><em> or </em><em>Gaussian Mixture</em>) – The factor to multiply with.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor product.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.GaussianMixture.observe">
-<code class="sig-name descname">observe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.observe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.</p>
+<dt id="veroku.factors.gaussian.GaussianMixture.normalize">
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>normalize the Gaussian mixture.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>vrs</strong> (<em>str list</em>) – the names of the observed variable (list)</p></li>
-<li><p><strong>values</strong> (<em>vactor-like</em>) – the values of the observed variables (list or vector-like object)</p></li>
-</ul>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The normalized factor.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the observation reduced factor.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -610,6 +592,26 @@ approximation of the Gaussian Mixture.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianMixture.reduce">
+<code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> (<em>str list</em>) – the names of the observed variable (list)</p></li>
+<li><p><strong>values</strong> (<em>vactor-like</em>) – the values of the observed variables (list or vector-like object)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the observation reduced factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.GaussianMixture" title="veroku.factors.gaussian.GaussianMixture">GaussianMixture</a></p>
 </dd>
 </dl>
 </dd></dl>

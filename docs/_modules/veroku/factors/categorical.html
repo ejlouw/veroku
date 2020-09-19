@@ -55,23 +55,44 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for instantiating sparse tables with log probabilities.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Construct a SparseLogTable.</span>
+<span class="sd">        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</span>
 
 <span class="sd">        :param var_names: The variable names.</span>
 <span class="sd">        :type var_names: str list</span>
-<span class="sd">        :param probs: A dictionary with assignments (tuples) as keys and log probabilities as values.</span>
-<span class="sd">                      Missing assignments are assumed to have zero probability.</span>
-<span class="sd">        :type probs: tuple float dict</span>
+<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.</span>
+<span class="sd">            Missing assignments are assumed to have zero probability.</span>
+<span class="sd">        :type</span>
+<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</span>
+<span class="sd">            Missing assignments are assumed to have -inf log-probability (zero probability).</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; var_names = [&#39;rain&#39;,&#39;slip&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
+<span class="sd">            &gt;&gt;&gt;                (0,1):0.2,</span>
+<span class="sd">            &gt;&gt;&gt;                (1,0):0.4,</span>
+<span class="sd">            &gt;&gt;&gt;                (1,1):0.6}</span>
+<span class="sd">            &gt;&gt;&gt;var_cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt;table = Categorical(log_probs_table=log_probs_table,</span>
+<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
+<span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: add check that assignment lengths are consistent with var_names</span>
         <span class="c1"># TODO: add check that cardinalities are consistent with assignments</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cardinalities</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The cardinalities and var_names lists should be the same length.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">log_probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either log_probs_table or probs_table must be specified&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_probs_table</span> <span class="o">=</span> <span class="p">{</span><span class="n">assignment</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">cardinalities</span>
 
-    <span class="c1"># TODO: improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor when probs turn to 0</span>
+
+    <span class="c1"># TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor</span>
+    <span class="c1">#  when probs turn to 0.</span>
     <span class="c1"># TODO: Add variable order sorting</span>
 <div class="viewcode-block" id="Categorical.equals"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -127,7 +148,7 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># TODO: change back to log form</span>
-<div class="viewcode-block" id="Categorical.marginalise"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.marginalise">[docs]</a>    <span class="k">def</span> <span class="nf">marginalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum out variables from this factor.</span>
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
@@ -154,7 +175,7 @@
         <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span>
                            <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="Categorical.observe"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.reduce"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe variables to have certain values and return reduced table.</span>
 <span class="sd">        :param vrs: (list) The variables.</span>
@@ -187,7 +208,7 @@
                 <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Error: inconsistent variable cardinalities: </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">error_msg</span>
 
-<div class="viewcode-block" id="Categorical.absorb"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.absorb">[docs]</a>    <span class="k">def</span> <span class="nf">absorb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.multiply"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this factor with another factor and return the result.</span>
 
@@ -207,7 +228,7 @@
         <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">result_vars</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span>
                            <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="Categorical.cancel"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.divide"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this factor by another factor and return the result.</span>
 
@@ -369,10 +390,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Categorical.normalise"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.normalise">[docs]</a>    <span class="k">def</span> <span class="nf">normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.normalize"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a normalised copy of the factor.</span>
-<span class="sd">        :return: The normalised factor.</span>
+<span class="sd">        Return a normalized copy of the factor.</span>
+<span class="sd">        :return: The normalized factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">factor_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -381,28 +402,39 @@
             <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span> <span class="o">-</span> <span class="n">logz</span>
         <span class="k">return</span> <span class="n">factor_copy</span></div>
 
-<div class="viewcode-block" id="Categorical.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalise_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.</span>
+<span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
+<span class="sd">        :return: Whether the factor is vacuous or not.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    
+<div class="viewcode-block" id="Categorical.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.</span>
 <span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
 
 <span class="sd">        :param factor: The other factor</span>
 <span class="sd">        :type factor: Gaussian</span>
-<span class="sd">        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.</span>
-<span class="sd">        :type normalise_factor: bool</span>
+<span class="sd">        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.</span>
+<span class="sd">        :type normalize_factor: bool</span>
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">normalised_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalise</span><span class="p">()</span>
+        <span class="n">normalized_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
         <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span>
-        <span class="k">if</span> <span class="n">normalise_factor</span><span class="p">:</span>
-            <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalise</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">normalize_factor</span><span class="p">:</span>
+            <span class="n">factor_</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
         <span class="c1"># TODO: check that this is correct. esp with zeroes.</span>
-        <span class="n">logPdivQ</span> <span class="o">=</span> <span class="n">normalised_self</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">factor_</span><span class="p">)</span>
-        <span class="n">normalised_self</span><span class="o">.</span><span class="n">_apply_to_probs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">)</span>
+        <span class="n">logPdivQ</span> <span class="o">=</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">factor_</span><span class="p">)</span>
+        <span class="n">normalized_self</span><span class="o">.</span><span class="n">_apply_to_probs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">)</span>
 
-        <span class="n">PlogPdivQ_table</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Categorical</span><span class="o">.</span><span class="n">_complex_table_operation</span><span class="p">(</span><span class="n">normalised_self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
-                                                                  <span class="n">normalised_self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+        <span class="n">PlogPdivQ_table</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Categorical</span><span class="o">.</span><span class="n">_complex_table_operation</span><span class="p">(</span><span class="n">normalized_self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
+                                                                  <span class="n">normalized_self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
                                                                   <span class="n">logPdivQ</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
                                                                   <span class="n">logPdivQ</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
                                                                   <span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">)</span>
@@ -411,7 +443,7 @@
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">kld</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
                 <span class="c1">#  this is fine (numerical error)</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">normalise_factor = &#39;</span><span class="p">,</span> <span class="n">normalise_factor</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">normalize_factor = &#39;</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;self = &#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">factor = &#39;</span><span class="p">)</span>
@@ -432,7 +464,7 @@
         <span class="n">uniform_log_prob</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">cards</span><span class="p">))</span>
         <span class="n">uniform_factor</span><span class="o">.</span><span class="n">_apply_to_probs</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">uniform_log_prob</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalise_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Categorical.potential"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">assignment</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
