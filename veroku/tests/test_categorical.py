@@ -36,11 +36,11 @@ class TestCategorical(unittest.TestCase):
                    (0, 1): 0.2,
                    (1, 0): 0.3,
                    (1, 1): 0.4}
-        self.sp_table_b = Categorical(var_names=vars_b, log_probs_table=probs_b, cardinalities=[2, 2, 2])
+        self.sp_table_b = Categorical(var_names=vars_b, log_probs_table=probs_b, cardinalities=[2, 2])
 
     def test_absorb(self):
         """
-        Test that the absorb function returns the correct result.
+        Test that the multiply function returns the correct result.
         """
         vars_ex = ['a', 'b', 'c']
         probs_ex = {(0, 0, 0): 0.11,
@@ -52,13 +52,13 @@ class TestCategorical(unittest.TestCase):
                     (1, 1, 0): 0.47,
                     (1, 1, 1): 0.48}
         expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
-        actual_resulting_factor = self.sp_table_a.absorb(self.sp_table_b)
+        actual_resulting_factor = self.sp_table_a.multiply(self.sp_table_b)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     # TODO: change to log form and fix
     def test_marginalise(self):
         """
-        Test that the marginalise function returns the correct result.
+        Test that the marginalize function returns the correct result.
         """
         vars_a = ['a', 'b', 'c']
         probs_a = {(0, 0, 0): np.log(0.01),
@@ -73,20 +73,20 @@ class TestCategorical(unittest.TestCase):
         vars_ex = ['a']
         probs_ex = {(0,): np.log(0.10),
                     (1,): np.log(0.26)}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
-        actual_resulting_factor = sp_table_a.marginalise(vrs=['b', 'c'])
+        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2])
+        actual_resulting_factor = sp_table_a.marginalize(vrs=['b', 'c'])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
         vars_ex = ['c']
         probs_ex = {(0,): np.log(0.01+0.03+0.05+0.07),
                     (1,): np.log(0.02+0.04+0.06+0.08)}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
-        actual_resulting_factor = sp_table_a.marginalise(vrs=['a', 'b'])
+        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2])
+        actual_resulting_factor = sp_table_a.marginalize(vrs=['a', 'b'])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_observe_1(self):
         """
-        Test that the observe function returns the correct result.
+        Test that the reduce function returns the correct result.
         """
 
         vars_a = ['a', 'b', 'c']
@@ -104,13 +104,13 @@ class TestCategorical(unittest.TestCase):
                     (0, 1): 0.02,
                     (1, 0): 0.03,
                     (1, 1): 0.04}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
-        actual_resulting_factor = sp_table_a.observe(vrs=['a'], values=[0])
+        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2])
+        actual_resulting_factor = sp_table_a.reduce(vrs=['a'], values=[0])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_observe_2(self):
         """
-        Test that the observe function returns the correct result.
+        Test that the reduce function returns the correct result.
         """
 
         vars_a = ['a', 'b', 'c']
@@ -129,8 +129,8 @@ class TestCategorical(unittest.TestCase):
                     (0, 1): 0.04,
                     (1, 0): 0.07,
                     (1, 1): 0.08}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
-        actual_resulting_factor = sp_table_a.observe(vrs=['b'], values=[1])
+        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2])
+        actual_resulting_factor = sp_table_a.reduce(vrs=['b'], values=[1])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_distance_from_vacuous(self):

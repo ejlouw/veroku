@@ -21,23 +21,44 @@ class Categorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
-    def __init__(self, var_names, log_probs_table, cardinalities):
+    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None):
         """
-        Construct a SparseLogTable.
+        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
         :param var_names: The variable names.
         :type var_names: str list
-        :param probs: A dictionary with assignments (tuples) as keys and log probabilities as values.
-                      Missing assignments are assumed to have zero probability.
-        :type probs: tuple float dict
+        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
+            Missing assignments are assumed to have zero probability.
+        :type
+        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.
+            Missing assignments are assumed to have -inf log-probability (zero probability).
+        Example:
+            >>> var_names = ['rain','slip']
+            >>> probs_table = {(0,0):0.8,
+            >>>                (0,1):0.2,
+            >>>                (1,0):0.4,
+            >>>                (1,1):0.6}
+            >>>var_cardinalities = [2,2]
+            >>>table = Categorical(log_probs_table=log_probs_table,
+            >>>                    var_names=var_names,
+            >>>                    cardinalities=var_cardinalities)
         """
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
+        if len(cardinalities) != len(var_names):
+            raise ValueError('The cardinalities and var_names lists should be the same length.')
+        if (log_probs_table is None) and (probs_table is None):
+                raise ValueError('Either log_probs_table or probs_table must be specified')
+        if log_probs_table is None:
+            log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
         self.log_probs_table = copy.deepcopy(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
+        self.cardinalities = cardinalities
 
-    # TODO: improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor when probs turn to 0
+
+    # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
+    #  when probs turn to 0.
     # TODO: Add variable order sorting
     def equals(self, factor):
         """
@@ -93,7 +114,7 @@ class Categorical(Factor):
         return False
 
     # TODO: change back to log form
-    def marginalise(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=False):
         """
         Sum out variables from this factor.
         :param vrs: (list) a subset of variables in the factor's scope
@@ -120,7 +141,7 @@ class Categorical(Factor):
         return Categorical(var_names=vars_to_keep, log_probs_table=result_table,
                            cardinalities=result_var_cards.values())
 
-    def observe(self, vrs, values):
+    def reduce(self, vrs, values):
         """
         Observe variables to have certain values and return reduced table.
         :param vrs: (list) The variables.
@@ -153,7 +174,7 @@ class Categorical(Factor):
                 error_msg = f'Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}'
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
-    def absorb(self, factor):
+    def multiply(self, factor):
         """
         Multiply this factor with another factor and return the result.
 
@@ -173,7 +194,7 @@ class Categorical(Factor):
         return Categorical(var_names=result_vars, log_probs_table=result_table,
                            cardinalities=result_var_cards.values())
 
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         Divide this factor by another factor and return the result.
 
@@ -335,10 +356,10 @@ class Categorical(Factor):
             else:
                 self.log_probs_table[assign] = func(prob)
 
-    def normalise(self):
+    def normalize(self):
         """
-        Return a normalised copy of the factor.
-        :return: The normalised factor.
+        Return a normalized copy of the factor.
+        :return: The normalized factor.
         """
 
         factor_copy = self.copy()
@@ -347,28 +368,39 @@ class Categorical(Factor):
             factor_copy.log_probs_table[assign] = prob - logz
         return factor_copy
 
-    def kl_divergence(self, factor, normalise_factor=True):
+    @property
+    def is_vacuous(self):
         """
-        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
+        Check if this factor is vacuous (i.e uniform).
+        :return: Whether the factor is vacuous or not.
+        :rtype: bool
+        """
+        if self.distance_from_vacuous() < 1e-10:
+            return True
+        return False
+    
+    def kl_divergence(self, factor, normalize_factor=True):
+        """
+        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
         :type factor: Gaussian
-        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.
-        :type normalise_factor: bool
+        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
+        :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-        normalised_self = self.normalise()
+        normalized_self = self.normalize()
         factor_ = factor
-        if normalise_factor:
-            factor_ = factor.normalise()
+        if normalize_factor:
+            factor_ = factor.normalize()
         # TODO: check that this is correct. esp with zeroes.
-        logPdivQ = normalised_self.cancel(factor_)
-        normalised_self._apply_to_probs(np.exp)
+        logPdivQ = normalized_self.divide(factor_)
+        normalized_self._apply_to_probs(np.exp)
 
-        PlogPdivQ_table, _ = Categorical._complex_table_operation(normalised_self.var_names,
-                                                                  normalised_self.log_probs_table,
+        PlogPdivQ_table, _ = Categorical._complex_table_operation(normalized_self.var_names,
+                                                                  normalized_self.log_probs_table,
                                                                   logPdivQ.var_names,
                                                                   logPdivQ.log_probs_table,
                                                                   operator.mul)
@@ -377,7 +409,7 @@ class Categorical(Factor):
             if np.isclose(kld, 0.0, atol=1e-5):
                 #  this is fine (numerical error)
                 return 0.0
-            print('\nnormalise_factor = ', normalise_factor)
+            print('\nnormalize_factor = ', normalize_factor)
             print('self = ')
             self.show()
             print('\nfactor = ')
@@ -398,7 +430,7 @@ class Categorical(Factor):
         uniform_log_prob = -np.log(np.product(cards))
         uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
 
-        return self.kl_divergence(uniform_factor, normalise_factor=False)
+        return self.kl_divergence(uniform_factor, normalize_factor=False)
 
     def potential(self, vrs, assignment):
         """

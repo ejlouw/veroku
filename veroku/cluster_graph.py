@@ -32,7 +32,7 @@ def evidence_reduce_factors(factors, evidence):
             vrs, values = get_subset_evidence(all_evidence_dict=evidence,
                                               subset_vars=factor.var_names)
             if len(vrs) > 0:
-                factor = factor.observe(vrs, values)
+                factor = factor.reduce(vrs, values)
         reduced_factors.append(factor.copy())
     return reduced_factors
 
@@ -66,7 +66,7 @@ def absorb_subset_factors(factors):
                             # print(f'Absorbing {factor_j.var_names} into{factor_product.var_names}')
                             # factors_absorbtion_dict[make_factor_name(factors[i])].append(make_factor_name(factors[j]))
                             try:
-                                factor_product = factor_product.absorb(factor_j)
+                                factor_product = factor_product.multiply(factor_j)
                                 factors_absorbtion_dict[i].append(j)
                                 factor_processed_mask[j] = 1
                                 factor_processed_mask[i] = 1
@@ -122,7 +122,7 @@ def greedy_absorb_subset_factors(factors):
             remaining_factors_to_absorb_indices = set(subfactor_indices) - set(already_processed_factor_indices)
             merged_factor = absorbing_factor
             for sub_factor_index in remaining_factors_to_absorb_indices:
-                merged_factor = merged_factor.absorb(factors[sub_factor_index])
+                merged_factor = merged_factor.multiply(factors[sub_factor_index])
                 already_processed_factor_indices.append(sub_factor_index)
             merged_factors.append(merged_factor)
     return merged_factors, subset_df
@@ -159,7 +159,7 @@ class ClusterGraph(object):
 
         prev_time = time.time()
         all_factors_copy = evidence_reduce_factors(factors, evidence)
-        self.conditional_print(f'Debug: Copy factors and observe evidence time duration: {time.time() - prev_time}')
+        self.conditional_print(f'Debug: Copy factors and reduce evidence time duration: {time.time() - prev_time}')
 
         prev_time = time.time()
         final_graph_cluster_factors, absorbtion_df = absorb_subset_factors(all_factors_copy)
@@ -251,14 +251,23 @@ class ClusterGraph(object):
         for i, cluster in enumerate(self._clusters):
             print(f'cluster {i} id: ', cluster.cluster_id, '   var_names: ', cluster.var_names)
 
-    def plot_message_convergence_old(self):
+    def plot_message_convergence(self):
+        """
+        Plot the message passing convergence over the consecutive iterations.
+        """
         # TODO: combine with one below - this one gets messed up by inf values
-        self.message_passing_log_df
-        title = 'KL Divergences between Messages and Previous Iteration Messages'
-        ax = self.message_passing_log_df.plot.box(figsize=[20, 10], title=title)
-        ax.title.set_size(20)
+        message_kld_df = self.message_passing_log_df
+        columns_mask = message_kld_df.columns.to_series().str.contains('distance_from_previous')
+        message_kld_distances_only_df = message_kld_df[message_kld_df.columns[columns_mask]]
+        message_kld_distances_only_df.columns = range(message_kld_distances_only_df.shape[1])
 
-    def plot_message_convergence(self, figsize=[10, 5]):
+        title = 'KL Divegences between Messages and Previous Iteration Messages'
+        ax = message_kld_distances_only_df.plot.box(figsize=[20, 10], title=title)
+        ax.title.set_size(20)
+        ax.set_ylabel('KLD', fontsize=15)
+        ax.set_xlabel('message passing iteration', fontsize=15)
+
+    def plot_message_convergence_new(self, figsize=[10, 5]):
         # TODO: improve this (inf value workaround is a bit hacky)
         df = self.message_passing_log_df
         kl_cols = [col for col in df.columns if 'distance' in col]
@@ -347,8 +356,8 @@ class ClusterGraph(object):
                 factor = cluster._factor.copy()
                 evidence_vrs, evidence_values = get_subset_evidence(self.special_evidence, factor.var_names)
                 if len(evidence_vrs) > 0:
-                    factor = factor.observe(evidence_vrs, evidence_values)
-                marginal = factor.marginalise(vrs, keep=True)
+                    factor = factor.reduce(evidence_vrs, evidence_values)
+                marginal = factor.marginalize(vrs, keep=True)
                 return marginal
         raise ValueError(f'No cluster with variables containing {vrs}')
 
@@ -357,15 +366,15 @@ class ClusterGraph(object):
         # the get_marginal function above.
         cluster_product = self._clusters[0]._factor.joint_distribution
         for cluster in self._clusters[1:]:
-            cluster_product = cluster_product.absorb(cluster._factor.joint_distribution)
+            cluster_product = cluster_product.multiply(cluster._factor.joint_distribution)
         last_passed_message_factors = list(self.last_passed_message_factors_dict.values())
         if len(last_passed_message_factors) == 0:
             assert self.num_messages_passed == 0
             return cluster_product
         message_product = last_passed_message_factors[0]
         for message_factor in last_passed_message_factors[1:]:
-            message_product = message_product.absorb(message_factor)
-        joint = cluster_product.cancel(message_product)
+            message_product = message_product.multiply(message_factor)
+        joint = cluster_product.divide(message_product)
         return joint
 
     def get_factor(self, cluster_id):
@@ -448,8 +457,8 @@ class ClusterGraph(object):
         """
         if len(self._clusters) == 1:
             # The Cluster Graph contains only single cluster. Message passing not possible or necessary.
-            self._clusters[0]._factor = self._clusters[0]._factor.observe(vrs=self.special_evidence.keys(),
-                                                                          values=self.special_evidence.values())
+            self._clusters[0]._factor = self._clusters[0]._factor.reduce(vrs=self.special_evidence.keys(),
+                                                                         values=self.special_evidence.values())
             return
 
         max_message_distance = float('inf')

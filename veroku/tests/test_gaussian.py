@@ -240,7 +240,7 @@ class TestGaussian(unittest.TestCase):
         gaussian_a = Gaussian(K=5.0, h=4.0, g=3.0, var_names=['a'])
         gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
         expected_product = Gaussian(K=8.0, h=6.0, g=4.0, var_names=['a'])
-        actual_product = gaussian_a.absorb(gaussian_b)
+        actual_product = gaussian_a.multiply(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
     def test_cancel_1d(self):
@@ -250,7 +250,7 @@ class TestGaussian(unittest.TestCase):
         gaussian_a = Gaussian(K=6.0, h=4.0, g=2.0, var_names=['a'])
         gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
         expected_quotient = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
-        actual_quotient = gaussian_a.cancel(gaussian_b)
+        actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
     def test_absorb_2d(self):
@@ -260,7 +260,7 @@ class TestGaussian(unittest.TestCase):
         gaussian_a = Gaussian(K=[[5.0, 2.0], [2.0, 6.0]], h=[1.0, 2.0], g=3.0, var_names=['a', 'b'])
         gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[2.0, 3.0], g=2.0, var_names=['a', 'b'])
         expected_product = Gaussian(K=[[9.0, 3.0], [3.0, 10.0]], h=[3.0, 5.0], g=5.0, var_names=['a', 'b'])
-        actual_product = gaussian_a.absorb(gaussian_b)
+        actual_product = gaussian_a.multiply(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
     def test_cancel_2d(self):
@@ -271,11 +271,11 @@ class TestGaussian(unittest.TestCase):
         gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[1.0, 2.0], g=2.0, var_names=['a', 'b'])
 
         expected_quotient = Gaussian(K=[[3.0, 1.0], [1.0, 2.0]], h=[3.0, 1.0], g=1.0, var_names=['a', 'b'])
-        actual_quotient = gaussian_a.cancel(gaussian_b)
+        actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
         gaussian_a_reordered = Gaussian(K=[[6.0, 2.0], [2.0, 7.0]], h=[3.0, 4.0], g=3.0, var_names=['b', 'a'])
-        actual_quotient = gaussian_a_reordered.cancel(gaussian_b)
+        actual_quotient = gaussian_a_reordered.divide(gaussian_b)
         # pylint: disable=protected-access
         actual_quotient._reorder_parameters(['a', 'b'])
         # pylint: enable=protected-access
@@ -285,7 +285,7 @@ class TestGaussian(unittest.TestCase):
     # pylint: disable=too-many-locals
     def test_observe(self):
         """
-        Test that the Gaussian observe function returns the correct result.
+        Test that the Gaussian reduce function returns the correct result.
         """
         # Note these equations where written independently from the actuall implementation.
         # TODO: consider extending this test and hard-coding the expected parmeters
@@ -316,7 +316,7 @@ class TestGaussian(unittest.TestCase):
         expected_g = g_val + h_y.transpose().dot(z_observed) - 0.5 * z_observed.transpose().dot(K_yy).dot(z_observed)
         expected_gaussian = Gaussian(K=expected_K, h=expeted_h, g=expected_g, var_names=['x', 'y'])
         gaussian = Gaussian(K=Kmat, h=hvec, g=g_val, var_names=['x', 'y', 'z'])
-        actual_gaussian = gaussian.observe(vrs=['z'], values=z_observed)
+        actual_gaussian = gaussian.reduce(vrs=['z'], values=z_observed)
         expected_gaussian.show()
         actual_gaussian.show()
         self.assertTrue(actual_gaussian.equals(expected_gaussian))
@@ -326,7 +326,7 @@ class TestGaussian(unittest.TestCase):
         gaussian_copy = gaussian.copy()
         gaussian_copy._reorder_parameters(['x', 'z', 'y'])
         # pylint: enable=protected-access
-        actual_gaussian = gaussian_copy.observe(vrs=['z'], values=z_observed)
+        actual_gaussian = gaussian_copy.reduce(vrs=['z'], values=z_observed)
         self.assertTrue(actual_gaussian.equals(expected_gaussian))
 
     # pylint: enable=too-many-locals
@@ -358,7 +358,7 @@ class TestGaussian(unittest.TestCase):
         """
         gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
         expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
-        actual_result = gaussian.marginalise(vrs=['a'], keep=True)
+        actual_result = gaussian.marginalize(vrs=['a'], keep=True)
         self.assertTrue(expected_result.equals(actual_result))
 
     def test_marginalise_2d_canform(self):
@@ -370,7 +370,7 @@ class TestGaussian(unittest.TestCase):
         expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
         expected_result._update_canform()
         gaussian._update_canform()
-        actual_result = gaussian.marginalise(vrs=['a'], keep=True)
+        actual_result = gaussian.marginalize(vrs=['a'], keep=True)
         self.assertTrue(expected_result.equals(actual_result))
 
     def test_equals(self):

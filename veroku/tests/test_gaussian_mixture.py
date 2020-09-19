@@ -87,33 +87,33 @@ class TestGaussianMixture(unittest.TestCase):
 
     def test_absorb(self):
         """
-        Test that the absorb function results in the correct components.
+        Test that the multiply function results in the correct components.
         """
-        expected_product_components = [self.gaussian_ab_1.absorb(self.gaussian_ab_3),
-                                       self.gaussian_ab_1.absorb(self.gaussian_ab_4),
-                                       self.gaussian_ab_2.absorb(self.gaussian_ab_3),
-                                       self.gaussian_ab_2.absorb(self.gaussian_ab_4)]
+        expected_product_components = [self.gaussian_ab_1.multiply(self.gaussian_ab_3),
+                                       self.gaussian_ab_1.multiply(self.gaussian_ab_4),
+                                       self.gaussian_ab_2.multiply(self.gaussian_ab_3),
+                                       self.gaussian_ab_2.multiply(self.gaussian_ab_4)]
         expected_gm = GaussianMixture(expected_product_components)
 
-        actual_gm = self.gaussian_mixture_ab_12.absorb(self.gaussian_mixture_ab_34)
+        actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_mixture_ab_34)
         self.assertTrue(actual_gm.equals(expected_gm))
 
     def test_marginalise(self):
         """
-        Test that the marginalise function results in the correct marginal components.
+        Test that the marginalize function results in the correct marginal components.
         """
-        expected_marginal_components = [self.gaussian_ab_1.marginalise(vrs='a'),
-                                        self.gaussian_ab_2.marginalise(vrs='a')]
+        expected_marginal_components = [self.gaussian_ab_1.marginalize(vrs='a'),
+                                        self.gaussian_ab_2.marginalize(vrs='a')]
         expected_gm = GaussianMixture(expected_marginal_components)
-        actual_gm = self.gaussian_mixture_ab_12.marginalise(vrs='a')
+        actual_gm = self.gaussian_mixture_ab_12.marginalize(vrs='a')
         self.assertTrue(actual_gm.equals(expected_gm))
 
-    def test_normalise(self):
+    def test_normalize(self):
         """
-        Test that the normalise function results in a a mixture  with a weight of 1.0.
+        Test that the normalize function results in a a mixture  with a weight of 1.0.
         :return:
         """
-        normed_gm = self.gaussian_mixture_ab_123.normalise()
+        normed_gm = self.gaussian_mixture_ab_123.normalize()
         log_weight = normed_gm.get_log_weight()
         actual_weight = np.exp(log_weight)
         self.assertAlmostEqual(actual_weight, 1.0)
@@ -139,10 +139,10 @@ class TestGaussianMixture(unittest.TestCase):
 
         gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
         gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
-        gaussian_mixture_12 = gaussian_mixture_1.absorb(gaussian_mixture_2)
+        gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)
 
         gaussian_mixture_12.cancel_method = 1
-        gaussian_mixture_quotient_approximation = gaussian_mixture_12.cancel(gaussian_mixture_2)
+        gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
 
     def test_cancel_method_2(self):
         """
@@ -153,8 +153,8 @@ class TestGaussianMixture(unittest.TestCase):
 
         gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
         gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
-        gaussian_mixture_12 = gaussian_mixture_1.absorb(gaussian_mixture_2)
+        gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)
 
         gaussian_mixture_12.cancel_method = 2
-        gaussian_mixture_quotient_approximation = gaussian_mixture_12.cancel(gaussian_mixture_2)
+        gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
         self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 9)

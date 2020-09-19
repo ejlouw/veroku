@@ -43,7 +43,7 @@ class Factor:
 
     def get_marginal_vars(self, vrs, keep=False):
         """
-        A helper function (for marginalise) that returns the variables that should be marginalised out (keep=False)
+        A helper function (for marginalize) that returns the variables that should be marginalised out (keep=False)
         or kept (keep=True).
         :param vrs: (list) the variables
         :param keep: Whether these variables are to be kept or summed out.
@@ -61,7 +61,7 @@ class Factor:
         """
 
     @abstractmethod
-    def marginalise(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=False):
         """
         An abstract function for performing factor marginalisation that should be implemented in the base class.
         :return: the resulting marginal factor.
@@ -71,23 +71,28 @@ class Factor:
         """
 
     @abstractmethod
-    def absorb(self, factor):
+    def multiply(self, factor):
         """
         An abstract function for performing factor multiplication that should be implemented in the base class.
         :param factor: The factor to be multiplied with.
         :return: The resulting product
         """
 
+    def absorb(self, factor):
+        return self.multiply(factor)
+
     @abstractmethod
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         An abstract function for performing factor division that should be implemented in the base class.
         :param factor: The factor to be divided by.
         :return: The resulting quotient
         """
+    def cancel(self, factor):
+        return self.divide(factor)
 
     @abstractmethod
-    def observe(self, vrs, values):
+    def reduce(self, vrs, values):
         """
         An abstract function for performing the observation (a.k.a conditioning) operation that should be implemented
         in the base class.
@@ -96,6 +101,18 @@ class Factor:
         :param values: The values of vars.
         :return: The resulting reduced factor.
         """
+    def observe(self, vrs, values):
+        return self.reduce(vrs, values)
+
+    @abstractmethod
+    def normalize(self):
+        """
+        An abstract function for performing factor normalization that should be implemented in the base class.
+        :return: The normalized factor.
+        """
+    #@property
+    #def is_vacuous(self):
+    #    return False
 
     @abstractmethod
     def show(self):
@@ -108,7 +125,8 @@ class Factor:
         return self.copy()
 
     def __mul__(self, other):
-        return self.absorb(other)
+        return self.multiply(other)
 
     def __div__(self, other):
-        return self.cancel(other)
+        return self.divide(other)
+

@@ -116,7 +116,7 @@ class Gaussian(Factor):
         """
 
         super().__init__(var_names=var_names)
-        self.is_vacuous = False
+        self._is_vacuous = False
         if all(v is None for v in [K, h, g]):
             if any(v is None for v in [cov, mean, log_weight]):
                 raise ValueError('incomplete parameters')
@@ -149,7 +149,7 @@ class Gaussian(Factor):
             # Note: this is important to allow vacuous Gaussians (that arise, for exmaple, when Gaussians are divided by
             # identical distributions or with unconditioned nonlinear Gaussians) to be merginalised.
             if np.allclose(self.K, np.zeros([self._dim, self._dim]), atol=1e-10):
-                self.is_vacuous = True
+                self._is_vacuous = True
 
     # pylint: enable=invalid-name
 
@@ -359,7 +359,7 @@ class Gaussian(Factor):
         self._update_covform()
         return self.log_weight
 
-    def normalise(self):
+    def normalize(self):
         gaussian_copy = self.copy()
         gaussian_copy._update_covform()
         gaussian_copy.log_weight = 0.0
@@ -428,7 +428,7 @@ class Gaussian(Factor):
 
     def get_weight(self):
         """
-        Get the weight of the distribution - the value of the integral of the (possibly unnormalised) distribution.
+        Get the weight of the distribution - the value of the integral of the (possibly unnormalized) distribution.
 
         :return: The weight.
         :rtype: float
@@ -443,7 +443,7 @@ class Gaussian(Factor):
             if not _factor_utils.is_pos_def(self.K):
                 self.K = _factor_utils.get_closest_psd_from_symmetric_matrix(self.K)
 
-    def marginalise(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=False):
         """
         Integrate out variables from this Gaussian.
 
@@ -456,7 +456,7 @@ class Gaussian(Factor):
         """
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_integrate_out = list(set(self.var_names) - set(vars_to_keep))
-        if self.is_vacuous:
+        if self._is_vacuous:
             # TODO: check this (esp log_weight)
             # print('Warning: marginalising vacuous Gaussian')
             return Gaussian.make_vacuous(var_names=vars_to_keep)
@@ -489,8 +489,8 @@ class Gaussian(Factor):
         indices_to_keep = [self._var_names.index(variable) for variable in vars_to_keep]
         marginal_var_names = vars_to_keep.copy()
 
-        if self.is_vacuous:
-            raise ValueError('cannot marginalise vacuous Gaussian.')
+        if self._is_vacuous:
+            raise ValueError('cannot marginalize vacuous Gaussian.')
 
         marginal_cov = self.cov[np.ix_(indices_to_keep, indices_to_keep)]
         marginal_mean = self.mean[np.ix_(indices_to_keep, [0])]
@@ -529,7 +529,7 @@ class Gaussian(Factor):
         """
         Update the covariance form parameters of the Gaussian.
         """
-        if self.is_vacuous:
+        if self._is_vacuous:
             raise Exception('cannot update covariance form for vacuous Gaussian.')
         # pylint: disable=invalid-name
         if self.COVFORM:
@@ -554,17 +554,17 @@ class Gaussian(Factor):
         self.COVFORM = True
         # pylint: enable=invalid-name
 
-    def absorb(self, factor):
+    def multiply(self, factor):
         """
         Multiply this Gaussian with another factor.
         :param factor: the factor to multiply with
         :return: the resulting factor
         """
         # if isinstance(factor, NonLinearGaussian):
-        #    return factor.absorb(self)
+        #    return factor.multiply(self)
         return self._absorb_or_cancel(factor, operator.add)
 
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         Divide this Gaussian by another facotr.
         :param factor: the factor to divide by
@@ -617,7 +617,7 @@ class Gaussian(Factor):
     # pylint: disable=invalid-name
     def _get_observation_reduced_canonical_vars(self, observed_indices, unobserved_indices, observed_vec):
         """
-        A helper function for observe.
+        A helper function for reduce.
         :param observed_indices: The observed variable indices
         :type observed_indices: int list
         :param unobserved_indices: The unobserved variable indices
@@ -645,7 +645,7 @@ class Gaussian(Factor):
     # pylint: enable=invalid-name
 
     # pylint: disable=invalid-name
-    def observe(self, vrs, values):
+    def reduce(self, vrs, values):
         """
         Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.
 
@@ -683,42 +683,42 @@ class Gaussian(Factor):
         :return: The KL divergence.
         :rtype: float
         """
-        if self.is_vacuous:
+        if self._is_vacuous:
             return 0.0
         else:
             return float('inf')
 
-    def kl_divergence(self, factor, normalise_factor=True):
+    def kl_divergence(self, factor, normalize_factor=True):
         """
-        Get the KL-divergence D_KL(self||factor) between a normalised version of this factor and another factor.
+        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
         :type factor: Gaussian
-        :param normalise_factor: Whether or not to normalise the other factor before computing the KL-divergence.
-        :type normalise_factor: bool
+        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
+        :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
         if self.dim != factor.dim:
             raise ValueError('cannot get KL-divergence between Gaussians of different dimensionalities.')
-        if self.is_vacuous and factor.is_vacuous:
+        if self._is_vacuous and factor._is_vacuous:
             return 0.0
-        if self.is_vacuous or factor.is_vacuous:
+        if self._is_vacuous or factor._is_vacuous:
             return float('inf')
 
         if self.equals(factor):
             return 0.0
-        normalised_self = self.normalise()
+        normalized_self = self.normalize()
         factor_ = factor
-        if normalise_factor:
-            factor_ = factor.normalise()
+        if normalize_factor:
+            factor_ = factor.normalize()
         inv_cov_q = factor_.get_K()
-        inv_cov_p = normalised_self.get_K()
-        cov_p = normalised_self.get_cov()
+        inv_cov_p = normalized_self.get_K()
+        cov_p = normalized_self.get_cov()
 
         u_q = factor_.get_mean()
-        u_p = normalised_self.get_mean()
+        u_p = normalized_self.get_mean()
 
         det_inv_cov_q = np.linalg.det(inv_cov_q)
         det_inv_cov_p = np.linalg.det(inv_cov_p)
@@ -731,7 +731,7 @@ class Gaussian(Factor):
             det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
         trace_term = 0.5 * np.trace(inv_cov_q.dot(cov_p))
         mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
-        dim_term = 0.5 * normalised_self.dim
+        dim_term = 0.5 * normalized_self.dim
         kld = det_term + trace_term + mahalanobis_term - dim_term
         # TODO:Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
@@ -812,7 +812,7 @@ class Gaussian(Factor):
         np.set_printoptions(precision=4)
         np.core.arrayprint._line_width = 200
         self_copy = self.copy()
-        if not self.is_vacuous and update_covform:
+        if not self._is_vacuous and update_covform:
             self_copy._update_covform()
         print('vars = ', self_copy.var_names)
         if self_copy.COVFORM:
@@ -824,7 +824,7 @@ class Gaussian(Factor):
             print('K = \n', self_copy.K)
             print('h = \n', self_copy.h)
             print('g = \n', self_copy.g)
-        print('is_vacuous: ', self_copy.is_vacuous)
+        print('is_vacuous: ', self_copy._is_vacuous)
 
     def show_vis(self, figsize=(10, 8)):
         """
@@ -990,7 +990,7 @@ class GaussianMixture(Factor):
             component_copies.append(gauss.copy())
         return GaussianMixture(component_copies)
 
-    def absorb(self, factor):
+    def multiply(self, factor):
         """
         Multiply this GaussianMixture with another factor.
 
@@ -1002,16 +1002,16 @@ class GaussianMixture(Factor):
         new_componnents = []
         if isinstance(factor, Gaussian):
             for gauss in self.components:
-                new_componnents.append(gauss.absorb(factor))
+                new_componnents.append(gauss.multiply(factor))
         elif isinstance(factor, GaussianMixture):
             for gauss_ai in self.components:
                 for gauss_bi in factor.components:
-                    new_componnents.append(gauss_ai.absorb(gauss_bi))
+                    new_componnents.append(gauss_ai.multiply(gauss_bi))
         else:
             raise TypeError('unsupported factor type.')
         return GaussianMixture(new_componnents)
 
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         Divide this GaussianMixture by another factor.
 
@@ -1037,10 +1037,10 @@ class GaussianMixture(Factor):
             raise TypeError('unsupported factor type.')
         new_components = []
         for gauss in self.components:
-            new_components.append(gauss.cancel(single_gaussian))
+            new_components.append(gauss.divide(single_gaussian))
         return GaussianMixture(new_components)
 
-    def observe(self, vrs, values):
+    def reduce(self, vrs, values):
         """
         Observe a subset of the variables in the scope of this Gaussian mixture and return the resulting factor.
 
@@ -1053,10 +1053,10 @@ class GaussianMixture(Factor):
         """
         new_componnents = []
         for gauss in self.components:
-            new_componnents.append(gauss.observe(vrs, values))
+            new_componnents.append(gauss.reduce(vrs, values))
         return GaussianMixture(new_componnents)
 
-    def marginalise(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=False):
         """
         Integrate out variables from this Gaussian mixture.
 
@@ -1069,7 +1069,7 @@ class GaussianMixture(Factor):
         """
         new_componnents = []
         for gauss in self.components:
-            new_componnents.append(gauss.marginalise(vrs, keep))
+            new_componnents.append(gauss.marginalize(vrs, keep))
         return GaussianMixture(new_componnents)
 
     # pylint: disable=invalid-name
@@ -1102,15 +1102,6 @@ class GaussianMixture(Factor):
         for gauss in self.components:
             total_potx += gauss.potential(x_val)
         return total_potx
-
-    @property
-    def is_vacuous(self):
-        # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
-        #  are vacuous? Maybe make a contains vacuous function as well.
-        for gauss in self.components:
-            if not gauss.is_vacuous:
-                return False
-        return True
 
     def _get_means(self):
         """
@@ -1167,20 +1158,29 @@ class GaussianMixture(Factor):
         """
         return scipy.misc.logsumexp(self._get_log_weights())
 
-    def normalise(self):
+    def normalize(self):
         """
-        Normalise the Gaussian mixture.
+        normalize the Gaussian mixture.
 
-        :return: The normalised factor.
+        :return: The normalized factor.
         :rtype: GaussianMixture
         """
-        unnormalised_log_weight = self.get_log_weight()
+        unnormalized_log_weight = self.get_log_weight()
         new_components = []
         for gauss in self.components:
             gauss_copy = gauss.copy()
-            gauss_copy._subtract_log_weight(unnormalised_log_weight)
+            gauss_copy._subtract_log_weight(unnormalized_log_weight)
             new_components.append(gauss_copy)
         return GaussianMixture(new_components)
+
+    @property
+    def is_vacuous(self):
+        # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
+        #  are vacuous? Maybe make a contains vacuous function as well.
+        for gauss in self.components:
+            if not gauss._is_vacuous:
+                return False
+        return True
 
     def sample(self, num_samples):
         """
@@ -1412,7 +1412,7 @@ class GaussianMixture(Factor):
             inverse_components = []
             inverse_gaussian_mixtures = []
             for g_b in gaussian_mixture_b.components:
-                inverse_components.append(g_b.cancel(g_a))
+                inverse_components.append(g_b.divide(g_a))
             inverse_gaussian_mixture = GaussianMixture(inverse_components)
             inverse_gaussian_mixtures.append(inverse_gaussian_mixture)
 
@@ -1500,7 +1500,7 @@ class GaussianMixture(Factor):
         for gaussian_a in gma.components:
             inverse_components = []
             for gaussian_b in gmb.components:
-                conditional = gaussian_b.cancel(gaussian_a)
+                conditional = gaussian_b.divide(gaussian_a)
                 inverse_components.append(conditional)
             inverse_gaussian_mixture = GaussianMixture(inverse_components)
             inverse_gaussian_mixtures.append(inverse_gaussian_mixture)

@@ -74,13 +74,13 @@ class Cluster(object):
         evidence_values = list(factor_scope_evidence.values())
         message_factor = self._factor.copy()
         if len(evidence_vrs) > 0:
-            message_factor = message_factor.observe(evidence_vrs, evidence_values)
-        message_factor = message_factor.marginalise(sepset_vars, keep=True)
+            message_factor = message_factor.reduce(evidence_vrs, evidence_values)
+        message_factor = message_factor.marginalize(sepset_vars, keep=True)
         if neighbour_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[neighbour_id]
-            message_factor = message_factor.cancel(prev_received_message_factor)
+            message_factor = message_factor.divide(prev_received_message_factor)
             # TODO: remove this after TableFactor has been converted to LogTableFactor
-            # message_factor = message_factor.normalise()
+            # message_factor = message_factor.normalize()
             if isinstance(message_factor, Gaussian) and FIX_NON_PSD_MATRICES:
                 message_factor._fix_non_psd_matrices()
         message = Message(factor=message_factor, sender_id=self.cluster_id, receiver_id=neighbour_id)
@@ -97,18 +97,18 @@ class Cluster(object):
         # EXPERIMENTAL START
         #if isinstance(self._factor, NonLinearGaussianMixture) and isinstance(message.factor, Gaussian) and len(message.factor.var_names) == 1:
         #    message_factor = split_gaussian(message.factor)
-        #    self._factor = self._factor.absorb(message_factor)
+        #    self._factor = self._factor.multiply(message_factor)
         # EXPERIMENTAL END
         #else:
-        self._factor = self._factor.absorb(message.factor)
+        self._factor = self._factor.multiply(message.factor)
 
         # Cancel out any message previously received from sender cluster
         sender_id = message.sender_id
         if sender_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[sender_id]
-            self._factor = self._factor.cancel(prev_received_message_factor)
+            self._factor = self._factor.divide(prev_received_message_factor)
         # TODO: remove this after TableFactor has been converted to LogTableFactor
-        #self._factor = self._factor.normalise()
+        #self._factor = self._factor.normalize()
         self._received_message_factors[message.sender_id] = message.factor.copy()
 
     def get_sepset(self, neighbour_id):
