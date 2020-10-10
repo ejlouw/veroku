@@ -8,7 +8,7 @@ import operator
 
 # Third-party imports
 import numpy as np
-import scipy.misc
+from scipy import special
 import itertools
 
 # Local imports
@@ -16,7 +16,13 @@ from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
 
+# special operator rules
+LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
+LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
+
 # TODO: consider removing some unused functions
+
+
 class Categorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
@@ -55,7 +61,6 @@ class Categorical(Factor):
         self.log_probs_table = copy.deepcopy(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
-
 
     # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
     #  when probs turn to 0.
@@ -131,7 +136,7 @@ class Categorical(Factor):
                                                                                old_assign_probs=self.log_probs_table)
         result_table = dict()
         for l1_assign, log_probs_table in nested_table.items():
-            prob = scipy.misc.logsumexp(list(log_probs_table.values()))
+            prob = special.logsumexp(list(log_probs_table.values()))
             result_table[l1_assign] = prob
 
         result_var_cards = copy.deepcopy(self.var_cards)
@@ -194,21 +199,36 @@ class Categorical(Factor):
         return Categorical(var_names=result_vars, log_probs_table=result_table,
                            cardinalities=result_var_cards.values())
 
-    def divide(self, factor):
+    def cancel(self, factor):
+        """
+        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
+        :param factor: The factor to divide by.
+        :type factor: Categorical
+        :return: The factor quotient.
+        :rtype: Categorical
+        """
+        return self.divide(factor, special_rules=LOG_SUBTRACT_CANCEL_RULES)
+
+    def divide(self, factor, special_rules=None):
         """
         Divide this factor by another factor and return the result.
 
         :param factor: The factor to divide by.
         :type factor: Categorical
+        :param special_rules: Any special rules to apply for specific values of the left and right variables.
+            For example: {(left_var_val, right_var_val): result, ...}
+        :type special_rules: dict
         :return: The factor quotient.
         :rtype: Categorical
         """
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
+        # TODO: check what happens here when dividing default and non default values by zero.
         result_table, result_vars = Categorical._complex_table_operation(self.var_names, self.log_probs_table,
                                                                          factor.var_names, factor.log_probs_table,
-                                                                         operator.sub)
+                                                                         operator.sub,
+                                                                         special_rules=special_rules)
         result_var_cards = copy.deepcopy(self.var_cards)
         result_var_cards.update(factor.var_cards)
         return Categorical(var_names=result_vars, log_probs_table=result_table,
@@ -259,7 +279,7 @@ class Categorical(Factor):
         return new_assign_probs, new_variable_order
 
     @staticmethod
-    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func):
+    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func, special_rules=None):
         """
         Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
         :param vars_a:
@@ -295,7 +315,8 @@ class Categorical(Factor):
         result_table = dict()
         for assign_l1, l2_table in smaller_table.items():
             result_l2_table = Categorical._basic_table_operation(larger_table_vars, larger_table,
-                                                                 smaller_table_vars, l2_table, func)
+                                                                 smaller_table_vars, l2_table,
+                                                                 func, special_rules)
             for results_assign, prob in result_l2_table.items():
                 # TODO: get better solution than this:
                 if (func == operator.sub) and switched:
@@ -309,7 +330,8 @@ class Categorical(Factor):
                                larger_table,
                                smaller_table_vars,
                                smaller_table,
-                               _opperator):
+                               _operator,
+                               special_rules=None):
         """
         Efficiently perform operations on corresponding (as indicted by the assignments and variables names)
         elements between larger_table_probs and smaller_table_probs. The smaller table variables must only
@@ -345,8 +367,16 @@ class Categorical(Factor):
             assign_smaller = tuple([lt_assign[i] for i in shared_indices_in_larger])
             if assign_smaller in smaller_table:
                 rt_prob = smaller_table[assign_smaller]
-                result_probs[lt_assign] = _opperator(lt_prob, rt_prob)
-
+            else:
+                # use default zero prob (-inf log prob)
+                rt_prob = -np.inf
+            if (special_rules is not None) and ((lt_prob, _operator, rt_prob) in special_rules):
+                result_prob = special_rules[(lt_prob, _operator, rt_prob)]
+            else:
+                result_prob = _operator(lt_prob, rt_prob)
+        # TODO: add only when not default? This might complicate things a lot.
+            #if result_prob != -np.inf:
+            result_probs[lt_assign] = result_prob
         return result_probs
 
     def _apply_to_probs(self, func, include_assignment=False):
@@ -363,7 +393,7 @@ class Categorical(Factor):
         """
 
         factor_copy = self.copy()
-        logz = scipy.misc.logsumexp(list(factor_copy.log_probs_table.values()))
+        logz = special.logsumexp(list(factor_copy.log_probs_table.values()))
         for assign, prob in factor_copy.log_probs_table.items():
             factor_copy.log_probs_table[assign] = prob - logz
         return factor_copy
@@ -381,7 +411,7 @@ class Categorical(Factor):
     
     def kl_divergence(self, factor, normalize_factor=True):
         """
-        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
+        Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
@@ -396,7 +426,7 @@ class Categorical(Factor):
         if normalize_factor:
             factor_ = factor.normalize()
         # TODO: check that this is correct. esp with zeroes.
-        logPdivQ = normalized_self.divide(factor_)
+        logPdivQ = normalized_self.divide(factor_, special_rules=LOG_SUBTRACT_KL_RULES)
         normalized_self._apply_to_probs(np.exp)
 
         PlogPdivQ_table, _ = Categorical._complex_table_operation(normalized_self.var_names,
@@ -412,6 +442,8 @@ class Categorical(Factor):
             print('\nnormalize_factor = ', normalize_factor)
             print('self = ')
             self.show()
+            print('normalized_self = ')
+            normalized_self.show()
             print('\nfactor = ')
             factor_.show()
             raise ValueError(f'Negative KLD: {kld}')
@@ -429,8 +461,11 @@ class Categorical(Factor):
         cards = list(uniform_factor.var_cards.values())
         uniform_log_prob = -np.log(np.product(cards))
         uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
-
-        return self.kl_divergence(uniform_factor, normalize_factor=False)
+        kl = self.kl_divergence(uniform_factor, normalize_factor=False)
+        if kl < 0.0:
+            raise ValueError(f"kl ({kl}) < 0.0")
+            self.show()
+        return kl
 
     def potential(self, vrs, assignment):
         """

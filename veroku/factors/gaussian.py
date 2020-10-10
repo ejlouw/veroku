@@ -13,7 +13,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
-import scipy.special
+from scipy import special
 
 # Local imports
 from veroku.factors._factor import Factor
@@ -736,6 +736,14 @@ class Gaussian(Factor):
         # TODO:Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
 
+    @property
+    def is_vacuous(self):
+        # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
+        #  are vacuous? Maybe make a contains vacuous function as well.
+        if self._is_vacuous:
+            return True
+        return False
+
     def copy(self):
         """
         Make a copy of this Gaussian.
@@ -1085,7 +1093,7 @@ class GaussianMixture(Factor):
         log_potentials = []
         for gauss in self.components:
             log_potentials.append(gauss.log_potential(x))
-        total_log_potx = scipy.special.logsumexp(log_potentials)
+        total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
     # pylint: enable=invalid-name
 
@@ -1156,7 +1164,7 @@ class GaussianMixture(Factor):
         :return: The log weight
         :rtype: float
         """
-        return scipy.misc.logsumexp(self._get_log_weights())
+        return special.logsumexp(self._get_log_weights())
 
     def normalize(self):
         """
@@ -1272,7 +1280,7 @@ class GaussianMixture(Factor):
             wm = gauss.get_weight() * gauss.get_mean()
             new_mean += wm
             log_weights.append(gauss.get_log_weight())
-        log_sum_weights = scipy.misc.logsumexp(log_weights)
+        log_sum_weights = special.logsumexp(log_weights)
         sum_weights = np.exp(log_sum_weights)
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim])

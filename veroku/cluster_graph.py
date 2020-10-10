@@ -11,6 +11,7 @@ from veroku._cg_helpers._cluster import Cluster
 import veroku._cg_helpers._animation as cg_animation
 from veroku.factors._factor_utils import get_subset_evidence
 import matplotlib.pyplot as plt
+from veroku.factors.gaussian import Gaussian
 
 
 # TODO: optimise pass_message
@@ -152,6 +153,9 @@ class ClusterGraph(object):
         self.message_passing_index_strings = []
         self.last_passed_message_factors_dict = dict()
         self.verbose = verbose
+        # new
+        self.last_sent_message_dict = {}  # {(rec_cluster_id1, rec_cluster_id1): msg1, ...}
+
         all_evidence_vars = set(self.special_evidence.keys())
         if evidence is not None:
             evidence_vars = set(evidence.keys())
@@ -451,7 +455,7 @@ class ClusterGraph(object):
 
         return ranked_message_df
 
-    def process_graph(self, tol=1e-3, max_iter=50):
+    def process_graph_async(self, tol=1e-3, max_iter=50):
         """
         Perform message passing until convergence (or maximum iterations).
         """
@@ -475,11 +479,18 @@ class ClusterGraph(object):
             for indx, message_row in ranked_message_df.iterrows():
                 message = message_row['message_object']
                 distance_from_previous = message_row.iloc[-1]
-                assert distance_from_previous >= 0.0, 'Error: Distance from previous message is negative.'
-                if distance_from_previous >= tol:  # TODO: correct this: if the message is not passed, it must not be included in new_message_distances_df
-                    self.pass_message(message)
+                if distance_from_previous < 0.0:
+                    raise ValueError('Distance from previous message is negative.')
+                # TODO: correct this: if the message is not passed, it must not be included in new_message_distances_df
+                if distance_from_previous >= tol:
                     if self.debug:
+                        print(f'\n {message.sender_id} -> {message.receiver_id}\t\t\t(dfp: {distance_from_previous})')
+                        if isinstance(message.factor, Gaussian):
+                            message.factor.show(update_covform=False, show_canform=True)
+                        else:
+                            message.factor.show()
                         self.debug_passed_message_factors.append(message._factor.copy())
+                    self.pass_message(message)
                     self.num_messages_passed += 1
 
             if self.num_messages_passed == 0:
@@ -499,6 +510,79 @@ class ClusterGraph(object):
         if self.make_animation_gif:
             self.make_message_passing_animation_gif()
 
+    def get_most_informative_message(self):
+        """
+        Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
+        previous iterations.
+        :return: The message with the highest KL between its current and previous iteration (if more than one, only the
+         last calculated is returned) and the distance from the previous iteration.
+        :rtype: Message, float
+        """
+        messages = self.make_all_messages()
+        factors_are_vacuous = [message.factor.is_vacuous for message in messages]
+        if all(factors_are_vacuous) and self.verbose:
+            print('Warning: All messages are vacuous')
+        if len(messages) == 0:
+            raise ValueError('no messages to send.')
+
+        max_distance = -np.inf
+        max_distance_message = None
+
+        for msg in messages:
+            if (msg.sender_id, msg.receiver_id) not in self.last_passed_message_factors_dict:
+                # We imagine that vacuous messages were sent at step -1.
+                distance = msg.factor.distance_from_vacuous()
+            else:
+                previous_msg_factor = self.last_passed_message_factors_dict[(msg.sender_id, msg.receiver_id)]
+                distance = previous_msg_factor.kl_divergence(msg.factor)
+            if distance > max_distance:
+                max_distance_message = msg
+                max_distance = distance
+        return max_distance_message, max_distance
+
+    def process_graph(self, sync=True):
+        """
+        Process the graph by performing message passing until convergece.
+        :param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)
+        """
+        if sync:
+            self.process_graph_sync()
+        else:
+            self.process_graph_async()
+
+    # New Synchronous version
+    #  TODO: make this more efficient, if no messages have been received by a cluster in the previous round, the next
+    #        message iterations from that cluster will be the same.
+    def process_graph_sync(self, tol=1e-3, max_iter=50):
+        """
+        Perform synchronous message passing until convergence (or maximum iterations).
+        """
+        if len(self._clusters) == 1:
+            # The Cluster Graph contains only single cluster. Message passing not possible or necessary.
+            self._clusters[0]._factor = self._clusters[0]._factor.reduce(vrs=self.special_evidence.keys(),
+                                                                         values=self.special_evidence.values())
+            return
+
+        max_message_distance = float('inf')
+
+        print('Info: Starting iterative message passing.*')
+        for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
+            self.conditional_print(f'iteration: {iterations}/{max_iter}')
+
+            message, distance_from_previous = self.get_most_informative_message()
+            if distance_from_previous < tol:
+                self.conditional_print(f'Info: max_message_distance={max_message_distance} < tol={tol}. Stopping.')
+                break
+            self.pass_message(message)
+            self.num_messages_passed += 1
+
+            if self.num_messages_passed == 0:
+                self.conditional_print('Warning: no messages passed.')
+
+        self.conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
+        #if self.make_animation_gif:
+        #    self.make_message_passing_animation_gif()
+
     def pass_message(self, message):
         """
         Pass message to the relevant receiver.
@@ -510,7 +594,7 @@ class ClusterGraph(object):
                 error_msg = f'Error: {message.var_names} is not a subset of {cluster.var_names}'
                 assert set(message.var_names) <= set(cluster.var_names), error_msg
                 cluster.receive_message(message)
-                self.last_passed_message_factors_dict[(message.sender_id, message.receiver_id)] = message.factor.copy()
+                self.last_passed_message_factors_dict[(message.sender_id, message.receiver_id)] = message.factor.copy() #old
                 if self.make_animation_gif:
                     cg_animation.add_message_pass_animation_frames(graph=self._graph,
                                                                    frames=self.message_passing_animation_frames,

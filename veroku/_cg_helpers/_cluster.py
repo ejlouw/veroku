@@ -204,11 +204,11 @@ class Message(object):
         :param other_message: The other message of which the factor will be used to compare to this message's factor.
         :return: The KL-divergence
         """
-        try:
-            distance = self.factor.kl_divergence(other_message.factor)
-        except np.linalg.LinAlgError:
-            # TODO: find better solution
-            distance = np.inf
+        #try:
+        distance = self.factor.kl_divergence(other_message.factor)
+        #except np.linalg.LinAlgError:
+        #    # TODO: find better solution
+        #    distance = np.inf
         return distance
 
     @property

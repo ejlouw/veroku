@@ -11,6 +11,8 @@ import numpy as np
 # Local imports
 from veroku.factors.categorical import Categorical
 
+#TODO: add tests for strange KLD (i.e with divide by zeros)
+#TODO: add tests divide operation
 
 class TestCategorical(unittest.TestCase):
     """
@@ -54,6 +56,30 @@ class TestCategorical(unittest.TestCase):
         expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
         actual_resulting_factor = self.sp_table_a.multiply(self.sp_table_b)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
+
+    def test_cancel_with_zeros(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): 1.0,
+                   (1, 1): 1.0}
+        factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+
+        vars_b = ['b', 'a']
+        probs_b = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): 1.0,
+                   (1, 1): 1.0}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+        vars_c = ['a', 'b']
+        probs_c = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): np.inf,
+                   (1, 1): 1.0}
+        expected_resulting_factor = Categorical(var_names=vars_c, probs_table=probs_c, cardinalities=[2, 2])
+        actual_resulting_factor = factor_a.cancel(factor_b)
+        self.assertTrue(expected_resulting_factor.equals(actual_resulting_factor))
 
     # TODO: change to log form and fix
     def test_marginalise(self):
@@ -191,11 +217,12 @@ class TestCategorical(unittest.TestCase):
         factor_1 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
 
         vars = ['a']
-        probs = {(2,): np.log(1.0),
-                 (4,): np.log(1.0)}
+        probs = {(2,): np.log(0.5),
+                 (4,): np.log(0.5)}
         factor_2 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 1.0*(np.log(1.0) - np.log(0.5))
+        self.assertAlmostEqual(computed_kld, correct_kld, places=4)
 
     def test_kld3(self):
         """
@@ -216,4 +243,78 @@ class TestCategorical(unittest.TestCase):
         correct_kld = correct_kld_1 + correct_kld_2
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
 
+    def test_KLD_with_zeros(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
 
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+
+        expected_KLD = 0.0
+        actual_KLD = factor_b.kl_divergence(factor_a)
+        self.assertEqual(expected_KLD, actual_KLD)
+
+    def test_KLD_with_zeros_sparse1(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 0.0,
+                   (0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+
+        expected_KLD = 0.0
+        actual_KLD = factor_b.kl_divergence(factor_a)
+        self.assertEqual(expected_KLD, actual_KLD)
+
+    def test_KLD_with_zeros_sparse2(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+
+        vars_b = ['a', 'b']
+        probs_b = {(0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+        expected_KLD = 0.0
+        actual_KLD = factor_b.kl_divergence(factor_a)
+        self.assertEqual(expected_KLD, actual_KLD)
+
+    def test_KLD_with_zeros_sparse3(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 1.0}
+        factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 0.5,
+                   (0, 1): 0.0,
+                   (1, 0): 0.0,
+                   (1, 1): 0.5}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+        ##expected_KLD = np.log(2)
+        #actual_KLD = factor_a.kl_divergence(factor_b)
+        #self.assertEqual(expected_KLD, actual_KLD)
+
+        expected_KLD = np.inf
+        actual_KLD = factor_b.kl_divergence(factor_a)
+        self.assertEqual(expected_KLD, actual_KLD)
