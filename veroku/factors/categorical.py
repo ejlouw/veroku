@@ -5,29 +5,35 @@ A module for instantiating sparse tables with log probabilities.
 # System imports
 import copy
 import operator
+import warnings
 
 # Third-party imports
 import numpy as np
+from numpy import unravel_index
 from scipy import special
-import itertools
+from itertools import product
 
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
-
 # special operator rules
 LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
 LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
 
+
 # TODO: consider removing some unused functions
+
+# TODO: Currently variable values should be the same as numpy indices and therefore start at 0 with increments of 1.
+#       We probably want to relax this requirement.
 
 
 class Categorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
-    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None):
+
+    def __init__(self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -52,19 +58,41 @@ class Categorical(Factor):
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
-        if len(cardinalities) != len(var_names):
+
+        if cardinalities is None:
+            cardinalities = log_probs_tensor.shape
+        elif len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
-        if (log_probs_table is None) and (probs_table is None):
-                raise ValueError('Either log_probs_table or probs_table must be specified')
-        if log_probs_table is None:
-            log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
-        self.log_probs_table = copy.deepcopy(log_probs_table)
+        if (log_probs_tensor is None) and (probs_table is None):
+            raise ValueError('Either log_probs_tensor or probs_table must be specified')
+        if log_probs_tensor is None:
+            probs_tensor = np.zeros(shape=cardinalities)
+            for assignment, prob in probs_table.items():
+                try:
+                    probs_tensor[assignment] = prob
+                except IndexError:
+                    error_message = f'assignment {assignment} is not consistent with the cardinalities ({cardinalities}) provided'
+                    raise IndexError(error_message)
+            with warnings.catch_warnings():
+                # prevents 'divide by zero encountered in log' from displaying
+                warnings.simplefilter("ignore")
+                self.log_probs_tensor = np.log(probs_tensor)
+        else:
+            if len(log_probs_tensor.shape) != len(var_names):
+                raise ValueError('log_probs_tensor should have dimension equal to the number of variables.')
+            self.log_probs_tensor = log_probs_tensor.copy()
+        # TODO: remove this
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
 
-    # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
-    #  when probs turn to 0.
-    # TODO: Add variable order sorting
+    def reorder(self, new_var_names_order):
+        if new_var_names_order == self.var_names:
+            return
+        if set(new_var_names_order) != set(self.var_names):
+            raise ValueError('The new_var_names_order set must be the same as the factor variables.')
+        vars_new_order_indices = [self.var_names.index(v) for v in new_var_names_order]
+        self.log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
+
     def equals(self, factor):
         """
         Check if this factor is the same as another factor.
@@ -76,13 +104,12 @@ class Categorical(Factor):
         """
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        if self.var_names != factor.var_names:
+        if set(self.var_names) != set(factor.var_names):
             return False
-        for assign, prob in self.log_probs_table.items():
-            if assign not in factor.log_probs_table:
-                return False
-            elif not np.isclose(factor.log_probs_table[assign], prob):
-                return False
+        factor_copy = factor.copy()
+        factor_copy.reorder(self.var_names)
+        if not np.allclose(self.log_probs_tensor, factor_copy.log_probs_tensor):
+            return False
         return True
 
     def copy(self):
@@ -92,8 +119,7 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         return Categorical(var_names=self.var_names.copy(),
-                           log_probs_table=copy.deepcopy(self.log_probs_table),
-                           cardinalities=self.var_cards.values())
+                           log_probs_tensor=self.log_probs_tensor.copy())
 
     @staticmethod
     def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
@@ -118,6 +144,54 @@ class Categorical(Factor):
             return True
         return False
 
+    @staticmethod
+    def tensor_operation(tensor_a, tensor_b, tensor_a_var_names, tensor_b_var_names, func):
+        """
+        Apply a element wise function to two tensors with named indices.
+        :param numpy.ndarray tensor_a: The first tensor.
+        :param numpy.ndarray tensor_b: The second tensor.
+        :param tensor_a_var_names: The first tensor's variable names corresponding to the indices.
+        :type tensor_a_var_names: string list
+        :param tensor_b_var_names: The second tensor's variable names corresponding to the indices.
+        :type tensor_b_var_names: string list
+        :param func: The function to apply elementwise to the two tensors (func(a,b))
+        :return: The resulting tensor and corresponding variable names
+        :rtype: string list
+        """
+        if tensor_a_var_names == tensor_b_var_names:
+            result_tensor = func(tensor_a, tensor_b)
+            return result_tensor, tensor_a_var_names
+        common_vars = set(tensor_a_var_names).intersection(tensor_b_var_names)
+        num_cvars = len(common_vars)
+        num_f1vars = len(tensor_a_var_names)
+        num_f2_vars = len(tensor_b_var_names)
+
+        remaining_f1_vars = [v for v in tensor_a_var_names if v not in common_vars]
+        remaining_f2_vars = [v for v in tensor_b_var_names if v not in common_vars]
+        # sort according to f1_vars so that only f2_tensor can be transposed if sets are the same
+        common_vars = [v for v in tensor_a_var_names if v in common_vars]
+        f1_vars_new_order = [tensor_a_var_names.index(v) for v in remaining_f1_vars]
+        f1_vars_new_order += [tensor_a_var_names.index(v) for v in common_vars]
+        f1_new_vars = [tensor_a_var_names[i] for i in f1_vars_new_order]
+        f1_tensor_new_shape = tensor_a.transpose(f1_vars_new_order)
+        f1_dim_expansion_axis = list(range(len(remaining_f2_vars)))
+        f1_tensor_std_shape = np.expand_dims(f1_tensor_new_shape, axis=f1_dim_expansion_axis)
+        #  now f1 has var order / dim order: [[1]*num_f2_vars, rest_f1_vars_dims, common_vars]
+
+        f2_vars_new_order = [tensor_b_var_names.index(v) for v in remaining_f2_vars]
+        f2_vars_new_order += [tensor_b_var_names.index(v) for v in common_vars]
+        f2_new_vars = [tensor_b_var_names[i] for i in f2_vars_new_order]
+        f2_tensor_new_shape = tensor_b.transpose(f2_vars_new_order)
+        # now f2 has var order / dim order:  [common_vars_dim, [1]*num_f2_vars]
+        # f2_dim_expansion_axis = list(range(num_cvars, num_cvars + len(remaining_f1_vars)))
+        f2_dim_expansion_axis = list(range(len(remaining_f2_vars), len(remaining_f2_vars) + len(remaining_f1_vars)))
+        f2_tensor_std_shape = np.expand_dims(f2_tensor_new_shape, axis=f2_dim_expansion_axis)
+        # now f1 has var order / dim order: [f1_vars_dims, [1]*num_f1_vars] =
+        # [common_vars, rest_f1_vars_dims, [1]*num_f2_vars]
+        result_vars = remaining_f2_vars + remaining_f1_vars + common_vars
+        result_tensor = func(f1_tensor_std_shape, f2_tensor_std_shape)
+        return result_tensor, result_vars
+
     # TODO: change back to log form
     def marginalize(self, vrs, keep=False):
         """
@@ -130,21 +204,9 @@ class Categorical(Factor):
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
-        nested_table, nested_table_vars = Categorical._get_nested_sorted_probs(new_variables_order_outer=vars_to_keep,
-                                                                               new_variables_order_inner=vars_to_sum_out,
-                                                                               old_variable_order=self.var_names,
-                                                                               old_assign_probs=self.log_probs_table)
-        result_table = dict()
-        for l1_assign, log_probs_table in nested_table.items():
-            prob = special.logsumexp(list(log_probs_table.values()))
-            result_table[l1_assign] = prob
-
-        result_var_cards = copy.deepcopy(self.var_cards)
-        for v in vars_to_sum_out:
-            del result_var_cards[v]
-
-        return Categorical(var_names=vars_to_keep, log_probs_table=result_table,
-                           cardinalities=result_var_cards.values())
+        indices_to_sum_out = [self.var_names.index(v) for v in vars_to_sum_out]
+        result_tensor = np.apply_over_axes(special.logsumexp, self.log_probs_tensor, axes=indices_to_sum_out)
+        return Categorical(var_names=vars_to_keep, log_probs_tensor=np.squeeze(result_tensor))
 
     def reduce(self, vrs, values):
         """
@@ -156,17 +218,11 @@ class Categorical(Factor):
         """
 
         vars_unobserved = [v for v in self.var_names if v not in vrs]
-        nested_table, nested_table_vars = Categorical._get_nested_sorted_probs(new_variables_order_outer=vrs,
-                                                                               new_variables_order_inner=vars_unobserved,
-                                                                               old_variable_order=self.var_names,
-                                                                               old_assign_probs=self.log_probs_table)
-        result_table = nested_table[tuple(values)]
-        result_var_cards = copy.deepcopy(self.var_cards)
-        for v in vrs:
-            del result_var_cards[v]
+        obs_dict = dict(zip(vrs, values))
 
-        return Categorical(var_names=vars_unobserved, log_probs_table=result_table,
-                           cardinalities=result_var_cards.values())
+        reduced_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
+        result_table = self.log_probs_tensor[reduced_tensor_indexing]
+        return Categorical(var_names=vars_unobserved, log_probs_tensor=result_table)
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -191,28 +247,33 @@ class Categorical(Factor):
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
-        result_table, result_vars = Categorical._complex_table_operation(self.var_names, self.log_probs_table,
-                                                                         factor.var_names, factor.log_probs_table,
-                                                                         operator.add)
-        result_var_cards = copy.deepcopy(self.var_cards)
-        result_var_cards.update(factor.var_cards)
-        return Categorical(var_names=result_vars, log_probs_table=result_table,
-                           cardinalities=result_var_cards.values())
+        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
+                                                           self.var_names, factor.var_names, operator.add)
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def cancel(self, factor):
         """
-        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
+        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros. When
+        categorical message factors with zero probabilities are used in Belief Update algorithms, multiplication by the
+        zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this
+        results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the
+        probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.
         :param factor: The factor to divide by.
         :type factor: Categorical
         :return: The factor quotient.
         :rtype: Categorical
         """
-        return self.divide(factor, special_rules=LOG_SUBTRACT_CANCEL_RULES)
+        augmented_factor_tensor = factor.log_probs_tensor.copy()
+        # when cancelling out a factor
+        special_case_indices = np.where((augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf))
+        augmented_factor_tensor[special_case_indices] = np.float(0.0)
+        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, augmented_factor_tensor,
+                                                           self.var_names, factor.var_names, operator.sub)
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def divide(self, factor, special_rules=None):
         """
         Divide this factor by another factor and return the result.
-
         :param factor: The factor to divide by.
         :type factor: Categorical
         :param special_rules: Any special rules to apply for specific values of the left and right variables.
@@ -224,15 +285,9 @@ class Categorical(Factor):
         if not isinstance(factor, Categorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
-        # TODO: check what happens here when dividing default and non default values by zero.
-        result_table, result_vars = Categorical._complex_table_operation(self.var_names, self.log_probs_table,
-                                                                         factor.var_names, factor.log_probs_table,
-                                                                         operator.sub,
-                                                                         special_rules=special_rules)
-        result_var_cards = copy.deepcopy(self.var_cards)
-        result_var_cards.update(factor.var_cards)
-        return Categorical(var_names=result_vars, log_probs_table=result_table,
-                           cardinalities=result_var_cards.values())
+        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
+                                                           self.var_names, factor.var_names, operator.sub)
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def argmax(self):
         """
@@ -241,150 +296,9 @@ class Categorical(Factor):
         :return: The argmax assignment.
         :rtype: int list
         """
-        return max(self.log_probs_table.items(), key=operator.itemgetter(1))[0]
 
-    @staticmethod
-    def _get_nested_sorted_probs(new_variables_order_outer,
-                                 new_variables_order_inner,
-                                 old_variable_order, old_assign_probs):
-        """
-        Reorder probs to a new order and sort assignments.
-        :params new_variables_order_outer:
-        :params new_variables_order_inner:
-        :params old_variable_order:
-        :params old_assign_probs: A dictionary of assignment and coresponding probabilities.
-        Example:
-        old_variable_order = [a, b]
-        new_variables_order_outer = [b]
-
-          a  b  c   P(a,b)     return:       b    a  c  P(b,a)
-        {(0, 0, 0): pa0b0c0                {(0):{(0, 0): pa0b0,
-         (0, 1, 0): pa0b1c0                      (1, 0): pa1b0}
-         (1, 0, 1): pa1b0c1                 (1):{(0, 1): pa0b1,
-         (1, 1, 1): pa1b1c1}                     (1, 1): pa1b1}}
-        """
-        # TODO: Complete and improve docstring.
-        new_variable_order = new_variables_order_outer + new_variables_order_inner
-        new_order_indices = [new_variable_order.index(var) for var in old_variable_order]
-        new_assign_probs = dict()
-        for old_assign_i, old_prob_i in old_assign_probs.items():
-            new_row_assignment = [None] * len(old_assign_i)
-            for old_i, new_i in enumerate(new_order_indices):
-                new_row_assignment[new_i] = old_assign_i[old_i]
-            l1_assign = tuple(new_row_assignment[:len(new_variables_order_outer)])
-            if l1_assign not in new_assign_probs:
-                new_assign_probs[l1_assign] = dict()
-            assign_l2 = tuple(new_row_assignment[len(new_variables_order_outer):])
-            new_assign_probs[l1_assign][assign_l2] = old_prob_i
-        return new_assign_probs, new_variable_order
-
-    @staticmethod
-    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func, special_rules=None):
-        """
-        Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
-        :param vars_a:
-        :param table_a:
-        :param vars_b:
-        :param table_b:
-        :param func: The function to apply on pairs of corresponding probabilities in the two tables.
-        :return:
-        """
-        # TODO: Complete and improve docstring.
-        larger_table = table_a
-        smaller_table = table_b
-        larger_table_vars = vars_a
-        smaller_table_vars = vars_b
-        switched = False
-        if len(table_a) < len(table_b):
-            larger_table = table_b
-            smaller_table = table_a
-            larger_table_vars = vars_b
-            smaller_table_vars = vars_a
-            switched = True
-
-        shared_order_smaller_vars = [v for v in larger_table_vars if v in smaller_table_vars]
-        remaining_smaller_vars = list(set(smaller_table_vars) - set(shared_order_smaller_vars))
-
-        new_order_smaller_table_vars = remaining_smaller_vars + shared_order_smaller_vars
-        smaller_table, smaller_table_vars = Categorical._get_nested_sorted_probs(remaining_smaller_vars,
-                                                                                 shared_order_smaller_vars,
-                                                                                 smaller_table_vars, smaller_table)
-        smaller_table_vars = copy.deepcopy(new_order_smaller_table_vars)
-
-        # use the nested dictionary (of sub-assignment prob dictionaries)
-        result_table = dict()
-        for assign_l1, l2_table in smaller_table.items():
-            result_l2_table = Categorical._basic_table_operation(larger_table_vars, larger_table,
-                                                                 smaller_table_vars, l2_table,
-                                                                 func, special_rules)
-            for results_assign, prob in result_l2_table.items():
-                # TODO: get better solution than this:
-                if (func == operator.sub) and switched:
-                    prob = -prob
-                result_table[assign_l1 + results_assign] = prob
-        result_vars = remaining_smaller_vars + larger_table_vars
-        return result_table, result_vars
-
-    @staticmethod
-    def _basic_table_operation(larger_table_vars,
-                               larger_table,
-                               smaller_table_vars,
-                               smaller_table,
-                               _operator,
-                               special_rules=None):
-        """
-        Efficiently perform operations on corresponding (as indicted by the assignments and variables names)
-        elements between larger_table_probs and smaller_table_probs. The smaller table variables must only
-        contain variables that is also in the larger and must be sorted to have the same order as in the larger
-        (although there can be variables in between in the larger). Also both can be sparse.
-
-        Note: the variables will have the same order as larger_table_vars and a new variable name list is therefore not
-              returned.
-
-        :param larger_table: A dictionary of assignment tuples and corresponding probabilities.
-        :type larger_table: Categorical
-        :param smaller_table: A dictionary of assignment tuples and corresponding probabilities.
-        :type smaller_table: Categorical
-
-        :Example:
-        larger_table_vars = ['a', 'b', 'c']
-        larger_table = {(0, 0, 0): 0.5,
-                        (0, 1, 1): 0.2,
-                        (1, 1, 0): 0.3}
-        smaller_table_vars = ['a', c']
-        smaller_table = {(0, 0): 0.2,
-                        (0, 1): 0.5,
-                        (1, 1): 0.1}
-        """
-
-        if not Categorical._intersection_has_same_order(larger_table_vars, smaller_table_vars):
-            raise ValueError('Variables must have same relative order.')
-        shared_indices_in_larger = [larger_table_vars.index(var) for var in smaller_table_vars if var in larger_table_vars]
-
-        result_probs = dict()
-
-        for lt_assign, lt_prob in larger_table.items():
-            assign_smaller = tuple([lt_assign[i] for i in shared_indices_in_larger])
-            if assign_smaller in smaller_table:
-                rt_prob = smaller_table[assign_smaller]
-            else:
-                # use default zero prob (-inf log prob)
-                rt_prob = -np.inf
-            if (special_rules is not None) and ((lt_prob, _operator, rt_prob) in special_rules):
-                result_prob = special_rules[(lt_prob, _operator, rt_prob)]
-            else:
-                result_prob = _operator(lt_prob, rt_prob)
-        # TODO: add only when not default? This might complicate things a lot.
-            #if result_prob != -np.inf:
-            result_probs[lt_assign] = result_prob
-        return result_probs
-
-    def _apply_to_probs(self, func, include_assignment=False):
-        for assign, prob in self.log_probs_table.items():
-            if include_assignment:
-                self.log_probs_table[assign] = func(prob, assign)
-            else:
-                self.log_probs_table[assign] = func(prob)
+        argmax_index = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
+        return argmax_index
 
     def normalize(self):
         """
@@ -393,9 +307,8 @@ class Categorical(Factor):
         """
 
         factor_copy = self.copy()
-        logz = special.logsumexp(list(factor_copy.log_probs_table.values()))
-        for assign, prob in factor_copy.log_probs_table.items():
-            factor_copy.log_probs_table[assign] = prob - logz
+        logz = special.logsumexp(self.log_probs_tensor)
+        factor_copy.log_probs_tensor -= logz
         return factor_copy
 
     @property
@@ -408,7 +321,7 @@ class Categorical(Factor):
         if self.distance_from_vacuous() < 1e-10:
             return True
         return False
-    
+
     def kl_divergence(self, factor, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
@@ -422,19 +335,15 @@ class Categorical(Factor):
         :rtype: float
         """
         normalized_self = self.normalize()
+        log_p = normalized_self.log_probs_tensor
         factor_ = factor
         if normalize_factor:
             factor_ = factor.normalize()
-        # TODO: check that this is correct. esp with zeroes.
-        logPdivQ = normalized_self.divide(factor_, special_rules=LOG_SUBTRACT_KL_RULES)
-        normalized_self._apply_to_probs(np.exp)
-
-        PlogPdivQ_table, _ = Categorical._complex_table_operation(normalized_self.var_names,
-                                                                  normalized_self.log_probs_table,
-                                                                  logPdivQ.var_names,
-                                                                  logPdivQ.log_probs_table,
-                                                                  operator.mul)
-        kld = np.sum(list(PlogPdivQ_table.values()))
+        log_q = factor_.log_probs_tensor
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            kl_array = np.where(log_p != -np.inf, np.exp(log_p) * (log_p - log_q), 0.0)
+        kld = np.sum(kl_array)
         if kld < 0.0:
             if np.isclose(kld, 0.0, atol=1e-5):
                 #  this is fine (numerical error)
@@ -457,10 +366,9 @@ class Categorical(Factor):
         :rtype: float
         """
         # make uniform copy
-        uniform_factor = self.copy()
-        cards = list(uniform_factor.var_cards.values())
-        uniform_log_prob = -np.log(np.product(cards))
-        uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
+        uniform_log_prob = -np.log(np.product(self.log_probs_tensor.shape))
+        uniform_log_tensor = np.ones(self.log_probs_tensor.shape) * uniform_log_prob
+        uniform_factor = Categorical(var_names=self.var_names, log_probs_tensor=uniform_log_tensor)
         kl = self.kl_divergence(uniform_factor, normalize_factor=False)
         if kl < 0.0:
             raise ValueError(f"kl ({kl}) < 0.0")
@@ -475,9 +383,9 @@ class Categorical(Factor):
         :return: The value
         """
         assert set(vrs) == set(self.var_names), 'variables (vrs) do not match factor variables.'
-        vrs_to_var_names_indices = [self.var_names.index(v) for v in vrs]
-        var_names_order_assignments = tuple([assignment[i] for i in vrs_to_var_names_indices])
-        return self.log_probs_table[var_names_order_assignments]
+        obs_dict = dict(zip(vrs, assignment))
+        obs_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
+        return self.log_probs_tensor[obs_tensor_indexing]
 
     def show(self, exp_log_probs=True):
         """
@@ -491,8 +399,8 @@ class Categorical(Factor):
         if exp_log_probs:
             prob_string = 'prob'
         print(self.var_names, ' ', prob_string)
-        for assignment, log_prob in self.log_probs_table.items():
-            prob = log_prob
+        for assignment in np.ndindex(self.log_probs_tensor.shape):
+            prob = self.log_probs_tensor[assignment]
             if exp_log_probs:
                 prob = np.exp(prob)
             print(assignment, ' ', prob)
@@ -500,7 +408,7 @@ class Categorical(Factor):
 
 class CategoricalTemplate(FactorTemplate):
 
-    def __init__(self, log_probs_table, var_templates):
+    def __init__(self, log_probs, var_templates):
         """
         Create a Categorical factor template.
 
@@ -533,39 +441,3 @@ class CategoricalTemplate(FactorTemplate):
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
         return Categorical(log_probs_table=copy.deepcopy(self.log_probs_table),
                            var_names=var_names, cardinalities=self.var_cards.values())
-
-
-def _reorder_probs(new_variable_order, old_variable_order, old_assign_probs):
-    """
-    Reorder categorical table variables to a new order and reorder the associated probabilities
-    accordingly.
-
-    :param new_variable_order: The new variable order.
-    :type new_variable_order: str list
-    :param old_variable_order: The old vriable order (corresponding to old_assign_probs)
-    :type old_variable_order: str list
-    :param old_assign_probs: The assignment probability list
-    :type old_assign_probs: str, float nested list
-
-    Example:
-        old_variable_order = [a, b]
-        new_variable_order = [b, a]
-
-        a b P(a,b)  return    b a P(a,b)
-        0 0  pa0b0            0 0  pa0b0
-        0 1  pa0b1            0 1  pa1b0
-        1 0  pa1b0            1 0  pa0b1
-        1 1  pa1b1            1 1  pa1b1
-    """
-    # TODO This function is old and still uses the list (instead of dictionary) format for probs. Update it.
-    new_order_indices = [new_variable_order.index(var) for var in old_variable_order]
-    new_assign_probs = []
-    for old_assign_prob_i in old_assign_probs:
-        old_row_assignment = old_assign_prob_i[0]
-        prob = old_assign_prob_i[1]
-        new_row_assignment = [None] * len(old_row_assignment)
-        for old_i, new_i in enumerate(new_order_indices):
-            new_row_assignment[new_i] = old_row_assignment[old_i]
-        new_assign_probs.append([tuple(new_row_assignment), prob])
-
-    return sorted(new_assign_probs, key=lambda x: x[0])

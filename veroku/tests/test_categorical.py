@@ -11,8 +11,10 @@ import numpy as np
 # Local imports
 from veroku.factors.categorical import Categorical
 
+
 #TODO: add tests for strange KLD (i.e with divide by zeros)
 #TODO: add tests divide operation
+
 
 class TestCategorical(unittest.TestCase):
     """
@@ -24,37 +26,58 @@ class TestCategorical(unittest.TestCase):
         Set up some variables.
         """
         vars_a = ['a', 'b', 'c']
-        probs_a = {(0, 0, 0): 0.01,
-                   (0, 0, 1): 0.02,
-                   (0, 1, 0): 0.03,
-                   (0, 1, 1): 0.04,
-                   (1, 0, 0): 0.05,
-                   (1, 0, 1): 0.06,
-                   (1, 1, 0): 0.07,
-                   (1, 1, 1): 0.08}
-        self.sp_table_a = Categorical(var_names=vars_a, log_probs_table=probs_a, cardinalities=[2, 2, 2])
+        probs_a = {(0, 0, 0): np.exp(0.01),
+                   (0, 0, 1): np.exp(0.02),
+                   (0, 1, 0): np.exp(0.03),
+                   (0, 1, 1): np.exp(0.04),
+                   (1, 0, 0): np.exp(0.05),
+                   (1, 0, 1): np.exp(0.06),
+                   (1, 1, 0): np.exp(0.07),
+                   (1, 1, 1): np.exp(0.08)}
+        self.sp_table_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2, 2])
         vars_b = ['a', 'b']
-        probs_b = {(0, 0): 0.1,
-                   (0, 1): 0.2,
-                   (1, 0): 0.3,
-                   (1, 1): 0.4}
-        self.sp_table_b = Categorical(var_names=vars_b, log_probs_table=probs_b, cardinalities=[2, 2])
+        probs_b = {(0, 0): np.exp(0.1),
+                   (0, 1): np.exp(0.2),
+                   (1, 0): np.exp(0.3),
+                   (1, 1): np.exp(0.4)}
+        self.sp_table_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
 
     def test_absorb(self):
         """
         Test that the multiply function returns the correct result.
         """
+        vars_ex = ['a', 'b']
+        probs_ex = {(0, 0): 0.01,
+                    (0, 1): 0.04,
+                    (1, 0): 0.09,
+                    (1, 1): 0.16}
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        sp_table_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2])
+        actual_resulting_factor = sp_table_b.multiply(sp_table_b)
+        self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
+
+    def test_absorb2(self):
+        """
+        Test that the multiply function returns the correct result.
+        """
         vars_ex = ['a', 'b', 'c']
-        probs_ex = {(0, 0, 0): 0.11,
-                    (0, 0, 1): 0.12,
-                    (0, 1, 0): 0.23,
-                    (0, 1, 1): 0.24,
-                    (1, 0, 0): 0.35,
-                    (1, 0, 1): 0.36,
-                    (1, 1, 0): 0.47,
-                    (1, 1, 1): 0.48}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2, 2])
+        probs_ex = {(0, 0, 0): np.exp(0.11),
+                    (0, 0, 1): np.exp(0.12),
+                    (0, 1, 0): np.exp(0.23),
+                    (0, 1, 1): np.exp(0.24),
+                    (1, 0, 0): np.exp(0.35),
+                    (1, 0, 1): np.exp(0.36),
+                    (1, 1, 0): np.exp(0.47),
+                    (1, 1, 1): np.exp(0.48)}
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2, 2])
         actual_resulting_factor = self.sp_table_a.multiply(self.sp_table_b)
+        #print(actual_resulting_factor.reorder(vars_ex))
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_cancel_with_zeros(self):
@@ -65,10 +88,10 @@ class TestCategorical(unittest.TestCase):
                    (1, 1): 1.0}
         factor_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
 
-        vars_b = ['b', 'a']
+        vars_b = ['a', 'b']
         probs_b = {(0, 0): 0.0,
-                   (0, 1): 0.0,
-                   (1, 0): 1.0,
+                   (0, 1): 1.0,
+                   (1, 0): 0.0,
                    (1, 1): 1.0}
         factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
 
@@ -86,27 +109,27 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the marginalize function returns the correct result.
         """
-        vars_a = ['a', 'b', 'c']
-        probs_a = {(0, 0, 0): np.log(0.01),
-                   (0, 0, 1): np.log(0.02),
-                   (0, 1, 0): np.log(0.03),
-                   (0, 1, 1): np.log(0.04),
-                   (1, 0, 0): np.log(0.05),
-                   (1, 0, 1): np.log(0.06),
-                   (1, 1, 0): np.log(0.07),
-                   (1, 1, 1): np.log(0.08)}
-        sp_table_a = Categorical(var_names=vars_a, log_probs_table=probs_a, cardinalities=[2, 2, 2])
+        vars_a = ['a','b', 'c']
+        probs_a = {(0, 0, 0): 0.01,
+                   (0, 0, 1): 0.02,
+                   (0, 1, 0): 0.03,
+                   (0, 1, 1): 0.04,
+                   (1, 0, 0): 0.05,
+                   (1, 0, 1): 0.06,
+                   (1, 1, 0): 0.07,
+                   (1, 1, 1): 0.08}
+        sp_table_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2, 2])
         vars_ex = ['a']
-        probs_ex = {(0,): np.log(0.10),
-                    (1,): np.log(0.26)}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2])
+        probs_ex = {(0,): 0.10,
+                    (1,): 0.26}
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2])
         actual_resulting_factor = sp_table_a.marginalize(vrs=['b', 'c'])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
         vars_ex = ['c']
-        probs_ex = {(0,): np.log(0.01+0.03+0.05+0.07),
-                    (1,): np.log(0.02+0.04+0.06+0.08)}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2])
+        probs_ex = {(0,): 0.01+0.03+0.05+0.07,
+                    (1,): 0.02+0.04+0.06+0.08}
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2])
         actual_resulting_factor = sp_table_a.marginalize(vrs=['a', 'b'])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
@@ -116,21 +139,21 @@ class TestCategorical(unittest.TestCase):
         """
 
         vars_a = ['a', 'b', 'c']
-        probs_a = {(0, 0, 0): 0.01,
-                   (0, 0, 1): 0.02,
-                   (0, 1, 0): 0.03,
-                   (0, 1, 1): 0.04,
-                   (1, 0, 0): 0.05,
-                   (1, 0, 1): 0.06,
-                   (1, 1, 0): 0.07,
-                   (1, 1, 1): 0.08}
-        sp_table_a = Categorical(var_names=vars_a, log_probs_table=probs_a, cardinalities=[2, 2, 2])
+        probs_a = {(0, 0, 0): np.exp(0.01),
+                   (0, 0, 1): np.exp(0.02),
+                   (0, 1, 0): np.exp(0.03),
+                   (0, 1, 1): np.exp(0.04),
+                   (1, 0, 0): np.exp(0.05),
+                   (1, 0, 1): np.exp(0.06),
+                   (1, 1, 0): np.exp(0.07),
+                   (1, 1, 1): np.exp(0.08)}
+        sp_table_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2, 2])
         vars_ex = ['b', 'c']
-        probs_ex = {(0, 0): 0.01,
-                    (0, 1): 0.02,
-                    (1, 0): 0.03,
-                    (1, 1): 0.04}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2])
+        probs_ex = {(0, 0): np.exp(0.01),
+                    (0, 1): np.exp(0.02),
+                    (1, 0): np.exp(0.03),
+                    (1, 1): np.exp(0.04)}
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2])
         actual_resulting_factor = sp_table_a.reduce(vrs=['a'], values=[0])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
@@ -140,22 +163,22 @@ class TestCategorical(unittest.TestCase):
         """
 
         vars_a = ['a', 'b', 'c']
-        probs_a = {(0, 0, 0): 0.01,
-                   (0, 0, 1): 0.02,
-                   (0, 1, 0): 0.03,
-                   (0, 1, 1): 0.04,
-                   (1, 0, 0): 0.05,
-                   (1, 0, 1): 0.06,
-                   (1, 1, 0): 0.07,
-                   (1, 1, 1): 0.08}
+        probs_a = {(0, 0, 0): np.exp(0.01),
+                   (0, 0, 1): np.exp(0.02),
+                   (0, 1, 0): np.exp(0.03),
+                   (0, 1, 1): np.exp(0.04),
+                   (1, 0, 0): np.exp(0.05),
+                   (1, 0, 1): np.exp(0.06),
+                   (1, 1, 0): np.exp(0.07),
+                   (1, 1, 1): np.exp(0.08)}
 
-        sp_table_a = Categorical(var_names=vars_a, log_probs_table=probs_a, cardinalities=[2, 2, 2])
+        sp_table_a = Categorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2, 2])
         vars_ex = ['a', 'c']
-        probs_ex = {(0, 0): 0.03,
-                    (0, 1): 0.04,
-                    (1, 0): 0.07,
-                    (1, 1): 0.08}
-        expected_resulting_factor = Categorical(var_names=vars_ex, log_probs_table=probs_ex, cardinalities=[2, 2])
+        probs_ex = {(0, 0): np.exp(0.03),
+                    (0, 1): np.exp(0.04),
+                    (1, 0): np.exp(0.07),
+                    (1, 1): np.exp(0.08)}
+        expected_resulting_factor = Categorical(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2])
         actual_resulting_factor = sp_table_a.reduce(vrs=['b'], values=[1])
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
@@ -164,10 +187,10 @@ class TestCategorical(unittest.TestCase):
         Test that the distance from vacuous function returns the correct result.
         """
         vars = ['a', 'c']
-        probs = {(0, 1): np.log(0.4),
-                 (1, 0): np.log(0.2),
-                 (1, 1): np.log(0.3)}
-        factor = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[2, 2])
+        probs = {(0, 1): 0.4,
+                 (1, 0): 0.2,
+                 (1, 1): 0.3}
+        factor = Categorical(var_names=vars, probs_table=probs, cardinalities=[2, 2])
 
         correct_KL_p_vac = sum([(0.4/0.9)*(np.log(0.4/0.9)-np.log(0.25)),
                                 (0.2/0.9)*(np.log(0.2/0.9)-np.log(0.25)),
@@ -180,10 +203,10 @@ class TestCategorical(unittest.TestCase):
         Test that the distance from vacuous function returns the correct result.
         """
         vars = ['a', 'c']
-        probs = {(0, 1): np.log(0.5),
-                 (1, 0): np.log(0.2),
-                 (1, 1): np.log(0.3)}
-        factor = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[2, 2])
+        probs = {(0, 1): 0.5,
+                 (1, 0): 0.2,
+                 (1, 1): 0.3}
+        factor = Categorical(var_names=vars, probs_table=probs, cardinalities=[2, 2])
 
         correct_KL_p_vac = sum([0.5*(np.log(0.5)-np.log(0.25)),
                                 0.2*(np.log(0.2)-np.log(0.25)),
@@ -196,14 +219,14 @@ class TestCategorical(unittest.TestCase):
         Test that the kld function returns the correct result.
         """
         vars = ['a']
-        probs = {(2,): np.log(0.2),
-                 (4,): np.log(0.8)}
-        factor_1 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 0.2,
+                 (3,): 0.8}
+        factor_1 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
 
         vars = ['a']
-        probs = {(2,): np.log(0.3),
-                 (4,): np.log(0.7)}
-        factor_2 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 0.3,
+                 (3,): 0.7}
+        factor_2 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 0.2*(np.log(0.2) - np.log(0.3)) + 0.8*(np.log(0.8) - np.log(0.7))
         self.assertAlmostEqual(correct_kld, computed_kld)
@@ -213,13 +236,13 @@ class TestCategorical(unittest.TestCase):
         Test that the kld function returns the correct result.
         """
         vars = ['a']
-        probs = {(2,): np.log(1.0)}
-        factor_1 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 1.0}
+        factor_1 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
 
         vars = ['a']
-        probs = {(2,): np.log(0.5),
-                 (4,): np.log(0.5)}
-        factor_2 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 0.5,
+                 (3,): 0.5}
+        factor_2 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 1.0*(np.log(1.0) - np.log(0.5))
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
@@ -229,14 +252,14 @@ class TestCategorical(unittest.TestCase):
         Test that the kld function returns the correct result.
         """
         vars = ['a']
-        probs = {(2,): np.log(1.0),
-                 (4,): np.log(1e-5)}
-        factor_1 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 1.0,
+                 (3,): 1e-5}
+        factor_1 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
 
         vars = ['a']
-        probs = {(2,): np.log(1.0),
-                 (4,): np.log(1.0)}
-        factor_2 = Categorical(var_names=vars, log_probs_table=probs, cardinalities=[4])
+        probs = {(2,): 1.0,
+                 (3,): 1.0}
+        factor_2 = Categorical(var_names=vars, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld_1 = 1.0*(np.log(1.0) - np.log(0.5))
         correct_kld_2 = 1e-5*(np.log(1e-5) - np.log(0.5))
