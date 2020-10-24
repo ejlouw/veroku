@@ -41,7 +41,7 @@ class TestCategorical(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.CatClass = Categorical
 
-    def test_absorb(self):
+    def test_absorb_same_scope(self):
         """
         Test that the multiply function returns the correct result.
         """
@@ -61,7 +61,7 @@ class TestCategorical(unittest.TestCase):
         actual_resulting_factor = sp_table_b.multiply(sp_table_b)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
-    def test_absorb2(self):
+    def test_absorb_subset_scope(self):
         """
         Test that the multiply function returns the correct result.
         """
@@ -84,10 +84,47 @@ class TestCategorical(unittest.TestCase):
                    (1, 0): np.exp(0.3),
                    (1, 1): np.exp(0.4)}
         sp_table_ab = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
-
-
         actual_resulting_factor = sp_table_abc.multiply(sp_table_ab)
+        self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
+    def test_absorb_different_scope(self):
+        """
+        Test that the multiply function returns the correct result.
+        """
+        vars_ex = ['c', 'd', 'a', 'b']
+        probs_ex = {(0, 0, 0, 0): 0.1*0.01,
+                    (0, 0, 0, 1): 0.1*0.04,
+                    (0, 0, 1, 0): 0.1*0.09,
+                    (0, 0, 1, 1): 0.1*0.16,
+                    (0, 1, 0, 0): 0.2*0.01,
+                    (0, 1, 0, 1): 0.2*0.04,
+                    (0, 1, 1, 0): 0.2*0.09,
+                    (0, 1, 1, 1): 0.2*0.16,
+                    (1, 0, 0, 0): 0.3*0.01,
+                    (1, 0, 0, 1): 0.3*0.04,
+                    (1, 0, 1, 0): 0.3*0.09,
+                    (1, 0, 1, 1): 0.3*0.16,
+                    (1, 1, 0, 0): 0.4*0.01,
+                    (1, 1, 0, 1): 0.4*0.04,
+                    (1, 1, 1, 0): 0.4*0.09,
+                    (1, 1, 1, 1): 0.4*0.16}
+
+        vars_ab = ['a', 'b']
+        probs_ab = {(0, 0): 0.01,
+                    (0, 1): 0.04,
+                    (1, 0): 0.09,
+                    (1, 1): 0.16}
+        vars_cd = ['c', 'd']
+        probs_cd = {(0, 0): 0.1,
+                    (0, 1): 0.2,
+                    (1, 0): 0.3,
+                    (1, 1): 0.4}
+
+        sp_table_cd = self.CatClass(var_names=vars_cd, probs_table=probs_cd, cardinalities=[2, 2])
+
+        expected_resulting_factor = self.CatClass(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2, 2, 2])
+        sp_table_ab = self.CatClass(var_names=vars_ab, probs_table=probs_ab, cardinalities=[2, 2])
+        actual_resulting_factor = sp_table_cd.multiply(sp_table_ab)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_cancel_different_scope(self):
@@ -377,9 +414,9 @@ class TestCategorical(unittest.TestCase):
                    (1, 0): 0.0,
                    (1, 1): 0.5}
         factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
-        ##expected_KLD = np.log(2)
-        #actual_KLD = factor_a.kl_divergence(factor_b)
-        #self.assertEqual(expected_KLD, actual_KLD)
+        expected_KLD = np.log(2)
+        actual_KLD = factor_a.kl_divergence(factor_b)
+        self.assertEqual(expected_KLD, actual_KLD)
 
         expected_KLD = np.inf
         actual_KLD = factor_b.kl_divergence(factor_a)
