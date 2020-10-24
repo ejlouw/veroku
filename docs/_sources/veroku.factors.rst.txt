@@ -9,6 +9,7 @@ Submodules
 
    veroku.factors.categorical
    veroku.factors.gaussian
+   veroku.factors.sparse_categorical
 
 Module contents
 ---------------

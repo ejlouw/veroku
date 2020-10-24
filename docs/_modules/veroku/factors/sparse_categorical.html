@@ -1,0 +1,678 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>veroku.factors.sparse_categorical &#8212; veroku 0.0.14 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for veroku.factors.sparse_categorical</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for instantiating sparse tables with log probabilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System imports</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="c1"># Third-party imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">special</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="c1"># Local imports</span>
+<span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
+<span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
+
+
+<span class="c1"># TODO: consider removing some unused functions</span>
+
+
+<div class="viewcode-block" id="SparseCategorical"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical">[docs]</a><span class="k">class</span> <span class="nc">SparseCategorical</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for instantiating sparse tables with log probabilities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</span>
+
+<span class="sd">        :param var_names: The variable names.</span>
+<span class="sd">        :type var_names: str list</span>
+<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.</span>
+<span class="sd">            Missing assignments are assumed to have zero probability.</span>
+<span class="sd">        :type</span>
+<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</span>
+<span class="sd">            Missing assignments are assumed to have -inf log-probability (zero probability).</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; var_names = [&#39;rain&#39;,&#39;slip&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
+<span class="sd">            &gt;&gt;&gt;                (0,1):0.2,</span>
+<span class="sd">            &gt;&gt;&gt;                (1,0):0.4,</span>
+<span class="sd">            &gt;&gt;&gt;                (1,1):0.6}</span>
+<span class="sd">            &gt;&gt;&gt;var_cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt;table = SparseCategorical(log_probs_table=log_probs_table,</span>
+<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
+<span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: add check that assignment lengths are consistent with var_names</span>
+        <span class="c1"># TODO: add check that cardinalities are consistent with assignments</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cardinalities</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The cardinalities and var_names lists should be the same length.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">log_probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either log_probs_table or probs_table must be specified&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_probs_table</span> <span class="o">=</span> <span class="p">{</span><span class="n">assignment</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">cardinalities</span>
+
+    <span class="c1"># TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor</span>
+    <span class="c1">#  when probs turn to 0.</span>
+    <span class="c1"># TODO: Add variable order sorting</span>
+<div class="viewcode-block" id="SparseCategorical.equals"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if this factor is the same as another factor.</span>
+
+<span class="sd">        :param factor: The other factor to compare to.</span>
+<span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :return: The result of the comparison.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">SparseCategorical</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;factor must be of SparseLogTable type but has type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="o">!=</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">],</span> <span class="n">prob</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.copy"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make a copy of this factor.</span>
+<span class="sd">        :return: The copy of this factor.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                                 <span class="n">log_probs_table</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">),</span>
+                                 <span class="n">cardinalities</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_shared_order_smaller_vars</span><span class="p">(</span><span class="n">smaller_vars</span><span class="p">,</span> <span class="n">larger_vars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        larger_vars = [&#39;a&#39;, &#39;c&#39;, &#39;d&#39;, &#39;b&#39;]</span>
+<span class="sd">        smaller_vars = [&#39;c&#39;, &#39;e&#39;, &#39;b&#39;]</span>
+<span class="sd">        return [&#39;c&#39;, &#39;b&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shared_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">smaller_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">larger_vars</span><span class="p">]</span>
+        <span class="n">remaining_smaller_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">larger_vars</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">shared_vars</span><span class="p">))</span>
+        <span class="n">smaller_vars_new_order</span> <span class="o">=</span> <span class="n">shared_vars</span> <span class="o">+</span> <span class="n">remaining_smaller_vars</span>
+        <span class="k">return</span> <span class="n">smaller_vars_new_order</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_intersection_has_same_order</span><span class="p">(</span><span class="n">larger_vars</span><span class="p">,</span> <span class="n">smaller_vars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the intersection of two lists has the same order in both lists.</span>
+<span class="sd">        Will return true if either list is empty? SHOULD THIS BE THE CASE?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices_of_smaller_in_larger</span> <span class="o">=</span> <span class="p">[</span><span class="n">larger_vars</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">smaller_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">larger_vars</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">indices_of_smaller_in_larger</span><span class="p">)</span> <span class="o">==</span> <span class="n">indices_of_smaller_in_larger</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># TODO: change back to log form</span>
+<div class="viewcode-block" id="SparseCategorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sum out variables from this factor.</span>
+<span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
+<span class="sd">        :param keep: Whether to keep or sum out vrs</span>
+<span class="sd">        :return: The resulting factor.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vars_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
+        <span class="n">vars_to_sum_out</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vars_to_keep</span><span class="p">]</span>
+        <span class="n">nested_table</span><span class="p">,</span> <span class="n">nested_table_vars</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_get_nested_sorted_probs</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span>
+                                                                                     <span class="n">new_variables_order_inner</span><span class="o">=</span><span class="n">vars_to_sum_out</span><span class="p">,</span>
+                                                                                     <span class="n">old_variable_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
+                                                                                     <span class="n">old_assign_probs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="n">result_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">l1_assign</span><span class="p">,</span> <span class="n">log_probs_table</span> <span class="ow">in</span> <span class="n">nested_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="n">result_table</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+
+        <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vars_to_sum_out</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span>
+                                 <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.reduce"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Observe variables to have certain values and return reduced table.</span>
+<span class="sd">        :param vrs: (list) The variables.</span>
+<span class="sd">        :param values: (tuple or list) Their values</span>
+<span class="sd">        :return: The resulting factor.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vars_unobserved</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">]</span>
+        <span class="n">nested_table</span><span class="p">,</span> <span class="n">nested_table_vars</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_get_nested_sorted_probs</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="o">=</span><span class="n">vrs</span><span class="p">,</span>
+                                                                                     <span class="n">new_variables_order_inner</span><span class="o">=</span><span class="n">vars_unobserved</span><span class="p">,</span>
+                                                                                     <span class="n">old_variable_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
+                                                                                     <span class="n">old_assign_probs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="n">result_table</span> <span class="o">=</span> <span class="n">nested_table</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)]</span>
+        <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">vars_unobserved</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span>
+                                 <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+    <span class="k">def</span> <span class="nf">_assert_consistent_cardinalities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assert that the variable cardinalities are consistent between two factors.</span>
+
+<span class="sd">        :param factor:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Error: inconsistent variable cardinalities: </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">error_msg</span>
+
+    <span class="k">def</span> <span class="nf">_apply_binary_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">operator_function</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply a binary operator function f(self.factor, factor) and return the result</span>
+
+<span class="sd">        :param factor: The other factor to use in the binary operation.</span>
+<span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :return: The resulting factor.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">SparseCategorical</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;factor must be of SparseLogTable type but has type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_consistent_cardinalities</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+        <span class="n">result_table</span><span class="p">,</span> <span class="n">result_vars</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_complex_table_operation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+                                                                               <span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="n">factor</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+                                                                               <span class="n">operator_function</span><span class="p">)</span>
+        <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
+        <span class="n">result_var_cards</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">result_vars</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span>
+                                 <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<div class="viewcode-block" id="SparseCategorical.multiply"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multiply this factor with another factor and return the result.</span>
+
+<span class="sd">        :param factor: The factor to multiply with.</span>
+<span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :return: The factor product.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_binary_operator</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.cancel"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.</span>
+<span class="sd">        :param factor: The factor to divide by.</span>
+<span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :return: The factor quotient.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">special_divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_binary_operator</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">special_divide</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.divide"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Divide this factor by another factor and return the result.</span>
+
+<span class="sd">        :param factor: The factor to divide by.</span>
+<span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :return: The factor quotient.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_binary_operator</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.argmax"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.argmax">[docs]</a>    <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the Categorical assignment (vector value) that maximises the factor potential.</span>
+
+<span class="sd">        :return: The argmax assignment.</span>
+<span class="sd">        :rtype: int list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_nested_sorted_probs</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">,</span>
+                                 <span class="n">new_variables_order_inner</span><span class="p">,</span>
+                                 <span class="n">old_variable_order</span><span class="p">,</span> <span class="n">old_assign_probs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reorder probs to a new order and sort assignments.</span>
+<span class="sd">        :params new_variables_order_outer:</span>
+<span class="sd">        :params new_variables_order_inner:</span>
+<span class="sd">        :params old_variable_order:</span>
+<span class="sd">        :params old_assign_probs: A dictionary of assignment and coresponding probabilities.</span>
+<span class="sd">        Example:</span>
+<span class="sd">        old_variable_order = [a, b]</span>
+<span class="sd">        new_variables_order_outer = [b]</span>
+
+<span class="sd">          a  b  c   P(a,b)     return:       b    a  c  P(b,a)</span>
+<span class="sd">        {(0, 0, 0): pa0b0c0                {(0):{(0, 0): pa0b0,</span>
+<span class="sd">         (0, 1, 0): pa0b1c0                      (1, 0): pa1b0}</span>
+<span class="sd">         (1, 0, 1): pa1b0c1                 (1):{(0, 1): pa0b1,</span>
+<span class="sd">         (1, 1, 1): pa1b1c1}                     (1, 1): pa1b1}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Complete and improve docstring.</span>
+        <span class="n">new_variable_order</span> <span class="o">=</span> <span class="n">new_variables_order_outer</span> <span class="o">+</span> <span class="n">new_variables_order_inner</span>
+        <span class="n">new_order_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_variable_order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">old_variable_order</span><span class="p">]</span>
+        <span class="n">new_assign_probs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">old_assign_i</span><span class="p">,</span> <span class="n">old_prob_i</span> <span class="ow">in</span> <span class="n">old_assign_probs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_row_assignment</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_assign_i</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">old_i</span><span class="p">,</span> <span class="n">new_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_order_indices</span><span class="p">):</span>
+                <span class="n">new_row_assignment</span><span class="p">[</span><span class="n">new_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_assign_i</span><span class="p">[</span><span class="n">old_i</span><span class="p">]</span>
+            <span class="n">l1_assign</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">)])</span>
+            <span class="k">if</span> <span class="n">l1_assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_assign_probs</span><span class="p">:</span>
+                <span class="n">new_assign_probs</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">assign_l2</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">):])</span>
+            <span class="n">new_assign_probs</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">][</span><span class="n">assign_l2</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_prob_i</span>
+        <span class="k">return</span> <span class="n">new_assign_probs</span><span class="p">,</span> <span class="n">new_variable_order</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_complex_table_operation</span><span class="p">(</span><span class="n">vars_a</span><span class="p">,</span> <span class="n">table_a</span><span class="p">,</span> <span class="n">vars_b</span><span class="p">,</span> <span class="n">table_b</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.</span>
+<span class="sd">        :param vars_a:</span>
+<span class="sd">        :param table_a:</span>
+<span class="sd">        :param vars_b:</span>
+<span class="sd">        :param table_b:</span>
+<span class="sd">        :param func: The function to apply on pairs of corresponding probabilities in the two tables.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Complete and improve docstring.</span>
+        <span class="n">larger_table</span> <span class="o">=</span> <span class="n">table_a</span>
+        <span class="n">smaller_table</span> <span class="o">=</span> <span class="n">table_b</span>
+        <span class="n">larger_table_vars</span> <span class="o">=</span> <span class="n">vars_a</span>
+        <span class="n">smaller_table_vars</span> <span class="o">=</span> <span class="n">vars_b</span>
+        <span class="n">switched</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_a</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_b</span><span class="p">):</span>
+            <span class="n">larger_table</span> <span class="o">=</span> <span class="n">table_b</span>
+            <span class="n">smaller_table</span> <span class="o">=</span> <span class="n">table_a</span>
+            <span class="n">larger_table_vars</span> <span class="o">=</span> <span class="n">vars_b</span>
+            <span class="n">smaller_table_vars</span> <span class="o">=</span> <span class="n">vars_a</span>
+            <span class="n">switched</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">shared_order_smaller_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">larger_table_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">smaller_table_vars</span><span class="p">]</span>
+        <span class="n">remaining_smaller_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">smaller_table_vars</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">shared_order_smaller_vars</span><span class="p">))</span>
+
+        <span class="n">new_order_smaller_table_vars</span> <span class="o">=</span> <span class="n">remaining_smaller_vars</span> <span class="o">+</span> <span class="n">shared_order_smaller_vars</span>
+        <span class="n">smaller_table</span><span class="p">,</span> <span class="n">smaller_table_vars</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_get_nested_sorted_probs</span><span class="p">(</span><span class="n">remaining_smaller_vars</span><span class="p">,</span>
+                                                                                       <span class="n">shared_order_smaller_vars</span><span class="p">,</span>
+                                                                                       <span class="n">smaller_table_vars</span><span class="p">,</span> <span class="n">smaller_table</span><span class="p">)</span>
+        <span class="n">smaller_table_vars</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_order_smaller_table_vars</span><span class="p">)</span>
+
+        <span class="c1"># use the nested dictionary (of sub-assignment prob dictionaries)</span>
+        <span class="n">result_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">assign_l1</span><span class="p">,</span> <span class="n">l2_table</span> <span class="ow">in</span> <span class="n">smaller_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">result_l2_table</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_basic_table_operation</span><span class="p">(</span><span class="n">larger_table_vars</span><span class="p">,</span> <span class="n">larger_table</span><span class="p">,</span>
+                                                                       <span class="n">smaller_table_vars</span><span class="p">,</span> <span class="n">l2_table</span><span class="p">,</span>
+                                                                       <span class="n">func</span><span class="p">,</span> <span class="n">switched</span><span class="o">=</span><span class="n">switched</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">results_assign</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">result_l2_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">result_table</span><span class="p">[</span><span class="n">assign_l1</span> <span class="o">+</span> <span class="n">results_assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+        <span class="n">result_vars</span> <span class="o">=</span> <span class="n">remaining_smaller_vars</span> <span class="o">+</span> <span class="n">larger_table_vars</span>
+        <span class="k">return</span> <span class="n">result_table</span><span class="p">,</span> <span class="n">result_vars</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_basic_table_operation</span><span class="p">(</span><span class="n">larger_table_vars</span><span class="p">,</span>
+                               <span class="n">larger_table</span><span class="p">,</span>
+                               <span class="n">smaller_table_vars</span><span class="p">,</span>
+                               <span class="n">smaller_table</span><span class="p">,</span>
+                               <span class="n">_operator</span><span class="p">,</span>
+                               <span class="n">switched</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Efficiently perform operations on corresponding (as indicted by the assignments and variables names)</span>
+<span class="sd">        elements between larger_table_probs and smaller_table_probs. The smaller table variables must only</span>
+<span class="sd">        contain variables that is also in the larger and must be sorted to have the same order as in the larger</span>
+<span class="sd">        (although there can be variables in between in the larger). Also both can be sparse.</span>
+
+<span class="sd">        Note: the variables will have the same order as larger_table_vars and a new variable name list is therefore not</span>
+<span class="sd">              returned.</span>
+
+<span class="sd">        :param larger_table: A dictionary of assignment tuples and corresponding probabilities.</span>
+<span class="sd">        :type larger_table: SparseCategorical</span>
+<span class="sd">        :param smaller_table: A dictionary of assignment tuples and corresponding probabilities.</span>
+<span class="sd">        :type smaller_table: SparseCategorical</span>
+
+<span class="sd">        :Example:</span>
+<span class="sd">        larger_table_vars = [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">        larger_table = {(0, 0, 0): 0.5,</span>
+<span class="sd">                        (0, 1, 1): 0.2,</span>
+<span class="sd">                        (1, 1, 0): 0.3}</span>
+<span class="sd">        smaller_table_vars = [&#39;a&#39;, c&#39;]</span>
+<span class="sd">        smaller_table = {(0, 0): 0.2,</span>
+<span class="sd">                        (0, 1): 0.5,</span>
+<span class="sd">                        (1, 1): 0.1}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_intersection_has_same_order</span><span class="p">(</span><span class="n">larger_table_vars</span><span class="p">,</span> <span class="n">smaller_table_vars</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Variables must have same relative order.&#39;</span><span class="p">)</span>
+        <span class="n">shared_indices_in_larger</span> <span class="o">=</span> <span class="p">[</span><span class="n">larger_table_vars</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">smaller_table_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">larger_table_vars</span><span class="p">]</span>
+
+        <span class="n">result_probs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">lt_assign</span><span class="p">,</span> <span class="n">lt_prob</span> <span class="ow">in</span> <span class="n">larger_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">assign_smaller</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">lt_assign</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">shared_indices_in_larger</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">assign_smaller</span> <span class="ow">in</span> <span class="n">smaller_table</span><span class="p">:</span>
+                <span class="n">rt_prob</span> <span class="o">=</span> <span class="n">smaller_table</span><span class="p">[</span><span class="n">assign_smaller</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># use default zero prob (-inf log prob)</span>
+                <span class="n">rt_prob</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">switched</span><span class="p">:</span>
+                <span class="n">result_prob</span> <span class="o">=</span> <span class="n">_operator</span><span class="p">(</span><span class="n">lt_prob</span><span class="p">,</span> <span class="n">rt_prob</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result_prob</span> <span class="o">=</span> <span class="n">_operator</span><span class="p">(</span><span class="n">rt_prob</span><span class="p">,</span> <span class="n">lt_prob</span><span class="p">)</span>
+            <span class="c1">#  TODO: add this and update tests.</span>
+            <span class="c1">#  if result_prob != -np.inf:</span>
+            <span class="n">result_probs</span><span class="p">[</span><span class="n">lt_assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_prob</span>
+        <span class="k">return</span> <span class="n">result_probs</span>
+
+    <span class="k">def</span> <span class="nf">_apply_to_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">include_assignment</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">include_assignment</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">assign</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SparseCategorical.normalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a normalized copy of the factor.</span>
+<span class="sd">        :return: The normalized factor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">factor_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">logz</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span> <span class="o">-</span> <span class="n">logz</span>
+        <span class="k">return</span> <span class="n">factor_copy</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
+<span class="sd">        :return: Whether the factor is vacuous or not.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="SparseCategorical.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.</span>
+<span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
+
+<span class="sd">        :param factor: The other factor</span>
+<span class="sd">        :type factor: Gaussian</span>
+<span class="sd">        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.</span>
+<span class="sd">        :type normalize_factor: bool</span>
+<span class="sd">        :return: The Kullback-Leibler divergence</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">kld_from_log_elements</span><span class="p">(</span><span class="n">log_pi</span><span class="p">,</span> <span class="n">log_qi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">log_pi</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+                <span class="c1"># lim_{p-&gt;0} p*log(p/q) = 0</span>
+                <span class="c1"># lim_{p-&gt;0} p*log(p/q) = 0, with q = p</span>
+                <span class="c1"># So if p_i = 0, kld_i = 0</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">kld_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_pi</span> <span class="o">-</span> <span class="n">log_qi</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">kld_i</span>
+
+        <span class="n">log_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+        <span class="n">log_Q</span> <span class="o">=</span> <span class="n">factor</span>
+        <span class="k">if</span> <span class="n">normalize_factor</span><span class="p">:</span>
+            <span class="n">log_Q</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+        <span class="c1"># TODO: check that this is correct. esp with zeroes.</span>
+
+        <span class="n">PlogPdivQ_table</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_complex_table_operation</span><span class="p">(</span><span class="n">log_P</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
+                                                                        <span class="n">log_P</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+                                                                        <span class="n">log_Q</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
+                                                                        <span class="n">log_Q</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+                                                                        <span class="n">kld_from_log_elements</span><span class="p">)</span>
+        <span class="n">kld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">PlogPdivQ_table</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">kld</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">kld</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+                <span class="c1">#  this is fine (numerical error)</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">normalize_factor = &#39;</span><span class="p">,</span> <span class="n">log_P</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;self = &#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normalized_self = &#39;</span><span class="p">)</span>
+            <span class="n">log_P</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">factor = &#39;</span><span class="p">)</span>
+            <span class="n">log_Q</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Negative KLD: </span><span class="si">{</span><span class="n">kld</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kld</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.distance_from_vacuous"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</span>
+
+<span class="sd">        :return: The KL divergence.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># make uniform copy</span>
+        <span class="n">uniform_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">cards</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">uniform_factor</span><span class="o">.</span><span class="n">var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">uniform_log_prob</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">cards</span><span class="p">))</span>
+        <span class="n">uniform_factor</span><span class="o">.</span><span class="n">_apply_to_probs</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">uniform_log_prob</span><span class="p">)</span>
+        <span class="n">kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kl</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kl (</span><span class="si">{</span><span class="n">kl</span><span class="si">}</span><span class="s2">) &lt; 0.0&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">kl</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.potential"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">assignment</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value of the factor for a specific assignment.</span>
+
+<span class="sd">        :param assignment: The assignment</span>
+<span class="sd">        :return: The value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">vrs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">),</span> <span class="s1">&#39;variables (vrs) do not match factor variables.&#39;</span>
+        <span class="n">vrs_to_var_names_indices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">]</span>
+        <span class="n">var_names_order_assignments</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">assignment</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vrs_to_var_names_indices</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">var_names_order_assignments</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SparseCategorical.show"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_log_probs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the factor.</span>
+
+<span class="sd">        :param exp_log_probs: Whether or no to exponentiate the log probabilities (to display probabilities instead of</span>
+<span class="sd">        log-probabilities)</span>
+<span class="sd">        :type exp_log_probs: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prob_string</span> <span class="o">=</span> <span class="s1">&#39;log(prob)&#39;</span>
+        <span class="k">if</span> <span class="n">exp_log_probs</span><span class="p">:</span>
+            <span class="n">prob_string</span> <span class="o">=</span> <span class="s1">&#39;prob&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">prob_string</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">log_prob</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="n">log_prob</span>
+            <span class="k">if</span> <span class="n">exp_log_probs</span><span class="p">:</span>
+                <span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">assignment</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SparseCategoricalTemplate"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate">[docs]</a><span class="k">class</span> <span class="nc">SparseCategoricalTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="p">,</span> <span class="n">var_templates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a Categorical factor template.</span>
+
+<span class="sd">        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.</span>
+<span class="sd">        :type log_probs_table: tuple:float dict</span>
+<span class="sd">        :param var_templates: A list of formattable strings.</span>
+<span class="sd">        :type var_templates: str list</span>
+
+<span class="sd">        log_probs_table example:</span>
+<span class="sd">        {(0, 0): 0.1,</span>
+<span class="sd">         (0, 1): 0.3,</span>
+<span class="sd">         (1, 0): 0.1,</span>
+<span class="sd">         (1, 1): 0.5}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Complete and improve docstring.</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_templates</span><span class="o">=</span><span class="n">var_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SparseCategoricalTemplate.make_factor"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor">[docs]</a>    <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make a factor with var_templates formatted by format_dict to create specific var names.</span>
+
+<span class="sd">        :param format_dict: The dictionary to be used to format the var_templates strings.</span>
+<span class="sd">        :type format_dict: str dict</span>
+<span class="sd">        :return: The instantiated factor.</span>
+<span class="sd">        :rtype: SparseCategorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_templates</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">),</span>
+                                 <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_reorder_probs</span><span class="p">(</span><span class="n">new_variable_order</span><span class="p">,</span> <span class="n">old_variable_order</span><span class="p">,</span> <span class="n">old_assign_probs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reorder categorical table variables to a new order and reorder the associated probabilities</span>
+<span class="sd">    accordingly.</span>
+
+<span class="sd">    :param new_variable_order: The new variable order.</span>
+<span class="sd">    :type new_variable_order: str list</span>
+<span class="sd">    :param old_variable_order: The old vriable order (corresponding to old_assign_probs)</span>
+<span class="sd">    :type old_variable_order: str list</span>
+<span class="sd">    :param old_assign_probs: The assignment probability list</span>
+<span class="sd">    :type old_assign_probs: str, float nested list</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        old_variable_order = [a, b]</span>
+<span class="sd">        new_variable_order = [b, a]</span>
+
+<span class="sd">        a b P(a,b)  return    b a P(a,b)</span>
+<span class="sd">        0 0  pa0b0            0 0  pa0b0</span>
+<span class="sd">        0 1  pa0b1            0 1  pa1b0</span>
+<span class="sd">        1 0  pa1b0            1 0  pa0b1</span>
+<span class="sd">        1 1  pa1b1            1 1  pa1b1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO This function is old and still uses the list (instead of dictionary) format for probs. Update it.</span>
+    <span class="n">new_order_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_variable_order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">old_variable_order</span><span class="p">]</span>
+    <span class="n">new_assign_probs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">old_assign_prob_i</span> <span class="ow">in</span> <span class="n">old_assign_probs</span><span class="p">:</span>
+        <span class="n">old_row_assignment</span> <span class="o">=</span> <span class="n">old_assign_prob_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">prob</span> <span class="o">=</span> <span class="n">old_assign_prob_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">new_row_assignment</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_row_assignment</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">old_i</span><span class="p">,</span> <span class="n">new_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_order_indices</span><span class="p">):</span>
+            <span class="n">new_row_assignment</span><span class="p">[</span><span class="n">new_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_row_assignment</span><span class="p">[</span><span class="n">old_i</span><span class="p">]</span>
+        <span class="n">new_assign_probs</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">),</span> <span class="n">prob</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">new_assign_probs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">veroku</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">veroku</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, EJ Louw.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

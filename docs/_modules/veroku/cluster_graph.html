@@ -45,6 +45,7 @@
 <span class="kn">import</span> <span class="nn">veroku._cg_helpers._animation</span> <span class="k">as</span> <span class="nn">cg_animation</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_utils</span> <span class="kn">import</span> <span class="n">get_subset_evidence</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">veroku.factors.gaussian</span> <span class="kn">import</span> <span class="n">Gaussian</span>
 
 
 <span class="c1"># TODO: optimise pass_message</span>
@@ -81,9 +82,6 @@
 <span class="sd">    :param factors:</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># make data for easy inspection</span>
-    <span class="c1"># factors_absorbtion_dict = {make_factor_name(factor): [] for factor in factors}</span>
     <span class="n">factors_absorbtion_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">factors</span><span class="p">))}</span>
     <span class="n">final_graph_cluster_factors</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># factors: possibly smaller list of factors after factors which have a scope</span>
@@ -130,40 +128,8 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<div class="viewcode-block" id="get_subset_factor_df"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.get_subset_factor_df">[docs]</a><span class="k">def</span> <span class="nf">get_subset_factor_df</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
-    <span class="n">subset_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">factor_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_i</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_j</span><span class="o">.</span><span class="n">var_names</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">subset_dict</span><span class="p">:</span>
-                    <span class="n">subset_dict</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">subset_dict</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">make_subset_factor_df</span><span class="p">(</span><span class="n">subset_dict</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span></div>
-
-
-<div class="viewcode-block" id="greedy_absorb_subset_factors"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.greedy_absorb_subset_factors">[docs]</a><span class="k">def</span> <span class="nf">greedy_absorb_subset_factors</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
-    <span class="n">subset_df</span> <span class="o">=</span> <span class="n">get_subset_factor_df</span><span class="p">(</span><span class="n">factors</span><span class="p">)</span>
-    <span class="n">merged_factors</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">already_processed_factor_indices</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">subset_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-        <span class="n">factor_index</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;factor_index&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">factor_index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">already_processed_factor_indices</span><span class="p">:</span>
-            <span class="n">already_processed_factor_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor_index</span><span class="p">)</span>
-            <span class="n">absorbing_factor</span> <span class="o">=</span> <span class="n">factors</span><span class="p">[</span><span class="n">factor_index</span><span class="p">]</span>
-            <span class="n">subfactor_indices</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;subfactor_indices&#39;</span><span class="p">]</span>
-            <span class="n">remaining_factors_to_absorb_indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">subfactor_indices</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">already_processed_factor_indices</span><span class="p">)</span>
-            <span class="n">merged_factor</span> <span class="o">=</span> <span class="n">absorbing_factor</span>
-            <span class="k">for</span> <span class="n">sub_factor_index</span> <span class="ow">in</span> <span class="n">remaining_factors_to_absorb_indices</span><span class="p">:</span>
-                <span class="n">merged_factor</span> <span class="o">=</span> <span class="n">merged_factor</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factors</span><span class="p">[</span><span class="n">sub_factor_index</span><span class="p">])</span>
-                <span class="n">already_processed_factor_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_factor_index</span><span class="p">)</span>
-            <span class="n">merged_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged_factor</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">merged_factors</span><span class="p">,</span> <span class="n">subset_df</span></div>
-
-
 <div class="viewcode-block" id="ClusterGraph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph">[docs]</a><span class="k">class</span> <span class="nc">ClusterGraph</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">special_evidence</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">make_animation_gif</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">disable_tqdm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -186,6 +152,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">message_passing_index_strings</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_passed_message_factors_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="c1"># new</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_sent_message_dict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {(rec_cluster_id1, rec_cluster_id1): msg1, ...}</span>
+
         <span class="n">all_evidence_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">evidence_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -408,7 +377,7 @@
         <span class="n">message_product</span> <span class="o">=</span> <span class="n">last_passed_message_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">message_factor</span> <span class="ow">in</span> <span class="n">last_passed_message_factors</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="n">message_product</span> <span class="o">=</span> <span class="n">message_product</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">message_factor</span><span class="p">)</span>
-        <span class="n">joint</span> <span class="o">=</span> <span class="n">cluster_product</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">message_product</span><span class="p">)</span>
+        <span class="n">joint</span> <span class="o">=</span> <span class="n">cluster_product</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">message_product</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">joint</span></div>
 
 <div class="viewcode-block" id="ClusterGraph.get_factor"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.get_factor">[docs]</a>    <span class="k">def</span> <span class="nf">get_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">):</span>
@@ -485,7 +454,7 @@
 
         <span class="k">return</span> <span class="n">ranked_message_df</span></div>
 
-<div class="viewcode-block" id="ClusterGraph.process_graph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+<div class="viewcode-block" id="ClusterGraph.process_graph_async"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph_async">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform message passing until convergence (or maximum iterations).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -509,11 +478,18 @@
             <span class="k">for</span> <span class="n">indx</span><span class="p">,</span> <span class="n">message_row</span> <span class="ow">in</span> <span class="n">ranked_message_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
                 <span class="n">message</span> <span class="o">=</span> <span class="n">message_row</span><span class="p">[</span><span class="s1">&#39;message_object&#39;</span><span class="p">]</span>
                 <span class="n">distance_from_previous</span> <span class="o">=</span> <span class="n">message_row</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">assert</span> <span class="n">distance_from_previous</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;Error: Distance from previous message is negative.&#39;</span>
-                <span class="k">if</span> <span class="n">distance_from_previous</span> <span class="o">&gt;=</span> <span class="n">tol</span><span class="p">:</span>  <span class="c1"># TODO: correct this: if the message is not passed, it must not be included in new_message_distances_df</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">pass_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">distance_from_previous</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Distance from previous message is negative.&#39;</span><span class="p">)</span>
+                <span class="c1"># TODO: correct this: if the message is not passed, it must not be included in new_message_distances_df</span>
+                <span class="k">if</span> <span class="n">distance_from_previous</span> <span class="o">&gt;=</span> <span class="n">tol</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">sender_id</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">receiver_id</span><span class="si">}</span><span class="se">\t\t\t</span><span class="s1">(dfp: </span><span class="si">{</span><span class="n">distance_from_previous</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
+                            <span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">update_covform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_canform</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">debug_passed_message_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pass_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -533,6 +509,79 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_animation_gif</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">make_message_passing_animation_gif</span><span class="p">()</span></div>
 
+<div class="viewcode-block" id="ClusterGraph.get_most_informative_message"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.get_most_informative_message">[docs]</a>    <span class="k">def</span> <span class="nf">get_most_informative_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their</span>
+<span class="sd">        previous iterations.</span>
+<span class="sd">        :return: The message with the highest KL between its current and previous iteration (if more than one, only the</span>
+<span class="sd">         last calculated is returned) and the distance from the previous iteration.</span>
+<span class="sd">        :rtype: Message, float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_all_messages</span><span class="p">()</span>
+        <span class="n">factors_are_vacuous</span> <span class="o">=</span> <span class="p">[</span><span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">is_vacuous</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">factors_are_vacuous</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: All messages are vacuous&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;no messages to send.&#39;</span><span class="p">)</span>
+
+        <span class="n">max_distance</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">max_distance_message</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">receiver_id</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_passed_message_factors_dict</span><span class="p">:</span>
+                <span class="c1"># We imagine that vacuous messages were sent at step -1.</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">previous_msg_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_passed_message_factors_dict</span><span class="p">[(</span><span class="n">msg</span><span class="o">.</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">receiver_id</span><span class="p">)]</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">previous_msg_factor</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="n">max_distance</span><span class="p">:</span>
+                <span class="n">max_distance_message</span> <span class="o">=</span> <span class="n">msg</span>
+                <span class="n">max_distance</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="k">return</span> <span class="n">max_distance_message</span><span class="p">,</span> <span class="n">max_distance</span></div>
+
+<div class="viewcode-block" id="ClusterGraph.process_graph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the graph by performing message passing until convergece.</span>
+<span class="sd">        :param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sync</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_graph_sync</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_graph_async</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span></div>
+
+    <span class="c1"># New Synchronous version</span>
+    <span class="c1">#  TODO: make this more efficient, if no messages have been received by a cluster in the previous round, the next</span>
+    <span class="c1">#        message iterations from that cluster will be the same.</span>
+<div class="viewcode-block" id="ClusterGraph.process_graph_sync"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph_sync">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform synchronous message passing until convergence (or maximum iterations).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clusters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># The Cluster Graph contains only single cluster. Message passing not possible or necessary.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clusters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clusters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                                                                         <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">return</span>
+
+        <span class="n">max_message_distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Info: Starting iterative message passing.*&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">iterations</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">),</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">disable_tqdm</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration: </span><span class="si">{</span><span class="n">iterations</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="n">message</span><span class="p">,</span> <span class="n">distance_from_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_most_informative_message</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">distance_from_previous</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Info: max_message_distance=</span><span class="si">{</span><span class="n">max_message_distance</span><span class="si">}</span><span class="s1"> &lt; tol=</span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1">. Stopping.&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pass_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="s1">&#39;Warning: no messages passed.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Info: num_messages_passed = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="c1">#if self.make_animation_gif:</span>
+        <span class="c1">#    self.make_message_passing_animation_gif()</span>
+
 <div class="viewcode-block" id="ClusterGraph.pass_message"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.pass_message">[docs]</a>    <span class="k">def</span> <span class="nf">pass_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Pass message to the relevant receiver.</span>
@@ -544,7 +593,7 @@
                 <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Error: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1"> is not a subset of </span><span class="si">{</span><span class="n">cluster</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">var_names</span><span class="p">),</span> <span class="n">error_msg</span>
                 <span class="n">cluster</span><span class="o">.</span><span class="n">receive_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">last_passed_message_factors_dict</span><span class="p">[(</span><span class="n">message</span><span class="o">.</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">receiver_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_passed_message_factors_dict</span><span class="p">[(</span><span class="n">message</span><span class="o">.</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">receiver_id</span><span class="p">)]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">#old</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_animation_gif</span><span class="p">:</span>
                     <span class="n">cg_animation</span><span class="o">.</span><span class="n">add_message_pass_animation_frames</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="p">,</span>
                                                                    <span class="n">frames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">message_passing_animation_frames</span><span class="p">,</span>

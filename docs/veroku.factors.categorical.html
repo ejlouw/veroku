@@ -38,7 +38,7 @@
 <p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.categorical.Categorical">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_probs_tensor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating sparse tables with log probabilities.</p>
 <dl class="py method">
@@ -53,6 +53,20 @@
 <dd class="field-even"><p>int list</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.cancel">
+<code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros. When
+categorical message factors with zero probabilities are used in Belief Update algorithms, multiplication by the
+zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this
+results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the
+probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.
+:param factor: The factor to divide by.
+:type factor: Categorical
+:return: The factor quotient.
+:rtype: Categorical</p>
 </dd></dl>
 
 <dl class="py method">
@@ -79,17 +93,20 @@
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.divide">
-<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide this factor by another factor and return the result.</p>
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">special_rules</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide this factor by another factor and return the result.
+:param factor: The factor to divide by.
+:type factor: Categorical
+:param special_rules: Any special rules to apply for specific values of the left and right variables.</p>
+<blockquote>
+<div><p>For example: {(left_var_val, right_var_val): result, …}</p>
+</div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The factor quotient.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The factor quotient.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -122,7 +139,7 @@
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.kl_divergence">
 <code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalize_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
+<dd><p>Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
 Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -199,6 +216,11 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 </dd></dl>
 
 <dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.reorder">
+<code class="sig-name descname">reorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_var_names_order</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.reorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.reorder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.show">
 <code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exp_log_probs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the factor.</p>
@@ -211,11 +233,26 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 :type exp_log_probs: bool</p>
 </dd></dl>
 
+<dl class="py method">
+<dt id="veroku.factors.categorical.Categorical.tensor_operation">
+<em class="property">static </em><code class="sig-name descname">tensor_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor_a</span></em>, <em class="sig-param"><span class="n">tensor_b</span></em>, <em class="sig-param"><span class="n">tensor_a_var_names</span></em>, <em class="sig-param"><span class="n">tensor_b_var_names</span></em>, <em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.tensor_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.tensor_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a element wise function to two tensors with named indices.
+:param numpy.ndarray tensor_a: The first tensor.
+:param numpy.ndarray tensor_b: The second tensor.
+:param tensor_a_var_names: The first tensor’s variable names corresponding to the indices.
+:type tensor_a_var_names: string list
+:param tensor_b_var_names: The second tensor’s variable names corresponding to the indices.
+:type tensor_b_var_names: string list
+:param func: The function to apply elementwise to the two tensors (func(a,b))
+:return: The resulting tensor and corresponding variable names
+:rtype: string list</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt id="veroku.factors.categorical.CategoricalTemplate">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">CategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#CategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.CategoricalTemplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.categorical.</code><code class="sig-name descname">CategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#CategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.CategoricalTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
 <dl class="py method">
 <dt id="veroku.factors.categorical.CategoricalTemplate.make_factor">

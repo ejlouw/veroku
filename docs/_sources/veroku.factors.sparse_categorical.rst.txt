@@ -1,0 +1,7 @@
+veroku.factors.sparse\_categorical module
+=========================================
+
+.. automodule:: veroku.factors.sparse_categorical
+   :members:
+   :undoc-members:
+   :show-inheritance:
