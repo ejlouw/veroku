@@ -455,7 +455,7 @@ class ClusterGraph(object):
 
         return ranked_message_df
 
-    def process_graph_async(self, tol=1e-3, max_iter=50):
+    def process_graph_async(self, tol, max_iter):
         """
         Perform message passing until convergence (or maximum iterations).
         """
@@ -540,20 +540,20 @@ class ClusterGraph(object):
                 max_distance = distance
         return max_distance_message, max_distance
 
-    def process_graph(self, sync=True):
+    def process_graph(self, tol=1e-3, max_iter=50, sync=True):
         """
         Process the graph by performing message passing until convergece.
         :param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)
         """
         if sync:
-            self.process_graph_sync()
+            self.process_graph_sync(tol=tol, max_iter=max_iter)
         else:
-            self.process_graph_async()
+            self.process_graph_async(tol=tol, max_iter=max_iter)
 
     # New Synchronous version
     #  TODO: make this more efficient, if no messages have been received by a cluster in the previous round, the next
     #        message iterations from that cluster will be the same.
-    def process_graph_sync(self, tol=1e-3, max_iter=50):
+    def process_graph_sync(self, tol, max_iter):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
         """

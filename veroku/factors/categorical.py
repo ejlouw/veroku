@@ -103,7 +103,7 @@ class Categorical(Factor):
         :rtype: bool
         """
         if not isinstance(factor, Categorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+            raise ValueError(f'factor must be of Categorical type but has type {type(factor)}')
         if set(self.var_names) != set(factor.var_names):
             return False
         factor_copy = factor.copy()
@@ -412,8 +412,8 @@ class CategoricalTemplate(FactorTemplate):
         """
         Create a Categorical factor template.
 
-        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.
-        :type log_probs_table: tuple:float dict
+        :param probs_table: The log_probs_table that specifies the assignments and values for the template.
+        :type probs_table: tuple:float dict
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
@@ -425,7 +425,7 @@ class CategoricalTemplate(FactorTemplate):
         """
         # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)
-        self.log_probs_table = copy.deepcopy(log_probs_table)
+        self.log_probs_table = copy.deepcopy(log_probs)
 
     def make_factor(self, format_dict=None, var_names=None):
         """
@@ -439,5 +439,5 @@ class CategoricalTemplate(FactorTemplate):
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
-        return Categorical(log_probs_table=copy.deepcopy(self.log_probs_table),
+        return Categorical(probs_table=copy.deepcopy(self.log_probs),
                            var_names=var_names, cardinalities=self.var_cards.values())

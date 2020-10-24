@@ -16,10 +16,6 @@ from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
 
-# special operator rules
-LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
-LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
-
 # TODO: consider removing some unused functions
 
 
@@ -179,6 +175,26 @@ class SparseCategorical(Factor):
                 error_msg = f'Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}'
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
+    def _apply_binary_operator(self, factor, operator_function):
+        """
+        Apply a binary operator function f(self.factor, factor) and return the result
+
+        :param factor: The other factor to use in the binary operation.
+        :type factor: SparseCategorical
+        :return: The resulting factor.
+        :rtype: SparseCategorical
+        """
+        if not isinstance(factor, SparseCategorical):
+            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+        self._assert_consistent_cardinalities(factor)
+        result_table, result_vars = SparseCategorical._complex_table_operation(self.var_names, self.log_probs_table,
+                                                                               factor.var_names, factor.log_probs_table,
+                                                                               operator_function)
+        result_var_cards = copy.deepcopy(self.var_cards)
+        result_var_cards.update(factor.var_cards)
+        return SparseCategorical(var_names=result_vars, log_probs_table=result_table,
+                                 cardinalities=result_var_cards.values())
+
     def multiply(self, factor):
         """
         Multiply this factor with another factor and return the result.
@@ -188,16 +204,7 @@ class SparseCategorical(Factor):
         :return: The factor product.
         :rtype: SparseCategorical
         """
-        if not isinstance(factor, SparseCategorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        self._assert_consistent_cardinalities(factor)
-        result_table, result_vars = SparseCategorical._complex_table_operation(self.var_names, self.log_probs_table,
-                                                                               factor.var_names, factor.log_probs_table,
-                                                                               operator.add)
-        result_var_cards = copy.deepcopy(self.var_cards)
-        result_var_cards.update(factor.var_cards)
-        return SparseCategorical(var_names=result_vars, log_probs_table=result_table,
-                                 cardinalities=result_var_cards.values())
+        return self._apply_binary_operator(factor, operator.add)
 
     def cancel(self, factor):
         """
@@ -207,32 +214,24 @@ class SparseCategorical(Factor):
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
-        return self.divide(factor, special_rules=LOG_SUBTRACT_CANCEL_RULES)
+        def special_divide(a, b):
+            if (a == -np.inf) and (b == -np.inf):
+                return -np.inf
+            else:
+                return a - b
 
-    def divide(self, factor, special_rules=None):
+        return self._apply_binary_operator(factor, special_divide)
+
+    def divide(self, factor):
         """
         Divide this factor by another factor and return the result.
 
         :param factor: The factor to divide by.
         :type factor: SparseCategorical
-        :param special_rules: Any special rules to apply for specific values of the left and right variables.
-            For example: {(left_var_val, right_var_val): result, ...}
-        :type special_rules: dict
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
-        if not isinstance(factor, SparseCategorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        self._assert_consistent_cardinalities(factor)
-        # TODO: check what happens here when dividing default and non default values by zero.
-        result_table, result_vars = SparseCategorical._complex_table_operation(self.var_names, self.log_probs_table,
-                                                                               factor.var_names, factor.log_probs_table,
-                                                                               operator.sub,
-                                                                               special_rules=special_rules)
-        result_var_cards = copy.deepcopy(self.var_cards)
-        result_var_cards.update(factor.var_cards)
-        return SparseCategorical(var_names=result_vars, log_probs_table=result_table,
-                                 cardinalities=result_var_cards.values())
+        return self._apply_binary_operator(factor, operator.sub)
 
     def argmax(self):
         """
@@ -279,7 +278,7 @@ class SparseCategorical(Factor):
         return new_assign_probs, new_variable_order
 
     @staticmethod
-    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func, special_rules=None):
+    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func):
         """
         Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
         :param vars_a:
@@ -316,11 +315,8 @@ class SparseCategorical(Factor):
         for assign_l1, l2_table in smaller_table.items():
             result_l2_table = SparseCategorical._basic_table_operation(larger_table_vars, larger_table,
                                                                        smaller_table_vars, l2_table,
-                                                                       func, special_rules)
+                                                                       func, switched=switched)
             for results_assign, prob in result_l2_table.items():
-                # TODO: get better solution than this:
-                if (func == operator.sub) and switched:
-                    prob = -prob
                 result_table[assign_l1 + results_assign] = prob
         result_vars = remaining_smaller_vars + larger_table_vars
         return result_table, result_vars
@@ -331,7 +327,7 @@ class SparseCategorical(Factor):
                                smaller_table_vars,
                                smaller_table,
                                _operator,
-                               special_rules=None):
+                               switched):
         """
         Efficiently perform operations on corresponding (as indicted by the assignments and variables names)
         elements between larger_table_probs and smaller_table_probs. The smaller table variables must only
@@ -370,11 +366,10 @@ class SparseCategorical(Factor):
             else:
                 # use default zero prob (-inf log prob)
                 rt_prob = -np.inf
-            if (special_rules is not None) and ((lt_prob, _operator, rt_prob) in special_rules):
-                result_prob = special_rules[(lt_prob, _operator, rt_prob)]
-            else:
+            if not switched:
                 result_prob = _operator(lt_prob, rt_prob)
-        # TODO: add only when not default? This might complicate things a lot.
+            else:
+                result_prob = _operator(rt_prob, lt_prob)
             #if result_prob != -np.inf:
             result_probs[lt_assign] = result_prob
         return result_probs
@@ -408,7 +403,7 @@ class SparseCategorical(Factor):
         if self.distance_from_vacuous() < 1e-10:
             return True
         return False
-    
+
     def kl_divergence(self, factor, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
@@ -421,31 +416,40 @@ class SparseCategorical(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-        normalized_self = self.normalize()
-        factor_ = factor
-        if normalize_factor:
-            factor_ = factor.normalize()
-        # TODO: check that this is correct. esp with zeroes.
-        logPdivQ = normalized_self.divide(factor_, special_rules=LOG_SUBTRACT_KL_RULES)
-        normalized_self._apply_to_probs(np.exp)
 
-        PlogPdivQ_table, _ = SparseCategorical._complex_table_operation(normalized_self.var_names,
-                                                                        normalized_self.log_probs_table,
-                                                                        logPdivQ.var_names,
-                                                                        logPdivQ.log_probs_table,
-                                                                        operator.mul)
+        def kld_from_log_elements(log_pi, log_qi):
+            if log_pi == -np.inf:
+                # lim_{p->0} p*log(p/q) = 0
+                # lim_{p->0} p*log(p/q) = 0, with q = p
+                # So if p_i = 0, kld_i = 0
+                return 0.0
+            else:
+                kld_i = np.exp(log_pi) * (log_pi - log_qi)
+                return kld_i
+
+        log_P = self.normalize()
+        log_Q = factor
+        if normalize_factor:
+            log_Q = factor.normalize()
+        # TODO: check that this is correct. esp with zeroes.
+
+        PlogPdivQ_table, _ = SparseCategorical._complex_table_operation(log_P.var_names,
+                                                                        log_P.log_probs_table,
+                                                                        log_Q.var_names,
+                                                                        log_Q.log_probs_table,
+                                                                        kld_from_log_elements)
         kld = np.sum(list(PlogPdivQ_table.values()))
         if kld < 0.0:
             if np.isclose(kld, 0.0, atol=1e-5):
                 #  this is fine (numerical error)
                 return 0.0
-            print('\nnormalize_factor = ', normalize_factor)
+            print('\nnormalize_factor = ', log_P)
             print('self = ')
             self.show()
             print('normalized_self = ')
-            normalized_self.show()
+            log_P.show()
             print('\nfactor = ')
-            factor_.show()
+            log_Q.show()
             raise ValueError(f'Negative KLD: {kld}')
         return kld
 
