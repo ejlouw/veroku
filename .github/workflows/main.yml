@@ -59,7 +59,7 @@ jobs:
           pip install twine
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
-          if $BRANCH -eq 'master'; then python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
+          if $BRANCH -eq 'master'; then python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/* fi
 
       # Create and Publish Documentation
       - run: |
