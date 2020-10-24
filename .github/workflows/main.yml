@@ -34,8 +34,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
-      - name: Install Setuptools
+      - name: Install setuptools
         run: pip install setuptools==50.3.2
+      - name: Install wheel
+        run: pip install wheel==0.35.1
       - name: Install dependencies
         run: pip install -r requirements.txt
 
