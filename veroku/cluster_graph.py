@@ -86,7 +86,11 @@ def make_subset_factor_df(subset_dict):
     :param subset_dict: (dict) A dictionary mapping factors to factors that have subset scopes
     :return:
     """
-    data = np.array([list(subset_dict.keys()), list(subset_dict.values())]).T
+    keys = list(subset_dict.keys())
+    values = list(subset_dict.values())
+    assert(len(keys) == len(values))
+    # TODO: This raises different list lengths warning. Investigate this.
+    data = np.array([keys, values]).T
     df = pd.DataFrame(columns=['factor_index', 'subfactor_indices'],
                       data=data)
     df['num_subfactors'] = df['subfactor_indices'].apply(lambda x: len(x))
