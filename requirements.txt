@@ -9,12 +9,9 @@ graphviz==0.10.1
 Pillow==6.0.0
 
 # misc
-wheel==0.35.1
 importnb==0.6.2
 tqdm==4.48.1
 pandas==0.23.4
-ipython==7.5.0
-ipywidgets==7.5.1
 
 # math
 numpy==1.19.2
@@ -23,4 +20,4 @@ numdifftools==0.9.20
 scipy==1.5.2
 
 # testing
-mockito==1.1.0
+mockito==1.2.2
