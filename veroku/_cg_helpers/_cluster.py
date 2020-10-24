@@ -78,7 +78,7 @@ class Cluster(object):
         message_factor = message_factor.marginalize(sepset_vars, keep=True)
         if neighbour_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[neighbour_id]
-            message_factor = message_factor.divide(prev_received_message_factor)
+            message_factor = message_factor.cancel(prev_received_message_factor)
             # TODO: remove this after TableFactor has been converted to LogTableFactor
             # message_factor = message_factor.normalize()
             if isinstance(message_factor, Gaussian) and FIX_NON_PSD_MATRICES:
@@ -106,7 +106,7 @@ class Cluster(object):
         sender_id = message.sender_id
         if sender_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[sender_id]
-            self._factor = self._factor.divide(prev_received_message_factor)
+            self._factor = self._factor.cancel(prev_received_message_factor)
         # TODO: remove this after TableFactor has been converted to LogTableFactor
         #self._factor = self._factor.normalize()
         self._received_message_factors[message.sender_id] = message.factor.copy()

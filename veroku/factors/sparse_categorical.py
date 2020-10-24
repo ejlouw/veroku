@@ -370,7 +370,8 @@ class SparseCategorical(Factor):
                 result_prob = _operator(lt_prob, rt_prob)
             else:
                 result_prob = _operator(rt_prob, lt_prob)
-            #if result_prob != -np.inf:
+            #  TODO: add this and update tests.
+            #  if result_prob != -np.inf:
             result_probs[lt_assign] = result_prob
         return result_probs
 

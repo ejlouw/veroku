@@ -343,7 +343,7 @@ class ClusterGraph(object):
         message_product = last_passed_message_factors[0]
         for message_factor in last_passed_message_factors[1:]:
             message_product = message_product.multiply(message_factor)
-        joint = cluster_product.divide(message_product)
+        joint = cluster_product.cancel(message_product)
         return joint
 
     def get_factor(self, cluster_id):
