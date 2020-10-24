@@ -162,9 +162,6 @@ class Categorical(Factor):
             result_tensor = func(tensor_a, tensor_b)
             return result_tensor, tensor_a_var_names
         common_vars = set(tensor_a_var_names).intersection(tensor_b_var_names)
-        num_cvars = len(common_vars)
-        num_f1vars = len(tensor_a_var_names)
-        num_f2_vars = len(tensor_b_var_names)
 
         remaining_f1_vars = [v for v in tensor_a_var_names if v not in common_vars]
         remaining_f2_vars = [v for v in tensor_b_var_names if v not in common_vars]
@@ -172,7 +169,7 @@ class Categorical(Factor):
         common_vars = [v for v in tensor_a_var_names if v in common_vars]
         f1_vars_new_order = [tensor_a_var_names.index(v) for v in remaining_f1_vars]
         f1_vars_new_order += [tensor_a_var_names.index(v) for v in common_vars]
-        f1_new_vars = [tensor_a_var_names[i] for i in f1_vars_new_order]
+
         f1_tensor_new_shape = tensor_a.transpose(f1_vars_new_order)
         f1_dim_expansion_axis = list(range(len(remaining_f2_vars)))
         f1_tensor_std_shape = np.expand_dims(f1_tensor_new_shape, axis=f1_dim_expansion_axis)
@@ -180,10 +177,9 @@ class Categorical(Factor):
 
         f2_vars_new_order = [tensor_b_var_names.index(v) for v in remaining_f2_vars]
         f2_vars_new_order += [tensor_b_var_names.index(v) for v in common_vars]
-        f2_new_vars = [tensor_b_var_names[i] for i in f2_vars_new_order]
         f2_tensor_new_shape = tensor_b.transpose(f2_vars_new_order)
         # now f2 has var order / dim order:  [common_vars_dim, [1]*num_f2_vars]
-        # f2_dim_expansion_axis = list(range(num_cvars, num_cvars + len(remaining_f1_vars)))
+
         f2_dim_expansion_axis = list(range(len(remaining_f2_vars), len(remaining_f2_vars) + len(remaining_f1_vars)))
         f2_tensor_std_shape = np.expand_dims(f2_tensor_new_shape, axis=f2_dim_expansion_axis)
         # now f1 has var order / dim order: [f1_vars_dims, [1]*num_f1_vars] =

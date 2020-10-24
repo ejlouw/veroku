@@ -48,9 +48,6 @@ def absorb_subset_factors(factors):
     :param factors:
     :return:
     """
-
-    # make data for easy inspection
-    # factors_absorbtion_dict = {make_factor_name(factor): [] for factor in factors}
     factors_absorbtion_dict = {i: [] for i in range(len(factors))}
     final_graph_cluster_factors = []
     # factors: possibly smaller list of factors after factors which have a scope
@@ -98,7 +95,7 @@ def make_subset_factor_df(subset_dict):
 
 
 class ClusterGraph(object):
-
+    
     def __init__(self, factors, evidence=None, special_evidence=dict(), make_animation_gif=False, debug=False,
                  disable_tqdm=False, verbose=False):
         """
