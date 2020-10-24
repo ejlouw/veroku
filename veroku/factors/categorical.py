@@ -60,6 +60,8 @@ class Categorical(Factor):
         super().__init__(var_names=var_names)
 
         if cardinalities is None:
+            if log_probs_tensor is None:
+                raise ValueError('numpy array type log_probs_tensor is expected cardinalities are not supplied. Alternatively, provide cardinalities with dict type probs_table.')
             cardinalities = log_probs_tensor.shape
         elif len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
@@ -262,7 +264,16 @@ class Categorical(Factor):
         augmented_factor_tensor = factor.log_probs_tensor.copy()
         # when cancelling out a factor
         special_case_indices = np.where((augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf))
-        augmented_factor_tensor[special_case_indices] = np.float(0.0)
+
+        indices_are_empty = [a.size == 0 for a in special_case_indices]
+        if not any(indices_are_empty):
+            augmented_factor_tensor[special_case_indices] = np.float(0.0)
+        elif not all(indices_are_empty):
+            print('augmented_factor_tensor: ')
+            print(augmented_factor_tensor)
+            print('self.log_probs_tensor: ')
+            print(self.log_probs_tensor)
+            raise ValueError('something strange happened.')
         result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, augmented_factor_tensor,
                                                            self.var_names, factor.var_names, operator.sub)
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)

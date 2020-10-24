@@ -1,11 +1,25 @@
+from mockito import when, unstub
 from importnb import Notebook
 import unittest
+from veroku.cluster_graph import ClusterGraph
 
 
 class TestSudoku(unittest.TestCase):
     """
     A test class for example notebooks
     """
+    def setUp(self):
+        """
+        Run before every test.
+        """
+        when(ClusterGraph).show().thenReturn()
+
+    def tearDown(self):
+        """
+        Run after every test.
+        """
+        unstub()
+
     def test_sudoku(self):
         """
         Test that the sudoku notebook runs successfully and computes the correct solution (checked in notebook)

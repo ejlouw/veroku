@@ -90,6 +90,57 @@ class TestCategorical(unittest.TestCase):
 
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
+    def test_cancel_different_scope(self):
+        vars_ab = ['a', 'b']
+        probs_ab = {(0, 0): 1.0,
+                    (0, 1): 2.0,
+                    (1, 0): 3.0,
+                    (1, 1): 4.0}
+        factor_ab = Categorical(var_names=vars_ab, probs_table=probs_ab, cardinalities=[2, 2])
+
+        vars_b = ['b']
+        probs_b = {(0,): 5.0,
+                   (1,): 6.0}
+        factor_b = Categorical(var_names=vars_b, probs_table=probs_b, cardinalities=[2])
+
+        probs_ab_expected = {(0, 0): 1.0/5.0,
+                             (0, 1): 2.0/6.0,
+                             (1, 0): 3.0/5.0,
+                             (1, 1): 4.0/6.0}
+        factor_ab_expected = Categorical(var_names=vars_ab, probs_table=probs_ab_expected, cardinalities=[2, 2])
+
+        factor_ab_actual = factor_ab.cancel(factor_b)
+        self.assertTrue(factor_ab_expected.equals(factor_ab_actual))
+
+    def test_cancel_same_scope(self):
+        """
+        Test the cancel function applied to factors with the same scope.
+        """
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 1.0,
+                   (0, 1): 2.0,
+                   (1, 0): 3.0,
+                   (1, 1): 4.0}
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 5.0,
+                   (0, 1): 6.0,
+                   (1, 0): 7.0,
+                   (1, 1): 8.0}
+        factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+        vars_c = ['a', 'b']
+        probs_c = {(0, 0): 1.0/5.0,
+                   (0, 1): 2.0/6.0,
+                   (1, 0): 3.0/7.0,
+                   (1, 1): 4.0/8.0}
+        expected_resulting_factor = self.CatClass(var_names=vars_c, probs_table=probs_c, cardinalities=[2, 2])
+        actual_resulting_factor = factor_a.cancel(factor_b)
+        actual_resulting_factor.show()
+        expected_resulting_factor.show()
+        self.assertTrue(expected_resulting_factor.equals(actual_resulting_factor))
+
     def test_cancel_with_zeros(self):
         vars_a = ['a', 'b']
         probs_a = {(0, 0): 0.0,
@@ -112,9 +163,7 @@ class TestCategorical(unittest.TestCase):
                    (1, 1): 1.0}
         expected_resulting_factor = self.CatClass(var_names=vars_c, probs_table=probs_c, cardinalities=[2, 2])
         actual_resulting_factor = factor_a.cancel(factor_b)
-        print('actual_resulting_factor = \n')
         actual_resulting_factor.show()
-        print('expected_resulting_factor = \n')
         expected_resulting_factor.show()
         self.assertTrue(expected_resulting_factor.equals(actual_resulting_factor))
 
@@ -239,8 +288,6 @@ class TestCategorical(unittest.TestCase):
         factor_2 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 1.0*(np.log(1.0) - np.log(0.5))
-        print('correct_kld = ', correct_kld)
-        print('computed_kld = ', computed_kld)
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
 
     def test_kld3(self):
