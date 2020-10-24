@@ -44,9 +44,10 @@ jobs:
           sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           python -m unittest discover -s ./veroku/tests -t ./ -p 'test_*.py'
 
-  if: github.ref == 'refs/heads/master'
+
   publish:
     # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Package And Upload
         env:
