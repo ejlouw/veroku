@@ -89,7 +89,8 @@ def make_subset_factor_df(subset_dict):
     keys = list(subset_dict.keys())
     values = list(subset_dict.values())
     assert(len(keys) == len(values))
-    # TODO: This raises different list lengths warning. Investigate this.
+    # TODO: This raises different list lengths warning (see below). Investigate this.
+    #   VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences...
     data = np.array([keys, values]).T
     df = pd.DataFrame(columns=['factor_index', 'subfactor_indices'],
                       data=data)
