@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
       # Python Installation
       - name: Setup Python
@@ -37,15 +37,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Update version number
-      - name: SetupAndTest
+  test:
+    steps:
+      - name: Setup And Test
         run: |
           sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           python -m unittest discover -s ./veroku/tests -t ./ -p 'test_*.py'
 
-      # Package and Upload
-      # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
-      - name: SetupAndTest
+  if: github.ref == 'refs/heads/master'
+  publish:
+    # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
+    steps:
+      - name: Package And Upload
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
@@ -63,7 +66,7 @@ jobs:
           cd ../
           cp -R docs ../docs_copy
 
-      - name: checkout-pages-branch
+      - name: Checkout Github Pages Branch
         uses: actions/checkout@v2
         with:
           ref: gh-pages
@@ -75,5 +78,5 @@ jobs:
           git add docs/
           git commit -m 'Update documentation.'
           git push
-          
+
 
