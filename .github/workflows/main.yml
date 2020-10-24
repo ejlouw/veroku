@@ -48,7 +48,7 @@ jobs:
       # Package and Upload
 
       - name: Extract Branch Name
-          run: echo "::set-env name=BRANCH::$(echo ${GITHUB_REF##*/})"
+        run: echo "::set-env name=BRANCH::$(echo ${GITHUB_REF##*/})"
       # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
       # TODO: move upload commands to script file and improve branch check
       - name: Package And Upload
