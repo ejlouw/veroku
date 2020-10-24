@@ -49,21 +49,12 @@ jobs:
 
       - name: Extract Branch Name
         run: echo "::set-env name=BRANCH::$(echo ${GITHUB_REF##*/})"
-      # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
-      # TODO: move upload commands to script file and improve branch check
       - name: Package And Upload
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          if [ $BRANCH == master ]
-          then
-            pip install twine
-            pip install --upgrade setuptools wheel
-            python setup.py sdist bdist_wheel
-            echo "On branch $BRANCH"
-            python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
-          fi
+        run: ./actions_scripts/publish_to_pypi.sh
+
 
       # Create and Publish Documentation
       - run: |
@@ -78,16 +69,4 @@ jobs:
         with:
           ref: gh-pages
       # TODO: Add proper checks and replace '|| :'s
-      - run: |
-          if [ $BRANCH == master ]
-          then
-            rm -rf docs || :
-            mv ../docs_copy/build/html docs
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add docs/ || :
-            git commit -m 'Update documentation.' || :
-            git push || :
-          if
-
-
+      - run: ./actions_scripts/publish_documentation.sh

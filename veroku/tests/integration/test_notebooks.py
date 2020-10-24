@@ -3,6 +3,8 @@ from importnb import Notebook
 import unittest
 from veroku.cluster_graph import ClusterGraph
 
+# TODO: add print output suppression to tests
+
 
 class TestSudoku(unittest.TestCase):
     """
