@@ -55,6 +55,7 @@ jobs:
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: ./actions_scripts/publish_to_pypi.sh
 
+      # TODO: find better solution than copying actions_scripts to parent dir
       # Create and Publish Documentation
       - run: |
           cd ./docs
@@ -62,10 +63,10 @@ jobs:
           make html
           cd ../
           cp -R docs ../docs_copy
+          cp -R actions_scripts ../actions_scripts
 
       - name: Checkout Github Pages Branch
         uses: actions/checkout@v2
         with:
           ref: gh-pages
-      # TODO: Add proper checks and replace '|| :'s
-      - run: ./actions_scripts/publish_documentation.sh
+      - run: ../actions_scripts/publish_documentation.sh

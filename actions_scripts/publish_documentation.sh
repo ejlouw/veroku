@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO: Add proper checks and replace '|| :'s
 if [ $BRANCH == master ]
 then
   rm -rf docs || :
