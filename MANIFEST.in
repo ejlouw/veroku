@@ -1,4 +1,4 @@
 include requirements.txt
 include logo.png
-
+include actions_scripts/*
 prune veroku/tests/
