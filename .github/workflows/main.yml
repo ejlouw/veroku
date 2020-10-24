@@ -16,9 +16,11 @@ jobs:
     # Runner Image
     runs-on: ubuntu-latest
     steps:
+
       # Checkout
       - name: Checkout
         uses: actions/checkout@v2
+
       # Python Installation
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -37,18 +39,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-  test:
-    steps:
+      # Setup And Test
       - name: Setup And Test
         run: |
           sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           python -m unittest discover -s ./veroku/tests -t ./ -p 'test_*.py'
 
-
-  publish:
-    # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
-    if: github.ref == 'refs/heads/master'
-    steps:
+      # Package and Upload
+      # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
+      if: github.ref == 'refs/heads/master'
       - name: Package And Upload
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -59,7 +58,8 @@ jobs:
           python setup.py sdist bdist_wheel
           python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*
 
-      # Create and publish documentation
+      # Create and Publish Documentation
+      - if: github.ref == 'refs/heads/master'
       - run: |
           cd ./docs
           sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
