@@ -97,38 +97,6 @@ def make_subset_factor_df(subset_dict):
     return df
 
 
-def get_subset_factor_df(factors):
-    subset_dict = dict()
-    for i, factor_i in enumerate(factors):
-        for j, factor_j in enumerate(factors):
-            if set(factor_i.var_names) < set(factor_j.var_names):
-                if j in subset_dict:
-                    subset_dict[j].append(i)
-                else:
-                    subset_dict[j] = [i]
-    df = make_subset_factor_df(subset_dict)
-    return df
-
-
-def greedy_absorb_subset_factors(factors):
-    subset_df = get_subset_factor_df(factors)
-    merged_factors = []
-    already_processed_factor_indices = []
-    for i, row in subset_df.iterrows():
-        factor_index = row['factor_index']
-        if factor_index not in already_processed_factor_indices:
-            already_processed_factor_indices.append(factor_index)
-            absorbing_factor = factors[factor_index]
-            subfactor_indices = row['subfactor_indices']
-            remaining_factors_to_absorb_indices = set(subfactor_indices) - set(already_processed_factor_indices)
-            merged_factor = absorbing_factor
-            for sub_factor_index in remaining_factors_to_absorb_indices:
-                merged_factor = merged_factor.multiply(factors[sub_factor_index])
-                already_processed_factor_indices.append(sub_factor_index)
-            merged_factors.append(merged_factor)
-    return merged_factors, subset_df
-
-
 class ClusterGraph(object):
 
     def __init__(self, factors, evidence=None, special_evidence=dict(), make_animation_gif=False, debug=False,
