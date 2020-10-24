@@ -9,6 +9,7 @@ graphviz==0.10.1
 Pillow==6.0.0
 
 # misc
+wheel==0.35.1
 importnb==0.6.2
 tqdm==4.48.1
 pandas==0.23.4

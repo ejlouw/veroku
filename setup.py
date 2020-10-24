@@ -20,5 +20,6 @@ setuptools.setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
+    setup_requires=['wheel'],
     install_requires=REQUIREMENTS,
     python_requires='>=3.6')
