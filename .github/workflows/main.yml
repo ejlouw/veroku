@@ -14,7 +14,7 @@ jobs:
   # Test and Build Job
   build:
     # Runner Image
-    runs-on: ubuntu-2.273.2
+    runs-on: ubuntu-latest
     steps:
       # Checkout
       - name: checkout
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.8.5'
       - name: Cache pip
         uses: actions/cache@v2
         with:
@@ -34,10 +34,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
-      - name: Install setuptools
-        run: pip install setuptools==50.3.2
-      - name: Install wheel
-        run: pip install wheel==0.35.1
       - name: Install dependencies
         run: pip install -r requirements.txt
 
