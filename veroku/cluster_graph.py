@@ -533,15 +533,13 @@ class ClusterGraph(object):
                                                                          values=self.special_evidence.values())
             return
 
-        max_message_distance = float('inf')
-
         print('Info: Starting iterative message passing.*')
         for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
             self.conditional_print(f'iteration: {iterations}/{max_iter}')
 
             message, distance_from_previous = self.get_most_informative_message()
             if distance_from_previous < tol:
-                self.conditional_print(f'Info: max_message_distance={max_message_distance} < tol={tol}. Stopping.')
+                self.conditional_print(f'Info: distance_from_previous={distance_from_previous} < tol={tol}. Stopping.')
                 break
             self.pass_message(message)
             self.num_messages_passed += 1

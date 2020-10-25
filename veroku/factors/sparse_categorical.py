@@ -16,14 +16,30 @@ from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
 
-# TODO: consider removing some unused functions
+def check_input_rules(values, rules):
+    """
+    A helper function for special rules for complex table operations.
+    :param values: The list of values (left, right)
+    :param rules: The list of rules (left_match_rule, right_match_rule), where each rule can either be a function or a constant
+    """
+    results = [False, False]
+
+    for i in range(2):
+        rule = rules[i]
+        actual_value = values[i]
+        if callable(rule):
+            results[i] = rule(actual_value)
+        else:
+            expected_value = rule
+            results[i] = expected_value == actual_value
+    return all(results)
 
 
 class SparseCategorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
-    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None):
+    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_value=-np.inf):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -40,23 +56,26 @@ class SparseCategorical(Factor):
             >>>                (0,1):0.2,
             >>>                (1,0):0.4,
             >>>                (1,1):0.6}
-            >>>var_cardinalities = [2,2]
-            >>>table = SparseCategorical(log_probs_table=log_probs_table,
-            >>>                    var_names=var_names,
-            >>>                    cardinalities=var_cardinalities)
+            >>> cardinalities = [2,2]
+            >>> table = SparseCategorical(log_probs_table=log_probs_table,
+            >>>                           var_names=var_names,
+            >>>                           cardinalities=cardinalities)
         """
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
+        #if not isinstance(cardinalities, list):
+        #    raise ValueError('cardinalies should have type list')
         if len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
         if (log_probs_table is None) and (probs_table is None):
-                raise ValueError('Either log_probs_table or probs_table must be specified')
+            raise ValueError('Either log_probs_table or probs_table must be specified')
         if log_probs_table is None:
             log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
         self.log_probs_table = copy.deepcopy(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
+        self.default_value = default_value
 
     # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
     #  when probs turn to 0.
@@ -70,15 +89,41 @@ class SparseCategorical(Factor):
         :return: The result of the comparison.
         :rtype: bool
         """
-        if not isinstance(factor, SparseCategorical):
+        factor_ = factor
+        if not isinstance(factor_, SparseCategorical):
             raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        if self.var_names != factor.var_names:
+
+        if set(self.var_names) != set(factor_.var_names):
             return False
-        for assign, prob in self.log_probs_table.items():
-            if assign not in factor.log_probs_table:
+
+        # var sets are the same
+        if self.var_names != factor.var_names:
+            factor_ = factor.reorder(self.var_names)
+        # factors now have same variable order
+
+        # Check the values for every non-default assignment of self
+        for assign, self_prob in self.log_probs_table.items():
+            if assign not in factor_.log_probs_table:
+                if self_prob != factor_.default_value:
+                    return False
+            elif not np.isclose(factor_.log_probs_table[assign], self_prob):
                 return False
-            elif not np.isclose(factor.log_probs_table[assign], prob):
+        # everywhere that self has non default values, factor has the same values.
+
+        # TODO: improve efficiency here (there could be a lot of duplication with the above loop)
+        # Check the values for every non-default assignment of factor
+        for assign, factor_prob in factor_.log_probs_table.items():
+            if assign not in self.log_probs_table:
+                if factor_prob != self.default_value:
+                    return False
+            elif not np.isclose(self.log_probs_table[assign], factor_prob):
                 return False
+
+        # If all possible assignments have not been checked - check that the default values are the same
+        if not self._is_dense() and not factor._is_dense():
+            if self.default_value != factor.default_value:
+                return False
+
         return True
 
     def copy(self):
@@ -89,7 +134,7 @@ class SparseCategorical(Factor):
         """
         return SparseCategorical(var_names=self.var_names.copy(),
                                  log_probs_table=copy.deepcopy(self.log_probs_table),
-                                 cardinalities=self.var_cards.values())
+                                 cardinalities=copy.deepcopy(self.cardinalities))
 
     @staticmethod
     def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
@@ -138,9 +183,9 @@ class SparseCategorical(Factor):
         result_var_cards = copy.deepcopy(self.var_cards)
         for v in vars_to_sum_out:
             del result_var_cards[v]
-
+        cardinalities = list(result_var_cards.values())
         return SparseCategorical(var_names=vars_to_keep, log_probs_table=result_table,
-                                 cardinalities=result_var_cards.values())
+                                 cardinalities=cardinalities)
 
     def reduce(self, vrs, values):
         """
@@ -161,8 +206,9 @@ class SparseCategorical(Factor):
         for v in vrs:
             del result_var_cards[v]
 
+        cardinalities = list(result_var_cards.values())
         return SparseCategorical(var_names=vars_unobserved, log_probs_table=result_table,
-                                 cardinalities=result_var_cards.values())
+                                 cardinalities=cardinalities)
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -175,26 +221,6 @@ class SparseCategorical(Factor):
                 error_msg = f'Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}'
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
-    def _apply_binary_operator(self, factor, operator_function):
-        """
-        Apply a binary operator function f(self.factor, factor) and return the result
-
-        :param factor: The other factor to use in the binary operation.
-        :type factor: SparseCategorical
-        :return: The resulting factor.
-        :rtype: SparseCategorical
-        """
-        if not isinstance(factor, SparseCategorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-        self._assert_consistent_cardinalities(factor)
-        result_table, result_vars = SparseCategorical._complex_table_operation(self.var_names, self.log_probs_table,
-                                                                               factor.var_names, factor.log_probs_table,
-                                                                               operator_function)
-        result_var_cards = copy.deepcopy(self.var_cards)
-        result_var_cards.update(factor.var_cards)
-        return SparseCategorical(var_names=result_vars, log_probs_table=result_table,
-                                 cardinalities=result_var_cards.values())
-
     def multiply(self, factor):
         """
         Multiply this factor with another factor and return the result.
@@ -204,7 +230,7 @@ class SparseCategorical(Factor):
         :return: The factor product.
         :rtype: SparseCategorical
         """
-        return self._apply_binary_operator(factor, operator.add)
+        return self._complex_table_operation(factor, operator.add)
 
     def cancel(self, factor):
         """
@@ -220,7 +246,7 @@ class SparseCategorical(Factor):
             else:
                 return a - b
 
-        return self._apply_binary_operator(factor, special_divide)
+        return self._complex_table_operation(factor, special_divide)
 
     def divide(self, factor):
         """
@@ -231,7 +257,7 @@ class SparseCategorical(Factor):
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
-        return self._apply_binary_operator(factor, operator.sub)
+        return self._complex_table_operation(factor, operator.sub)
 
     def argmax(self):
         """
@@ -277,49 +303,53 @@ class SparseCategorical(Factor):
             new_assign_probs[l1_assign][assign_l2] = old_prob_i
         return new_assign_probs, new_variable_order
 
-    @staticmethod
-    def _complex_table_operation(vars_a, table_a, vars_b, table_b, func):
+    #TODO: make this more general / robust
+    def _complex_table_operation(self, factor_b, func):
         """
         Operate on a pair of tables which can be sparse and have any combination of overlapping or disjoint variable sets.
-        :param vars_a:
-        :param table_a:
-        :param vars_b:
-        :param table_b:
+        :param factor_a:
+        :param factor_b:
         :param func: The function to apply on pairs of corresponding probabilities in the two tables.
         :return:
         """
+        # NOTE: This function will skip operations where one of the factors has default values and is therefore only
+        # suitable for operators such as multiply, where if either of the factors have a default value, the result will
+        # also be default, or cancel, where it is typically the case that the larger factor (the cluster potentials)
+        # will have default values at assignments corresponding to that of the smaller factor (the message).
+        # TODO: Investigate the above note further.
+
+        factor_a = self.copy()
         # TODO: Complete and improve docstring.
-        larger_table = table_a
-        smaller_table = table_b
-        larger_table_vars = vars_a
-        smaller_table_vars = vars_b
-        switched = False
-        if len(table_a) < len(table_b):
-            larger_table = table_b
-            smaller_table = table_a
-            larger_table_vars = vars_b
-            smaller_table_vars = vars_a
-            switched = True
+        if not isinstance(factor_b, SparseCategorical):
+            raise ValueError(f'factor_b must be of SparseLogTable type but has type {type(factor)}')
+        factor_a._assert_consistent_cardinalities(factor_b)
 
-        shared_order_smaller_vars = [v for v in larger_table_vars if v in smaller_table_vars]
-        remaining_smaller_vars = list(set(smaller_table_vars) - set(shared_order_smaller_vars))
+        factor_a_table = factor_a.log_probs_table
+        factor_b_table = factor_b.log_probs_table
+        factor_a_vars = factor_a.var_names
+        factor_b_vars = factor_b.var_names
 
-        new_order_smaller_table_vars = remaining_smaller_vars + shared_order_smaller_vars
-        smaller_table, smaller_table_vars = SparseCategorical._get_nested_sorted_probs(remaining_smaller_vars,
-                                                                                       shared_order_smaller_vars,
-                                                                                       smaller_table_vars, smaller_table)
-        smaller_table_vars = copy.deepcopy(new_order_smaller_table_vars)
+        shared_vars_factor_b_order = [v for v in factor_a_vars if v in factor_b_vars]
+        remaining_factor_b_vars = list(set(factor_b_vars) - set(shared_vars_factor_b_order))
+        remaining_factor_b_var_cards = [factor_b.cardinalities[factor_b_vars.index(v)] for v in remaining_factor_b_vars]
+
+        new_order_factor_b_vars = remaining_factor_b_vars + shared_vars_factor_b_order
+        nested_factor_b_table, factor_b_vars = SparseCategorical._get_nested_sorted_probs(remaining_factor_b_vars,
+                                                                                          shared_vars_factor_b_order,
+                                                                                          factor_b_vars, factor_b_table)
+        factor_b_vars = copy.deepcopy(new_order_factor_b_vars)
 
         # use the nested dictionary (of sub-assignment prob dictionaries)
         result_table = dict()
-        for assign_l1, l2_table in smaller_table.items():
-            result_l2_table = SparseCategorical._basic_table_operation(larger_table_vars, larger_table,
-                                                                       smaller_table_vars, l2_table,
-                                                                       func, switched=switched)
+        for assign_l1, factor_b_sub_table in nested_factor_b_table.items():
+            result_l2_table = SparseCategorical._basic_table_operation(factor_a_vars, factor_a_table,
+                                                                       factor_b_vars, factor_b_sub_table,
+                                                                       func, switched=False)
             for results_assign, prob in result_l2_table.items():
                 result_table[assign_l1 + results_assign] = prob
-        result_vars = remaining_smaller_vars + larger_table_vars
-        return result_table, result_vars
+        result_vars = remaining_factor_b_vars + factor_a_vars
+        result_cardinalities = remaining_factor_b_var_cards + factor_a.cardinalities
+        return SparseCategorical(var_names=result_vars, log_probs_table=result_table, cardinalities=result_cardinalities)
 
     @staticmethod
     def _basic_table_operation(larger_table_vars,
@@ -358,7 +388,6 @@ class SparseCategorical(Factor):
         shared_indices_in_larger = [larger_table_vars.index(var) for var in smaller_table_vars if var in larger_table_vars]
 
         result_probs = dict()
-
         for lt_assign, lt_prob in larger_table.items():
             assign_smaller = tuple([lt_assign[i] for i in shared_indices_in_larger])
             if assign_smaller in smaller_table:
@@ -371,8 +400,8 @@ class SparseCategorical(Factor):
             else:
                 result_prob = _operator(rt_prob, lt_prob)
             #  TODO: add this and update tests.
-            #  if result_prob != -np.inf:
-            result_probs[lt_assign] = result_prob
+            if result_prob != -np.inf:
+                result_probs[lt_assign] = result_prob
         return result_probs
 
     def _apply_to_probs(self, func, include_assignment=False):
@@ -393,6 +422,18 @@ class SparseCategorical(Factor):
         for assign, prob in factor_copy.log_probs_table.items():
             factor_copy.log_probs_table[assign] = prob - logz
         return factor_copy
+
+    def _is_dense(self):
+        """
+        Check if all factor assignments have non-default values.
+        :return: The result of the check.
+        :rtype: Bool
+        """
+        num_assignments = len(self.log_probs_table)
+        max_possible_assignments = np.prod(self.cardinalities)
+        if num_assignments == max_possible_assignments:
+            return True
+        return False
 
     @property
     def is_vacuous(self):
@@ -432,14 +473,27 @@ class SparseCategorical(Factor):
         log_Q = factor
         if normalize_factor:
             log_Q = factor.normalize()
-        # TODO: check that this is correct. esp with zeroes.
 
-        PlogPdivQ_table, _ = SparseCategorical._complex_table_operation(log_P.var_names,
-                                                                        log_P.log_probs_table,
-                                                                        log_Q.var_names,
-                                                                        log_Q.log_probs_table,
-                                                                        kld_from_log_elements)
-        kld = np.sum(list(PlogPdivQ_table.values()))
+        # TODO: check that this is correct. esp with zeroes.
+        kld_factor = SparseCategorical._complex_table_operation(log_P,
+                                                                log_Q,
+                                                                kld_from_log_elements)
+
+        klds = list(kld_factor.log_probs_table.values())
+
+        # get assignments plog(p/q) where p is not default, but q is. These have not been accounted for above.
+        # TODO: find a better solution for this (see TOOD in _complex_table_operation)
+
+        #TODO: fix this
+        #q_assignments = list(log_P.log_probs_table.keys())
+        #for p_assign in log_P.log_probs_table.keys():
+        #    p_to_q_translation_indices = [self.var_names.index(v) for v in factor.var_names]
+        #    p_assign_in_q_order = [p_assign[i] for i in p_to_q_translation_indices]
+        #    if p_assign_in_q_order not in q_assignments:
+        #        klds.append(np.inf)
+
+        kld = np.sum(klds)
+
         if kld < 0.0:
             if np.isclose(kld, 0.0, atol=1e-5):
                 #  this is fine (numerical error)
@@ -502,6 +556,36 @@ class SparseCategorical(Factor):
                 prob = np.exp(prob)
             print(assignment, ' ', prob)
 
+    def reorder(self, new_var_names_order):
+        """
+        Reorder categorical table variables to a new order and reorder the associated probabilities
+        accordingly.
+        :param new_var_names_order: The new variable order.
+        :type new_var_names_order: str list
+        :return: The factor with new order.
+
+        Example:
+            old_variable_order = [a, b]
+            new_variable_order = [b, a]
+
+            a b P(a,b)  return    b a P(a,b)
+            0 0  pa0b0            0 0  pa0b0
+            0 1  pa0b1            0 1  pa1b0
+            1 0  pa1b0            1 0  pa0b1
+            1 1  pa1b1            1 1  pa1b1
+        """
+
+        new_order_indices = [self.var_names.index(var) for var in new_var_names_order]
+        new_log_probs_table = dict()
+        for assignment, value in self.log_probs_table.items():
+            reordered_assignment = tuple(assignment[i] for i in new_order_indices)
+            new_log_probs_table[reordered_assignment] = value
+        reordered_cardinalities = [self.cardinalities[i] for i in new_order_indices]
+
+        return SparseCategorical(var_names=new_var_names_order,
+                                 log_probs_table=new_log_probs_table,
+                                 cardinalities=reordered_cardinalities)
+
 
 class SparseCategoricalTemplate(FactorTemplate):
 
@@ -536,41 +620,6 @@ class SparseCategoricalTemplate(FactorTemplate):
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
+        cardinalities = list(self.var_cards.values())
         return SparseCategorical(log_probs_table=copy.deepcopy(self.log_probs_table),
-                                 var_names=var_names, cardinalities=self.var_cards.values())
-
-
-def _reorder_probs(new_variable_order, old_variable_order, old_assign_probs):
-    """
-    Reorder categorical table variables to a new order and reorder the associated probabilities
-    accordingly.
-
-    :param new_variable_order: The new variable order.
-    :type new_variable_order: str list
-    :param old_variable_order: The old vriable order (corresponding to old_assign_probs)
-    :type old_variable_order: str list
-    :param old_assign_probs: The assignment probability list
-    :type old_assign_probs: str, float nested list
-
-    Example:
-        old_variable_order = [a, b]
-        new_variable_order = [b, a]
-
-        a b P(a,b)  return    b a P(a,b)
-        0 0  pa0b0            0 0  pa0b0
-        0 1  pa0b1            0 1  pa1b0
-        1 0  pa1b0            1 0  pa0b1
-        1 1  pa1b1            1 1  pa1b1
-    """
-    # TODO This function is old and still uses the list (instead of dictionary) format for probs. Update it.
-    new_order_indices = [new_variable_order.index(var) for var in old_variable_order]
-    new_assign_probs = []
-    for old_assign_prob_i in old_assign_probs:
-        old_row_assignment = old_assign_prob_i[0]
-        prob = old_assign_prob_i[1]
-        new_row_assignment = [None] * len(old_row_assignment)
-        for old_i, new_i in enumerate(new_order_indices):
-            new_row_assignment[new_i] = old_row_assignment[old_i]
-        new_assign_probs.append([tuple(new_row_assignment), prob])
-
-    return sorted(new_assign_probs, key=lambda x: x[0])
+                                 var_names=var_names, cardinalities=cardinalities)
