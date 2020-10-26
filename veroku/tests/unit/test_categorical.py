@@ -440,16 +440,23 @@ class TestCategorical(unittest.TestCase):
 
     def test_KLD_with_zeros_sparse3(self):
         vars_a = ['a', 'b']
-        probs_a = {(0, 1): 0.0,
-                   (1, 0): 0.0,
-                   (1, 1): 1.0}
+        probs_a = {#(0,0): 0.0 #log: -inf
+                   (0, 1): 0.0,#log: -inf
+                   (1, 0): 0.0,#log: -inf
+                   (1, 1): 1.0}#log: 0
         factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
 
         vars_b = ['a', 'b']
         probs_b = {(0, 0): 0.5,
-                   (0, 1): 0.0,
-                   (1, 0): 0.0,
+                   (0, 1): 0.0, #log: -inf
+                   (1, 0): 0.0, #log: -inf
                    (1, 1): 0.5}
+        # test 1
+        # expected KL(a||b):
+        #    0log(0/0.5)    = 0
+        #    0log(0/0)      = 0
+        #    0log(0/0)      = 0
+        #    1log(1.0/0.5)  = log(2) = 0.6931
         factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
         expected_KLD = np.log(2)
         actual_KLD = factor_a.kl_divergence(factor_b)
@@ -495,7 +502,7 @@ class TestCategorical(unittest.TestCase):
         self.assertEqual(expected_kld, actual_kld)
 
     # SparseCategorical only
-    def test__complex_table_operation(self):
+    def test_apply_binary_operator(self):
         if self.CatClass == SparseCategorical:
             vars_abc = ['a', 'b', 'c']
             probs_abc = {#(0, 0, 0): -np.inf,
@@ -532,7 +539,9 @@ class TestCategorical(unittest.TestCase):
                                                 cardinalities=[2, 2, 2, 2])
             factor_abc = SparseCategorical(var_names=vars_abc, log_probs_table=probs_abc, cardinalities=[2, 2, 2])
             factor_dbc = SparseCategorical(var_names=vars_dbc, log_probs_table=probs_dbc, cardinalities=[2, 2, 2])
-            actual_result = factor_abc._complex_table_operation(factor_dbc, operator.sub)
+            actual_result = factor_abc._apply_binary_operator(factor_dbc, operator.sub)
+            actual_result_df = actual_result._to_df()
+            expected_result_df = expected_result._to_df()
             self.assertTrue(actual_result.equals(expected_result))
 
 
