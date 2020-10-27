@@ -504,48 +504,53 @@ class TestCategorical(unittest.TestCase):
     # SparseCategorical only
     def test_apply_binary_operator(self):
         if self.CatClass == SparseCategorical:
+            default_log_prob = 0.5
             vars_abc = ['a', 'b', 'c']
-            probs_abc = {#(0, 0, 0): -np.inf,
-                         #(0, 0, 1): -np.inf,
-                         (0, 1, 0): 0.03,
-                         (0, 1, 1): 0.04}
+            probs_abc = {#(0, 0, 0): 0.5,
+                         #(0, 0, 1): 0.5,
+                         (0, 1, 0): 0.3,
+                         (0, 1, 1): 0.4}
             vars_dbc = ['d', 'b', 'c']
-            probs_dbc = {#(0, 0, 0): -np.inf,
-                         (0, 0, 1): 0.02,
-                         #(0, 1, 0): -np.inf,
-                         (0, 1, 1): 0.04}
+            probs_dbc = {#(0, 0, 0): 0.5,
+                         (0, 0, 1): 0.2,
+                         #(0, 1, 0): 0.5,
+                         (0, 1, 1): 0.4}
+            ld = default_log_prob
 
-            d = -np.inf
             vars_dabc = ['d', 'a', 'b', 'c']
-            probs_dabc = {(0, 0, 0, 0): d-d,
-                          #(0, 0, 0, 1): d-0.2,
-                          (0, 0, 1, 0): 0.3-d,
-                          (0, 0, 1, 1): 0.04-0.4,
-                          (0, 1, 0, 0): d-d,
-                          #(0, 1, 0, 1): d-0.2,
-                          (0, 1, 1, 0): d-d,
-                          #(0, 1, 1, 1): d-0.4,
-                          (1, 0, 0, 0): d-d,
-                          (1, 0, 0, 1): d-d,
-                          (1, 0, 1, 0): 0.3-d,
-                          (1, 0, 1, 1): 0.4-d,
-                          (1, 1, 0, 0): np.nan,
-                          (1, 1, 0, 1): np.nan,
-                          (1, 1, 1, 0): np.nan,
-                          (1, 1, 1, 1): np.nan}
+            probs_dabc = {(0, 0, 0, 0): ld-ld,
+                          (0, 0, 0, 1): ld-0.2,
+                          (0, 0, 1, 0): 0.3-ld,
+                          (0, 0, 1, 1): 0.4-0.4,
+                          (0, 1, 0, 0): ld-ld,
+                          (0, 1, 0, 1): ld-0.2,
+                          (0, 1, 1, 0): ld-ld,
+                          (0, 1, 1, 1): ld-0.4,
+                          (1, 0, 0, 0): ld-ld,
+                          (1, 0, 0, 1): ld-ld,
+                          (1, 0, 1, 0): 0.3-ld,
+                          (1, 0, 1, 1): 0.4-ld,
+                          (1, 1, 0, 0): ld-ld,
+                          (1, 1, 0, 1): ld-ld,
+                          (1, 1, 1, 0): ld-ld,
+                          (1, 1, 1, 1): ld-ld}
 
             expected_result = SparseCategorical(var_names=vars_dabc,
                                                 log_probs_table=probs_dabc,
-                                                cardinalities=[2, 2, 2, 2])
-            factor_abc = SparseCategorical(var_names=vars_abc, log_probs_table=probs_abc, cardinalities=[2, 2, 2])
-            factor_dbc = SparseCategorical(var_names=vars_dbc, log_probs_table=probs_dbc, cardinalities=[2, 2, 2])
+                                                cardinalities=[2, 2, 2, 2],
+                                                default_log_prob=0.0)
+            factor_abc = SparseCategorical(var_names=vars_abc,
+                                           log_probs_table=probs_abc,
+                                           cardinalities=[2, 2, 2],
+                                           default_log_prob=default_log_prob)
+            factor_dbc = SparseCategorical(var_names=vars_dbc,
+                                           log_probs_table=probs_dbc,
+                                           cardinalities=[2, 2, 2],
+                                           default_log_prob=default_log_prob)
             actual_result = factor_abc._apply_binary_operator(factor_dbc, operator.sub)
             actual_result_df = actual_result._to_df()
             expected_result_df = expected_result._to_df()
             self.assertTrue(actual_result.equals(expected_result))
-
-
-
 
     def test__reorder(self):
         """

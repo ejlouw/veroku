@@ -10,13 +10,25 @@ import operator
 import numpy as np
 from scipy import special
 import pandas as pd
+import itertools
 
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
 
-def _make_standard_extended_table(table_a_df, table_b_df, default_value):
+def _get_var_names_from_log_prob_df(df):
+    var_names = [c for c in df.columns if c != 'log_prob']
+    return var_names
+
+
+def _get_full_assignments_table(var_names, cardinalities):
+    vars_possible_assignments_lists = [range(c) for c in cardinalities]
+    assignments_data = np.array(list(itertools.product(*vars_possible_assignments_lists)))
+    return pd.DataFrame(data=assignments_data, columns=var_names)
+
+
+def _make_standard_extended_table(table_a_df, table_b_df, default_value, table_a_var_cards=None):
     """
     Extend table so that it has all of the assignments corresponding to the assignments in another table.
     :param table_a_df: The table to extend.
@@ -24,50 +36,68 @@ def _make_standard_extended_table(table_a_df, table_b_df, default_value):
     :param table_b_df: The table base the extension of table_a on
     :type table_b_df: pandas Dataframe
     :param default_value: The value to fill missing values.
+    :param table_a_var_cards: This is used to extend the table even further to explicitly include assignments with
+        default values of table_a_df, where the common variables have assignments that are also found in table_b_df.
+        This is only necessary when preparing a sparse table for a binary operation where at least one default value
+        (between the two left and right values for each operation) does not guarantee that the operation result is
+        also default.
     :return: The extended table.
     :rtype: pandas Dataframe
 
     Example:
-    table_a_df = \
-    c	a	b   log_prob
-	0	0	1   1.030455
-	0	1	0   1.051271
-	0	1	1   1.072508
-	1	0	1   1.040811
-	1	1	0   1.061837
-	1	1	1   1.083287
+        table_a_df = \
+        c	a	b   log_prob
+        --------------------
+        0	0	1   1.0
+        0	1	0   1.0
+        0	1	1   1.0
+        1	0	1   1.0
+        1	1	0   1.0
+        1	1	1   1.0
 
-    table_a_df = \
-    a	b	e   log_prob
-    0	0	0   1.010050
-    0	0	1   1.030455
-    0	1	0   1.051271
-    0	1	1   1.072508
-    1	0	0   1.020201
-    1	0	1   1.040811
-    1	1	0   1.061837
-    1	1	1   1.083287
+        table_b_df = \
+        a	b	e   log_prob
+        --------------------
+        0	0	0   1.0
+        0	0	1   1.0
+        0	1	0   1.0
+        0	1	1   1.0
+        1	0	0   1.0
+        1	0	1   1.0
+        1	1	0   1.0
+        1	1	1   1.0
 
-    #returns the extended
-    a	b	c	log_prob table_a_df with the additional assignments where [a,b] = [0,0], as is present in table_b_df
-    0	0	0	-inf
-    0	0	1	-inf
-    0	1	0	1.030455
-    0	1	1	1.040811
-    1	0	0	1.051271
-    1	0	1	1.061837
-    1	1	0	1.072508
-    1	1	1	1.083287
+        #returns the extended table_a_df
+        # with the additional assignments where [a,b] = [0,0], as is present in table_b_df
+        a	b	c	log_prob
+        --------------------
+        0	0	0	-inf
+        0	0	1	-inf
+        0	1	0	1.0
+        0	1	1	1.0
+        1	0	0	1.0
+        1	0	1	1.0
+        1	1	0	1.0
+        1	1	1	1.0
+
     """
-    vars_a = [c for c in table_a_df.columns if c != 'log_prob']
-    vars_b = [c for c in table_b_df.columns if c != 'log_prob']
+    # TODO: see what else here might be unnecessary when table_a_var_cards in not None (to improve efficiency)
+    vars_a = _get_var_names_from_log_prob_df(table_a_df)
+    vars_b = _get_var_names_from_log_prob_df(table_b_df)
 
     vars_intersection = list(set(vars_b).intersection(set(vars_a)))
+    if len(vars_intersection) == 0:
+        return table_a_df
     table_a_extra_vars = list(set(vars_a) - set(vars_intersection))
-
     table_b_intersect_vars_df = table_b_df[vars_intersection].drop_duplicates()
     if len(table_a_extra_vars) != 0:
-        table_a_extra_vars_df = table_a_df[table_a_extra_vars].drop_duplicates()
+        if table_a_var_cards is not None:
+            # This is not necessary if the result of the operation that will be performed is
+            # default if any of the variables are default.
+            table_a_extra_vars_cards = [table_a_var_cards[v] for v in table_a_extra_vars]
+            table_a_extra_vars_df = _get_full_assignments_table(table_a_extra_vars, table_a_extra_vars_cards)
+        else:
+            table_a_extra_vars_df = table_a_df[table_a_extra_vars].drop_duplicates()
         table_a_full_assignments_df = table_b_intersect_vars_df.assign(dummy=1).merge(
             table_a_extra_vars_df.assign(dummy=1)).drop('dummy', 1)
     else:
@@ -78,19 +108,50 @@ def _make_standard_extended_table(table_a_df, table_b_df, default_value):
     return table_a_extended_df
 
 
-def _make_standard_extended_tables(table_a_df, table_b_df, default_value):
+def outer_merge_categorical_dfs(cat_a_df, cat_b_df, suffixes):
+    cat_a_var_names = _get_var_names_from_log_prob_df(cat_a_df)
+    cat_b_var_names = _get_var_names_from_log_prob_df(cat_b_df)
+    vars_intersection = list(set(cat_a_var_names).intersection(set(cat_b_var_names)))
+    if len(vars_intersection) == 0:
+        cat_a_df = cat_a_df.assign(dummy=1)
+        cat_b_df = cat_b_df.assign(dummy=1)
+        vars_intersection = 'dummy'
+    merged_df = pd.merge(cat_a_df, cat_b_df,
+                         on=vars_intersection, how='outer',
+                         suffixes=[suffixes[0], suffixes[1]])
+    if len(vars_intersection) == 0:
+        merged_df.drop('dummy', 1)
+    return merged_df
+
+
+def _make_standard_extended_tables(factor_a, factor_b, extra_default_values):
+    #TODO: update docstring
     """
     Extend two tables so that each has all of the assignments corresponding to the other
     :param table_a_df: The first table to extend other table.
     :type table_a_df: pandas Dataframe
     :param table_b_df: The other table to extend based on the first table.
     :type table_b_df: pandas Dataframe
-    :param default_value: The value to fill missing values.
+    :param extra_default_values:
     :return: The extended tables.
     :rtype: pandas Dataframes tuple
     """
-    extended_table_a_df = _make_standard_extended_table(table_a_df, table_b_df, default_value)
-    extended_table_b_df = _make_standard_extended_table(table_b_df, table_a_df, default_value)
+    # TODO: Add this functionality
+    if factor_a.default_log_prob != factor_b.default_log_prob:
+        error_msg = 'Cases where self.default_value and factor.default_value differ are not yet supported.'
+        raise NotImplementedError(error_msg)
+    default = factor_a.default_log_prob
+
+    table_a_df = factor_a._to_df()
+    table_b_df = factor_b._to_df()
+    a_cards = None
+    b_cards = None
+    if extra_default_values:
+        a_cards = factor_a.var_cards
+        b_cards = factor_b.var_cards
+
+    extended_table_a_df = _make_standard_extended_table(table_a_df, table_b_df, default, table_a_var_cards=a_cards)
+    extended_table_b_df = _make_standard_extended_table(table_b_df, table_a_df, default, table_a_var_cards=b_cards)
     return extended_table_a_df, extended_table_b_df
 
 
@@ -106,7 +167,7 @@ class SparseCategorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
-    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_value=-np.inf):
+    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -132,7 +193,7 @@ class SparseCategorical(Factor):
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
         #if not isinstance(cardinalities, list):
-        #    raise ValueError('cardinalies should have type list')
+        #    raise ValueError('cardinalities should have type list')
         if len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
         if (log_probs_table is None) and (probs_table is None):
@@ -142,7 +203,7 @@ class SparseCategorical(Factor):
         self.log_probs_table = copy.deepcopy(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
-        self.default_value = default_value
+        self.default_log_prob = default_log_prob
 
     # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
     #  when probs turn to 0.
@@ -170,26 +231,32 @@ class SparseCategorical(Factor):
         # factors now have same variable order
 
         # Check the values for every non-default assignment of self
-        for assign, self_prob in self.log_probs_table.items():
+        for assign, self_log_prob in self.log_probs_table.items():
+
             if assign not in factor_.log_probs_table:
-                if self_prob != factor_.default_value:
+                if self_log_prob != factor_.default_log_prob:
                     return False
-            elif not np.isclose(factor_.log_probs_table[assign], self_prob):
-                return False
+            else:
+                factor_log_prob = factor_.log_probs_table[assign]
+                if not np.isclose(factor_log_prob, self_log_prob):
+                    return False
         # everywhere that self has non default values, factor has the same values.
 
         # TODO: improve efficiency here (there could be a lot of duplication with the above loop)
         # Check the values for every non-default assignment of factor
-        for assign, factor_prob in factor_.log_probs_table.items():
+        for assign, factor_log_prob in factor_.log_probs_table.items():
+
             if assign not in self.log_probs_table:
-                if factor_prob != self.default_value:
+                if factor_log_prob != self.default_log_prob:
                     return False
-            elif not np.isclose(self.log_probs_table[assign], factor_prob):
-                return False
+            else:
+                self_log_prob = self.log_probs_table[assign]
+                if not np.isclose(self_log_prob, factor_log_prob):
+                    return False
 
         # If all possible assignments have not been checked - check that the default values are the same
         if not self._is_dense() and not factor._is_dense():
-            if self.default_value != factor.default_value:
+            if self.default_log_prob != factor.default_log_prob:
                 return False
 
         return True
@@ -202,7 +269,8 @@ class SparseCategorical(Factor):
         """
         return SparseCategorical(var_names=self.var_names.copy(),
                                  log_probs_table=copy.deepcopy(self.log_probs_table),
-                                 cardinalities=copy.deepcopy(self.cardinalities))
+                                 cardinalities=copy.deepcopy(self.cardinalities),
+                                 default_log_prob=self.default_log_prob)
 
     @staticmethod
     def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
@@ -374,35 +442,46 @@ class SparseCategorical(Factor):
     def _to_df(self):
         log_probs_table = self.log_probs_table
         var_names = self.var_names
-        df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: 'var_names', 1: 'log_prob'})
-        df[var_names] = pd.DataFrame(df['var_names'].to_list())
-        df.drop(columns=['var_names'], inplace=True)
+        df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: 'assignment', 1: 'log_prob'})
+        df[var_names] = pd.DataFrame(df['assignment'].to_list())
+        df.drop(columns=['assignment'], inplace=True)
         return df
 
-    def _apply_binary_operator(self, factor, func):
-        self_df = self._to_df()
-        factor_df = factor._to_df()
+    def _apply_binary_operator(self, factor, func, assume_default_result=False):
+        """
+
+        :param factor:
+        :param func:
+        :return:
+        """
+        #TODO: make this more efficient - there can be many duplicate operations in the current state.
+
 
         # TODO: Add this functionality
-        if self.default_value != factor.default_value:
+        if self.default_log_prob != factor.default_log_prob:
             error_msg = 'Cases where self.default_value and factor.default_value differ are not yet supported.'
             raise NotImplementedError(error_msg)
 
-        extended_table_a_df, extended_table_b_df = _make_standard_extended_tables(table_a_df=self_df,
-                                                                                  table_b_df=factor_df,
-                                                                                  default_value=self.default_value)
-        # TODO: see why this is necessary
-        #extended_table_a_df.drop_duplicates(inplace=True)
-        #extended_table_b_df.drop_duplicates(inplace=True)
+        if not assume_default_result:
+            extra_default_values = True
 
-        vars_intersection = list(set(self.var_names).intersection(set(factor.var_names)))
-        merged_df = pd.merge(extended_table_a_df, extended_table_b_df, on=vars_intersection, how='outer',
-                             suffixes=['_lt', '_rt'])
+        extended_table_a_df, extended_table_b_df = _make_standard_extended_tables(factor_a=self.copy(),
+                                                                                  factor_b=factor.copy(),
+                                                                                  extra_default_values=extra_default_values)
+
+        left_suffix, right_suffix = '_lt', '_rt'
+        merged_df = outer_merge_categorical_dfs(extended_table_a_df, extended_table_b_df,
+                                                suffixes=[left_suffix, right_suffix])
+        left_log_prob_col_name = 'log_prob' + left_suffix
+        right_log_prob_col_name = 'log_prob' + right_suffix
 
         wrapped_func = STAFunctionWrapper(func)
-        merged_df['log_prob'] = merged_df[['log_prob_lt', 'log_prob_rt']].apply(wrapped_func, axis=1)
-        merged_df.drop(columns=['log_prob_lt', 'log_prob_rt'], inplace=True)
-        sparser_merged_df = merged_df[merged_df['log_prob'] != self.default_value]
+        merged_df['log_prob'] = merged_df[[left_log_prob_col_name, right_log_prob_col_name]].apply(wrapped_func, axis=1)
+        merged_df.drop(columns=[left_log_prob_col_name, right_log_prob_col_name], inplace=True)
+
+        new_default_log_prob = func(self.default_log_prob, factor.default_log_prob)
+        if func(self.default_log_prob, factor.default_log_prob) == self.default_log_prob:
+            merged_df = merged_df[merged_df['log_prob'] != self.default_log_prob]
 
         # convert to log_probs_table dict
         new_var_cards = copy.deepcopy(self.var_cards)
@@ -410,12 +489,13 @@ class SparseCategorical(Factor):
         new_var_names = list(new_var_cards.keys())
         new_cardinalities = list(new_var_cards.values())
 
-        sparser_merged_df['var_names'] = list(zip(*[sparser_merged_df[v] for v in new_var_names]))
+        merged_df['var_names'] = list(zip(*[merged_df[v] for v in new_var_names]))
         # TODO: improve this
-        new_log_probs_table = sparser_merged_df[['var_names', 'log_prob']].set_index('var_names').to_dict()['log_prob']
+        new_log_probs_table = merged_df[['var_names', 'log_prob']].set_index('var_names').to_dict()['log_prob']
         return SparseCategorical(var_names=new_var_names,
                                  log_probs_table=new_log_probs_table,
-                                 cardinalities=new_cardinalities)
+                                 cardinalities=new_cardinalities,
+                                 default_log_prob=new_default_log_prob)
 
     def _apply_to_probs(self, func, include_assignment=False):
         for assign, prob in self.log_probs_table.items():
