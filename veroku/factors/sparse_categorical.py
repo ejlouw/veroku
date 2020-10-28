@@ -81,12 +81,13 @@ def _make_standard_extended_table(table_a_df, table_b_df, default_value, table_a
         1	1	1	1.0
 
     """
-    # TODO: see what else here might be unnecessary when table_a_var_cards in not None (to improve efficiency)
+    # TODO: improve explanation about table_a_var_cards
     vars_a = _get_var_names_from_log_prob_df(table_a_df)
     vars_b = _get_var_names_from_log_prob_df(table_b_df)
 
     vars_intersection = list(set(vars_b).intersection(set(vars_a)))
-    if len(vars_intersection) == 0:
+    if (len(vars_intersection) == 0) or (table_a_var_cards is None):
+        # NOte: if table_a_var_cards is not given: no extension is required
         return table_a_df
     table_a_extra_vars = list(set(vars_a) - set(vars_intersection))
     table_b_intersect_vars_df = table_b_df[vars_intersection].drop_duplicates()
@@ -125,7 +126,7 @@ def outer_merge_categorical_dfs(cat_a_df, cat_b_df, suffixes):
 
 
 def _make_standard_extended_tables(factor_a, factor_b, extra_default_values):
-    #TODO: update docstring
+    # TODO: update docstring
     """
     Extend two tables so that each has all of the assignments corresponding to the other
     :param table_a_df: The first table to extend other table.
@@ -167,6 +168,7 @@ class SparseCategorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
+
     def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
@@ -192,7 +194,7 @@ class SparseCategorical(Factor):
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
-        #if not isinstance(cardinalities, list):
+        # if not isinstance(cardinalities, list):
         #    raise ValueError('cardinalities should have type list')
         if len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
@@ -307,10 +309,11 @@ class SparseCategorical(Factor):
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
-        nested_table, nested_table_vars = SparseCategorical._get_nested_sorted_probs(new_variables_order_outer=vars_to_keep,
-                                                                                     new_variables_order_inner=vars_to_sum_out,
-                                                                                     old_variable_order=self.var_names,
-                                                                                     old_assign_probs=self.log_probs_table)
+        nested_table, nested_table_vars = SparseCategorical._get_nested_sorted_probs(
+            new_variables_order_outer=vars_to_keep,
+            new_variables_order_inner=vars_to_sum_out,
+            old_variable_order=self.var_names,
+            old_assign_probs=self.log_probs_table)
         result_table = dict()
         for l1_assign, log_probs_table in nested_table.items():
             prob = special.logsumexp(list(log_probs_table.values()))
@@ -366,7 +369,7 @@ class SparseCategorical(Factor):
         :return: The factor product.
         :rtype: SparseCategorical
         """
-        return self._apply_binary_operator(factor, operator.add)
+        return self._apply_binary_operator(factor, operator.add, assume_default_result=True)
 
     def cancel(self, factor):
         """
@@ -376,13 +379,14 @@ class SparseCategorical(Factor):
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
+
         def special_divide(a, b):
             if (a == -np.inf) and (b == -np.inf):
                 return -np.inf
             else:
                 return a - b
 
-        return self._apply_binary_operator(factor, special_divide)
+        return self._apply_binary_operator(factor, special_divide, assume_default_result=True)
 
     def divide(self, factor):
         """
@@ -450,18 +454,18 @@ class SparseCategorical(Factor):
     def _apply_binary_operator(self, factor, func, assume_default_result=False):
         """
 
-        :param factor:
-        :param func:
-        :return:
+        :param SparseCategorical factor: The other (other than self) factor to use in the binary operation.
+        :param callable func: The function specifying the binary operation between the two factors.
+        :return: The resulting factor.
+        :rtype: SparseCategorical
         """
-        #TODO: make this more efficient - there can be many duplicate operations in the current state.
-
-
+        # TODO: make this more efficient - there can be many duplicate operations in the current state.
         # TODO: Add this functionality
         if self.default_log_prob != factor.default_log_prob:
             error_msg = 'Cases where self.default_value and factor.default_value differ are not yet supported.'
             raise NotImplementedError(error_msg)
 
+        extra_default_values = False
         if not assume_default_result:
             extra_default_values = True
 

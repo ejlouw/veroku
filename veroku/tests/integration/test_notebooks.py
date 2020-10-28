@@ -28,8 +28,8 @@ class TestSudoku(unittest.TestCase):
         :return:
         """
         #TODO: put this back once factor operations have been made faster (too slow right now).
-        #with Notebook():
-        #    import veroku.notebooks.sudoku_example
+        with Notebook():
+            import veroku.notebooks.sudoku_example
 
     def test_slip_on_grass(self):
         """
