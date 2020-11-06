@@ -51,22 +51,47 @@
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
 
 
-<div class="viewcode-block" id="make_dense"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.make_dense">[docs]</a><span class="k">def</span> <span class="nf">make_dense</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_dense</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a factor to a dense factor by instanciating all of the implicit default value assignments.</span>
+<span class="sd">    :param factor: The factor to convert.</span>
+<span class="sd">    :type factor: SparseCategorical</span>
+<span class="sd">    :return: The dense factor version.</span>
+<span class="sd">    :rtype: SparseCategorical</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">factor_copy</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">dense_assingments</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">factor_copy</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">var_names</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">assign</span> <span class="ow">in</span> <span class="n">dense_assingments</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">:</span>
             <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">default_log_prob</span>
-    <span class="k">return</span> <span class="n">factor_copy</span></div>
+    <span class="k">return</span> <span class="n">factor_copy</span>
 
 
-<div class="viewcode-block" id="make_dense_default_probs_dict"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.make_dense_default_probs_dict">[docs]</a><span class="k">def</span> <span class="nf">make_dense_default_probs_dict</span><span class="p">(</span><span class="n">cardinalities</span><span class="p">,</span> <span class="n">default_value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">cardinalities</span><span class="p">,</span> <span class="n">default_value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a dictionary representing a categorical probability table that contains all assignments, as specified by the</span>
+<span class="sd">    given cardinalities (starting from 0).</span>
+<span class="sd">    :param cardinalities: The given cardinalities.</span>
+<span class="sd">    :type cardinalities: list</span>
+<span class="sd">    :param default_value: The default value to assign the missing values.</span>
+<span class="sd">    :type default_value: float</span>
+<span class="sd">    :returns: The dense representation.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; _make_dense_default_probs_dict(cardinalities=[2,3], default_value=0.0)</span>
+<span class="sd">    {(0,0):0.0,</span>
+<span class="sd">    (0,1):0.0,</span>
+<span class="sd">    (0,2):0.0,</span>
+<span class="sd">    (1,0):0.0,</span>
+<span class="sd">    (1,1):0.0,</span>
+<span class="sd">    (1,2):0.0}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dense_assingments</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cardinalities</span><span class="p">])</span>
     <span class="n">dense_default_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">dense_assingments</span><span class="p">,</span> <span class="p">[</span><span class="n">default_value</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">cardinalities</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">dense_default_dict</span></div>
+    <span class="k">return</span> <span class="n">dense_default_dict</span>
 
 
-<div class="viewcode-block" id="make_inner_dense"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.make_inner_dense">[docs]</a><span class="k">def</span> <span class="nf">make_inner_dense</span><span class="p">(</span><span class="n">sparse_nested_table</span><span class="p">,</span> <span class="n">outer_inner_cards</span><span class="p">,</span> <span class="n">default_value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_inner_dense</span><span class="p">(</span><span class="n">sparse_nested_table</span><span class="p">,</span> <span class="n">outer_inner_cards</span><span class="p">,</span> <span class="n">default_value</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert n sparse nested table dictionary&#39;s implicit default values in the innetables to real entries so that</span>
 <span class="sd">    all possible assignments are present in the inner sub tables.</span>
@@ -84,7 +109,7 @@
         <span class="k">for</span> <span class="n">inner_assign</span> <span class="ow">in</span> <span class="n">all_inner_table_assignments</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">inner_assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sparse_nested_inner_dense_table</span><span class="p">[</span><span class="n">outer_assign</span><span class="p">]:</span>
                 <span class="n">sparse_nested_inner_dense_table</span><span class="p">[</span><span class="n">outer_assign</span><span class="p">][</span><span class="n">inner_assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_value</span>
-    <span class="k">return</span> <span class="n">sparse_nested_inner_dense_table</span></div>
+    <span class="k">return</span> <span class="n">sparse_nested_inner_dense_table</span>
 
 
 <span class="k">def</span> <span class="nf">_get_nested_sorted_probs</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">,</span>
@@ -162,8 +187,6 @@
 <span class="sd">    :param default: The default value for ntd_a and ntd_b (the values for the missing values).</span>
 <span class="sd">    :param default_rules: The rules for when a calculation results will result in a default value (optional).</span>
 <span class="sd">        This can help speed up this function. The possible values are as follows:</span>
-<span class="sd">            &#39;left&#39; : If ntd_a has a default value, the result will always be default.</span>
-<span class="sd">            &#39;right&#39; : If ntd_b has a default value, the result will always be default.</span>
 <span class="sd">            &#39;any&#39; : If either ntd_a or ntd_b has a default value, the result will always be default.</span>
 <span class="sd">            &#39;both&#39;: Only if both ntd_a and ntd_b has a default value, the result will always be default.</span>
 <span class="sd">            &#39;none&#39;: No combination of default or non-default values is guarenteed to result in a default value</span>
@@ -171,7 +194,8 @@
 <span class="sd">    :returns: The nested table dictionary for the resulting factor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?)</span>
+    <span class="c1"># TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?).</span>
+    <span class="c1">#  Seems like it works - confirm.</span>
 
     <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -193,14 +217,14 @@
         <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
         <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
 
-        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
 
         <span class="c1"># Having only dense default table is not good enough, as this will still not cause the missing</span>
         <span class="c1"># default values in the sub tables to be used to compute potentially none default result values.</span>
         <span class="c1"># we therefore need to make these sub tables dense.</span>
-        <span class="n">ntd_a</span> <span class="o">=</span> <span class="n">make_inner_dense</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">ntd_b</span> <span class="o">=</span> <span class="n">make_inner_dense</span><span class="p">(</span><span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">ntd_a</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">ntd_b</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
         <span class="c1"># The result will only be default if the values in both ntd_a are default. This means</span>
@@ -226,30 +250,26 @@
         <span class="c1"># 1 0 1 dd = d</span>
         <span class="c1"># 1 1 0 dv</span>
         <span class="c1"># 1 1 1 dd = d</span>
-        <span class="c1"># But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this entry.</span>
-        <span class="c1"># We do this by adding default sub tables below.</span>
+        <span class="c1"># But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this</span>
+        <span class="c1"># entry. We do this by adding default sub tables below.</span>
         <span class="n">outer_assignments_a</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_a</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">outer_assignments_b</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_b</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outer_assignments_a</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">outer_assignments_b</span><span class="p">))</span>
         <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ntd_a_sd_assignments</span><span class="p">)</span>
 
-        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span>
-        <span class="c1"># If the values in ntd_a are default, the result is default. This means that we do not</span>
-        <span class="c1"># need to calculate the values where ntd_a is default. This will be the case by default,</span>
-        <span class="c1"># if we do not expand the assignments.</span>
-        <span class="k">pass</span>  <span class="c1"># no further processing necessary</span>
-    <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span>
-        <span class="c1"># Same as above</span>
-        <span class="k">pass</span>  <span class="c1"># no further processing necessary</span>
+    <span class="c1"># TODO: This is strange - improve.</span>
+    <span class="c1"># TODO: See if any performance gains are possible with &#39;left&#39; and &#39;right&#39; flags and add them if so.</span>
     <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s1">&#39;any&#39;</span><span class="p">:</span>
         <span class="k">pass</span>  <span class="c1"># no further processing necessary</span>
     <span class="n">symmetric_difference_combinations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ntd_a_sd_assignments</span><span class="p">,</span> <span class="n">ntd_b_sd_assignments</span><span class="p">])</span>
 
     <span class="k">for</span> <span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">sd_assign_b</span> <span class="ow">in</span> <span class="n">symmetric_difference_combinations</span><span class="p">:</span>
         <span class="n">joined_sd_assignment</span> <span class="o">=</span> <span class="n">sd_assign_a</span> <span class="o">+</span> <span class="n">sd_assign_b</span>
+
+        <span class="c1"># TODO: Add special, pre-computed result if both 0.</span>
         <span class="n">common_vars_subtable_a</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">full_sd_a_default_sub_table</span><span class="p">)</span>
         <span class="n">common_vars_subtable_b</span> <span class="o">=</span> <span class="n">ntd_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_b</span><span class="p">,</span> <span class="n">full_sd_b_default_sub_table</span><span class="p">)</span>
 

@@ -279,9 +279,7 @@ new_variable_order = [b, a]</p>
 <li><p><strong>default_rules</strong> – <p>The rules for when a calculation results will result in a default value (optional).
 This can help speed up this function. The possible values are as follows:</p>
 <blockquote>
-<div><p>’left’ : If ntd_a has a default value, the result will always be default.
-‘right’ : If ntd_b has a default value, the result will always be default.
-‘any’ : If either ntd_a or ntd_b has a default value, the result will always be default.
+<div><p>’any’ : If either ntd_a or ntd_b has a default value, the result will always be default.
 ‘both’: Only if both ntd_a and ntd_b has a default value, the result will always be default.
 ‘none’: No combination of default or non-default values is guarenteed to result in a default value</p>
 </div></blockquote>
@@ -299,30 +297,6 @@ This can help speed up this function. The possible values are as follows:</p>
 <dt id="veroku.factors.sparse_categorical.flatten_ntd">
 <code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">flatten_ntd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ntd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#flatten_ntd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.flatten_ntd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flatten a two level nested table dictionary.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.make_dense">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">make_dense</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#make_dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.make_dense" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.make_dense_default_probs_dict">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">make_dense_default_probs_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">default_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#make_dense_default_probs_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.make_dense_default_probs_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.make_inner_dense">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">make_inner_dense</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sparse_nested_table</span></em>, <em class="sig-param"><span class="n">outer_inner_cards</span></em>, <em class="sig-param"><span class="n">default_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#make_inner_dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.make_inner_dense" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert n sparse nested table dictionary’s implicit default values in the innetables to real entries so that
-all possible assignments are present in the inner sub tables.
-:param sparse_nested_table: The nested dictionary representing a sparse table.
-:type sparse_nested_table: dictionary of dictionaries
-:param outer_inner_cards: The lists of the cardinalities for the outer and inner part of the nested table respectively</p>
-<blockquote>
-<div><p>i.e [[2,2], [3, 4]] if the table dict is {(0,0):{(2,3):0.3},….} where the outer variables has cardinalities [2,2]
-and the inner ones [3,4]</p>
-</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
