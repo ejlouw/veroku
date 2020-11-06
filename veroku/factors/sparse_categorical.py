@@ -17,7 +17,14 @@ from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
 
-def make_dense(factor):
+def _make_dense(factor):
+    """
+    Convert a factor to a dense factor by instanciating all of the implicit default value assignments.
+    :param factor: The factor to convert.
+    :type factor: SparseCategorical
+    :return: The dense factor version.
+    :rtype: SparseCategorical
+    """
     factor_copy = factor.copy()
     dense_assingments = itertools.product(*[range(factor_copy.var_cards[v]) for v in factor_copy.var_names])
     for assign in dense_assingments:
@@ -26,13 +33,31 @@ def make_dense(factor):
     return factor_copy
 
 
-def make_dense_default_probs_dict(cardinalities, default_value):
+def _make_dense_default_probs_dict(cardinalities, default_value):
+    """
+    Make a dictionary representing a categorical probability table that contains all assignments, as specified by the
+    given cardinalities (starting from 0).
+    :param cardinalities: The given cardinalities.
+    :type cardinalities: list
+    :param default_value: The default value to assign the missing values.
+    :type default_value: float
+    :returns: The dense representation.
+    :rtype: dict
+    Example:
+    >>> _make_dense_default_probs_dict(cardinalities=[2,3], default_value=0.0)
+    {(0,0):0.0,
+    (0,1):0.0,
+    (0,2):0.0,
+    (1,0):0.0,
+    (1,1):0.0,
+    (1,2):0.0}
+    """
     dense_assingments = itertools.product(*[range(c) for c in cardinalities])
     dense_default_dict = dict(zip(dense_assingments, [default_value] * np.product(cardinalities)))
     return dense_default_dict
 
 
-def make_inner_dense(sparse_nested_table, outer_inner_cards, default_value):
+def _make_inner_dense(sparse_nested_table, outer_inner_cards, default_value):
     """
     Convert n sparse nested table dictionary's implicit default values in the innetables to real entries so that
     all possible assignments are present in the inner sub tables.
@@ -128,8 +153,6 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     :param default: The default value for ntd_a and ntd_b (the values for the missing values).
     :param default_rules: The rules for when a calculation results will result in a default value (optional).
         This can help speed up this function. The possible values are as follows:
-            'left' : If ntd_a has a default value, the result will always be default.
-            'right' : If ntd_b has a default value, the result will always be default.
             'any' : If either ntd_a or ntd_b has a default value, the result will always be default.
             'both': Only if both ntd_a and ntd_b has a default value, the result will always be default.
             'none': No combination of default or non-default values is guarenteed to result in a default value
@@ -137,7 +160,8 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     :returns: The nested table dictionary for the resulting factor.
     """
 
-    # TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?)
+    # TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?).
+    #  Seems like it works - confirm.
 
     resulting_factor_table = dict()
     ntd_a_sd_assignments = ntd_a.keys()
@@ -159,14 +183,14 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         ntd_a_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_a[0]]))
         ntd_b_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_b[0]]))
 
-        full_sd_a_default_sub_table = make_dense_default_probs_dict(outer_inner_cards_a[1], default)
-        full_sd_b_default_sub_table = make_dense_default_probs_dict(outer_inner_cards_b[1], default)
+        full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
+        full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
 
         # Having only dense default table is not good enough, as this will still not cause the missing
         # default values in the sub tables to be used to compute potentially none default result values.
         # we therefore need to make these sub tables dense.
-        ntd_a = make_inner_dense(ntd_a, outer_inner_cards_a, default)
-        ntd_b = make_inner_dense(ntd_b, outer_inner_cards_b, default)
+        ntd_a = _make_inner_dense(ntd_a, outer_inner_cards_a, default)
+        ntd_b = _make_inner_dense(ntd_b, outer_inner_cards_b, default)
 
     elif default_rules == 'both':
         # The result will only be default if the values in both ntd_a are default. This means
@@ -192,30 +216,26 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         # 1 0 1 dd = d
         # 1 1 0 dv
         # 1 1 1 dd = d
-        # But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this entry.
-        # We do this by adding default sub tables below.
+        # But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this
+        # entry. We do this by adding default sub tables below.
         outer_assignments_a = set(ntd_a.keys())
         outer_assignments_b = set(ntd_b.keys())
         ntd_a_sd_assignments = list(outer_assignments_a.union(outer_assignments_b))
         ntd_b_sd_assignments = copy.deepcopy(ntd_a_sd_assignments)
 
-        full_sd_a_default_sub_table = make_dense_default_probs_dict(outer_inner_cards_a[1], default)
-        full_sd_b_default_sub_table = make_dense_default_probs_dict(outer_inner_cards_b[1], default)
+        full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
+        full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
 
-    elif default_rules == 'left':
-        # If the values in ntd_a are default, the result is default. This means that we do not
-        # need to calculate the values where ntd_a is default. This will be the case by default,
-        # if we do not expand the assignments.
-        pass  # no further processing necessary
-    elif default_rules == 'right':
-        # Same as above
-        pass  # no further processing necessary
+    # TODO: This is strange - improve.
+    # TODO: See if any performance gains are possible with 'left' and 'right' flags and add them if so.
     elif default_rules == 'any':
         pass  # no further processing necessary
     symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
 
     for sd_assign_a, sd_assign_b in symmetric_difference_combinations:
         joined_sd_assignment = sd_assign_a + sd_assign_b
+
+        # TODO: Add special, pre-computed result if both 0.
         common_vars_subtable_a = ntd_a.get(sd_assign_a, full_sd_a_default_sub_table)
         common_vars_subtable_b = ntd_b.get(sd_assign_b, full_sd_b_default_sub_table)
 
