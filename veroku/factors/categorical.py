@@ -88,12 +88,30 @@ class Categorical(Factor):
         self.cardinalities = cardinalities
 
     def reorder(self, new_var_names_order):
+        """
+        Reorder categorical table variables to a new order and reorder the associated probabilities
+        accordingly.
+        :param new_var_names_order: The new variable order.
+        :type new_var_names_order: str list
+        :return: The factor with new order.
+
+        Example:
+            old_variable_order = [a, b]
+            new_variable_order = [b, a]
+
+            a b P(a,b)  return    b a P(a,b)
+            0 0  pa0b0            0 0  pa0b0
+            0 1  pa0b1            0 1  pa1b0
+            1 0  pa1b0            1 0  pa0b1
+            1 1  pa1b1            1 1  pa1b1
+        """
         if new_var_names_order == self.var_names:
-            return
+            return self.copy()
         if set(new_var_names_order) != set(self.var_names):
             raise ValueError('The new_var_names_order set must be the same as the factor variables.')
         vars_new_order_indices = [self.var_names.index(v) for v in new_var_names_order]
-        self.log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
+        log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
+        return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor)
 
     def equals(self, factor):
         """
@@ -108,8 +126,7 @@ class Categorical(Factor):
             raise ValueError(f'factor must be of Categorical type but has type {type(factor)}')
         if set(self.var_names) != set(factor.var_names):
             return False
-        factor_copy = factor.copy()
-        factor_copy.reorder(self.var_names)
+        factor_copy = factor.reorder(self.var_names)
         if not np.allclose(self.log_probs_tensor, factor_copy.log_probs_tensor):
             return False
         return True
