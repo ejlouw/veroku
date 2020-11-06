@@ -123,7 +123,8 @@
     <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">subset_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">subset_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
-    <span class="c1"># TODO: This raises different list lengths warning. Investigate this.</span>
+    <span class="c1"># TODO: This raises different list lengths warning (see below). Investigate this.</span>
+    <span class="c1">#   VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences...</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;factor_index&#39;</span><span class="p">,</span> <span class="s1">&#39;subfactor_indices&#39;</span><span class="p">],</span>
                       <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
@@ -566,15 +567,13 @@
                                                                          <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
             <span class="k">return</span>
 
-        <span class="n">max_message_distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Info: Starting iterative message passing.*&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">iterations</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">),</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">disable_tqdm</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration: </span><span class="si">{</span><span class="n">iterations</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
             <span class="n">message</span><span class="p">,</span> <span class="n">distance_from_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_most_informative_message</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">distance_from_previous</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Info: max_message_distance=</span><span class="si">{</span><span class="n">max_message_distance</span><span class="si">}</span><span class="s1"> &lt; tol=</span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1">. Stopping.&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conditional_print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Info: distance_from_previous=</span><span class="si">{</span><span class="n">distance_from_previous</span><span class="si">}</span><span class="s1"> &lt; tol=</span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1">. Stopping.&#39;</span><span class="p">)</span>
                 <span class="k">break</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pass_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">+=</span> <span class="mi">1</span>

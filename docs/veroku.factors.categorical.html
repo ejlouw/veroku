@@ -218,7 +218,22 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.reorder">
 <code class="sig-name descname">reorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_var_names_order</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.reorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.reorder" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Reorder categorical table variables to a new order and reorder the associated probabilities
+accordingly.
+:param new_var_names_order: The new variable order.
+:type new_var_names_order: str list
+:return: The factor with new order.</p>
+<dl>
+<dt>Example:</dt><dd><p>old_variable_order = [a, b]
+new_variable_order = [b, a]</p>
+<p>a b P(a,b)  return    b a P(a,b)
+0 0  pa0b0            0 0  pa0b0
+0 1  pa0b1            0 1  pa1b0
+1 0  pa1b0            1 0  pa0b1
+1 1  pa1b1            1 1  pa1b1</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.show">
