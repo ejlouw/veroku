@@ -157,8 +157,8 @@ class Gaussian(Factor):
                 pass
             assert len(self.K.shape) == 2, "Error: Precision matrix must be two dimensional."
             assert self.K.shape[0] == self.dim, "Error: Precision matrix dimension inconsistency."
-            assert self.h.shape[
-                       0] == self.dim, f"Error: h vector dimension inconsistency: {h.shape[0]} (should be {self.dim})"
+            h_error_msg = f"Error: h vector dimension inconsistency: {self.h.shape[0]} (should be {self.dim})"
+            assert self.h.shape[0] == self.dim, h_error_msg
             self.g = _factor_utils.make_scalar(g)
             self.cov, self.mean, self.log_weight = None, None, None
             self.CANFORM = True
@@ -166,7 +166,7 @@ class Gaussian(Factor):
 
             # Note: this is important to allow vacuous Gaussians (that arise, for exmaple, when Gaussians are divided by
             # identical distributions or with unconditioned nonlinear Gaussians) to be merginalised.
-            if np.allclose(self.K, np.zeros([self._dim, self._dim]), atol=1e-10):
+            if self.is_vacuous:
                 self._is_vacuous = True
 
     # pylint: enable=invalid-name
@@ -726,7 +726,7 @@ class Gaussian(Factor):
         if self._is_vacuous and factor._is_vacuous:
             return 0.0
         if self._is_vacuous or factor._is_vacuous:
-            return float('inf')
+            return np.inf
 
         if self.equals(factor):
             return 0.0
@@ -754,15 +754,23 @@ class Gaussian(Factor):
         mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
         dim_term = 0.5 * normalized_self.dim
         kld = det_term + trace_term + mahalanobis_term - dim_term
-        # TODO:Add warning or error if this is negative and remove abs below
+        # TODO: Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
 
     @property
     def is_vacuous(self):
-        # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
-        #  are vacuous? Maybe make a contains vacuous function as well.
+        """
+        Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.
+        :return: The result of the check.
+        :rtype: Bool
+        """
+
         if self._is_vacuous:
             return True
+        if self.CANFORM:
+            if np.allclose(self.K, 0.0):
+                if not _factor_utils.is_pos_def(self.K):
+                    return True
         return False
 
     def copy(self):
@@ -774,27 +782,26 @@ class Gaussian(Factor):
         """
 
         if self.COVFORM and self.CANFORM:
-
-            assert isinstance(self.g, float)
-            assert isinstance(self.log_weight, float)
+            assert isinstance(self.g, (int, float))
+            assert isinstance(self.log_weight, (int, float))
             gaussian_copy = Gaussian(cov=self.cov.copy(),
                                      mean=self.mean.copy(),
                                      log_weight=self.log_weight,
                                      var_names=copy.deepcopy(self._var_names))
             gaussian_copy.K = self.K.copy()
             gaussian_copy.h = self.h.copy()
-            gaussian_copy.g = self.g.copy()
+            gaussian_copy.g = self.g
             gaussian_copy.CANFORM = True
             return gaussian_copy
 
         if self.COVFORM:
-            assert isinstance(self.log_weight, float)
+            assert isinstance(self.log_weight, (int, float))
             return Gaussian(cov=self.cov.copy(),
                             mean=self.mean.copy(),
                             log_weight=self.log_weight,
                             var_names=copy.deepcopy(self._var_names))
         if self.CANFORM:
-            assert isinstance(self.g, float)
+            assert isinstance(self.g, (int, float))
             return Gaussian(K=self.K.copy(),
                             h=self.h.copy(),
                             g=self.g,

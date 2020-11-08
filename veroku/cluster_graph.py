@@ -512,7 +512,7 @@ class ClusterGraph(object):
 
         max_distance = -np.inf
         max_distance_message = None
-
+        distances = []
         for msg in messages:
             if (msg.sender_id, msg.receiver_id) not in self.last_passed_message_factors_dict:
                 # We imagine that vacuous messages were sent at step -1.
@@ -520,6 +520,7 @@ class ClusterGraph(object):
             else:
                 previous_msg_factor = self.last_passed_message_factors_dict[(msg.sender_id, msg.receiver_id)]
                 distance = previous_msg_factor.kl_divergence(msg.factor)
+            distances.append(distance)
             if distance > max_distance:
                 max_distance_message = msg
                 max_distance = distance
@@ -561,7 +562,7 @@ class ClusterGraph(object):
                 break
             self.pass_message(message)
             self.num_messages_passed += 1
-            #excepts
+            #except
 
             if self.num_messages_passed == 0:
                 self.conditional_print('Warning: no messages passed.')

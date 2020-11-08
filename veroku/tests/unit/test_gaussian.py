@@ -619,7 +619,6 @@ class TestGaussian(unittest.TestCase):
     def test_log_potential(self):
         gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=0.0, var_names=['a', 'b'])
 
-
         x_val = [7, 3]
         vrs = ['a', 'b']
         log_pot_canform = gaussian.log_potential(x_val=x_val, vrs=vrs)
@@ -629,5 +628,46 @@ class TestGaussian(unittest.TestCase):
         # TODO: investigate the
         self.assertAlmostEqual(log_pot_canform, log_pot_covform, places=1)
 
-    # TODO: add tests for vacuous Gaussians.
+    def test_is_vacuous_flat_gaussian(self):
+        """
+        Test that the is_vacuous property function identifies a Gaussian as non-vacuous if all the precision
+        matrix entries are close to zero and the matrix is invertible.
+        """
+        dims = 3
+        var_names = [str(i) for i in range(dims)]
+        K = np.eye(dims) * 1e-9
+        h = np.zeros([dims,1])
+        g = 0.0
+        gauss = Gaussian(var_names=var_names, K=K, h=h, g=g)
+        self.assertFalse(gauss.is_vacuous)
+
+    def test_is_vacuous_non_psd_precision(self):
+        """
+        Test that the is_vacuous property function identifies a Gaussian as vacuous if all the precision
+        matrix entries are close to zero and the matrix is not invertible.
+        """
+        dims = 3
+        var_names = [str(i) for i in range(dims)]
+        K = np.eye(dims) * 1e-9
+        K[1, 1] = 0.0
+        h = np.zeros([dims, 1])
+        g = 0.0
+        gauss = Gaussian(var_names=var_names, K=K, h=h, g=g)
+        self.assertTrue(gauss.is_vacuous)
+
+    def test_is_vacuous_vacuous(self):
+        """
+        Test that the is_vacuous property function identifies a Gaussian as vacuous if the vacuous member variable is
+        set to True.
+        """
+
+        dims = 3
+        var_names = [str(i) for i in range(dims)]
+        K = np.eye(dims) * 1.0
+        h = np.zeros([dims, 1])
+        g = 0.0
+        gauss = Gaussian(var_names=var_names, K=K, h=h, g=g)
+        gauss._is_vacuous = True
+        self.assertTrue(gauss.is_vacuous)
+
 # pylint: enable=too-many-public-methods
