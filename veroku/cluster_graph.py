@@ -126,6 +126,9 @@ class ClusterGraph(object):
         # new
         self.last_sent_message_dict = {}  # {(rec_cluster_id1, rec_cluster_id1): msg1, ...}
 
+        self.sync_message_passing_max_distances = None
+        self.sync_message_passing_max_distances = None
+
         all_evidence_vars = set(self.special_evidence.keys())
         if evidence is not None:
             evidence_vars = set(evidence.keys())
@@ -168,6 +171,8 @@ class ClusterGraph(object):
         self.conditional_print(f'Debug: building graph')
         self._build_graph()
         self.conditional_print(f'Debug: build graph time duration: {time.time() - prev_time}')
+
+        # TODO: consolodate these two, if possible
         self.message_passing_log_df = None
         self.message_passing_animation_frames = []
 
@@ -225,7 +230,17 @@ class ClusterGraph(object):
         for i, cluster in enumerate(self._clusters):
             print(f'cluster {i} id: ', cluster.cluster_id, '   var_names: ', cluster.var_names)
 
-    def plot_message_convergence(self):
+    def plot_message_convergence(self, old=False):
+        if self.sync_message_passing_max_distances:
+            assert self.message_passing_log_df is None, 'Error: it seems bot sync and async message passing was run.'
+            plt.plot(self.sync_message_passing_max_distances)
+        else:
+            if old:
+                self.plot_message_convergence_old()
+            else:
+                self.plot_message_convergence_new()
+
+    def plot_message_convergence_old(self):
         """
         Plot the message passing convergence over the consecutive iterations.
         """
@@ -527,6 +542,7 @@ class ClusterGraph(object):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
         """
+        self.sync_message_passing_max_distances = []
         if len(self._clusters) == 1:
             # The Cluster Graph contains only single cluster. Message passing not possible or necessary.
             self._clusters[0]._factor = self._clusters[0]._factor.reduce(vrs=self.special_evidence.keys(),
@@ -536,20 +552,23 @@ class ClusterGraph(object):
         print('Info: Starting iterative message passing.*')
         for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
             self.conditional_print(f'iteration: {iterations}/{max_iter}')
-
+            
+            #try:
             message, distance_from_previous = self.get_most_informative_message()
+            self.sync_message_passing_max_distances.append(distance_from_previous)
             if distance_from_previous < tol:
                 self.conditional_print(f'Info: distance_from_previous={distance_from_previous} < tol={tol}. Stopping.')
                 break
             self.pass_message(message)
             self.num_messages_passed += 1
+            #excepts
 
             if self.num_messages_passed == 0:
                 self.conditional_print('Warning: no messages passed.')
 
         self.conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
-        #if self.make_animation_gif:
-        #    self.make_message_passing_animation_gif()
+        if self.make_animation_gif:
+            self.make_message_passing_animation_gif()
 
     def pass_message(self, message):
         """
@@ -570,7 +589,7 @@ class ClusterGraph(object):
                                                                    node_b_name=receiver_cluster_id)
 
     def make_message_passing_animation_gif(self):
-
+        print('Making message passing animation.')
         self.message_passing_animation_frames[0].save(fp='./graph_animation.gif',
                                                       format='GIF',
                                                       append_images=self.message_passing_animation_frames[1:],

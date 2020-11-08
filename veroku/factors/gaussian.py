@@ -19,6 +19,24 @@ from scipy import special
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 
+def assert_consistent_forms(gaussian):
+    if gaussian.COVFORM:
+        if gaussian.CANFORM:
+            g_copy_covform = gaussian.copy()
+            g_copy_covform.CANFORM = False
+            g_copy_canform = gaussian.copy()
+            g_copy_canform.COVFORM = False
+            if not g_copy_covform.equals(g_copy_canform):
+                g_copy_covform.CANFORM = True
+                g_copy_canform.COVFORM = True
+                print('\n\n\nFROM INCONSISTENCY:')
+
+                print('\nCOVFORM FACTOR:')
+                g_copy_covform._update_canform()
+                g_copy_covform.show(update_covform=False, show_canform=True)
+                print('\nCANFORM FACTOR:')
+                g_copy_canform.show(update_covform=False, show_canform=True)
+
 
 def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     """
@@ -363,6 +381,7 @@ class Gaussian(Factor):
         gaussian_copy = self.copy()
         gaussian_copy._update_covform()
         gaussian_copy.log_weight = 0.0
+        gaussian_copy._destroy_canform()
         return gaussian_copy
 
     def get_complex_weight(self):
@@ -401,18 +420,8 @@ class Gaussian(Factor):
         gaussian_copy.K = (-1.0) * self.K
         gaussian_copy.h = (-1.0) * self.h
         gaussian_copy.g = (-1.0) * self.g
+        gaussian_copy._destroy_covform()
         return gaussian_copy
-
-    def _subtract_log_weight(self, log_weight_to_subtract):
-        """
-        Subtract log value to the log weight.
-
-        :param log_weight_to_subtract: The log value to subtract from the weight.
-        :type log_weight_to_subtract: float
-        """
-        # TODO: replace with _add_log_weight
-        self._update_covform()
-        self.log_weight -= log_weight_to_subtract
 
     def _add_log_weight(self, log_weight_to_add):
         """
@@ -436,9 +445,12 @@ class Gaussian(Factor):
         return np.exp(self.get_log_weight())
 
     def _fix_non_psd_matrices(self):
+
+        # TODO: how to ensure these are consistent?
         if self.COVFORM:
             if not _factor_utils.is_pos_def(self.cov):
                 self.cov = _factor_utils.get_closest_psd_from_symmetric_matrix(self.cov)
+
         if self.CANFORM:
             if not _factor_utils.is_pos_def(self.K):
                 self.K = _factor_utils.get_closest_psd_from_symmetric_matrix(self.K)
@@ -496,6 +508,14 @@ class Gaussian(Factor):
         marginal_mean = self.mean[np.ix_(indices_to_keep, [0])]
         return Gaussian(cov=marginal_cov, mean=marginal_mean, log_weight=self.log_weight,
                         var_names=marginal_var_names)
+
+    def _destroy_canform(self):
+        self.K, self.h, self.h = None, None, None
+        self.CANFORM = False
+
+    def _destroy_covform(self):
+        self.cov, self.mean, self.log_weight = None, None, None
+        self.COVFORM = False
 
     def _update_canform(self):
         """
@@ -656,7 +676,6 @@ class Gaussian(Factor):
         :return: the resulting Gaussian
         :rtype: Gaussian
         """
-
         observed_vec = _factor_utils.make_column_vector(values)
 
         assert isinstance(vrs, list)  # just to future-proof interface
@@ -683,6 +702,7 @@ class Gaussian(Factor):
         :return: The KL divergence.
         :rtype: float
         """
+
         if self._is_vacuous:
             return 0.0
         else:
@@ -700,6 +720,7 @@ class Gaussian(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
+
         if self.dim != factor.dim:
             raise ValueError('cannot get KL-divergence between Gaussians of different dimensionalities.')
         if self._is_vacuous and factor._is_vacuous:
@@ -751,12 +772,29 @@ class Gaussian(Factor):
         :return: The copied Gaussian.
         :rtype: Gaussian
         """
+
+        if self.COVFORM and self.CANFORM:
+
+            assert isinstance(self.g, float)
+            assert isinstance(self.log_weight, float)
+            gaussian_copy = Gaussian(cov=self.cov.copy(),
+                                     mean=self.mean.copy(),
+                                     log_weight=self.log_weight,
+                                     var_names=copy.deepcopy(self._var_names))
+            gaussian_copy.K = self.K.copy()
+            gaussian_copy.h = self.h.copy()
+            gaussian_copy.g = self.g.copy()
+            gaussian_copy.CANFORM = True
+            return gaussian_copy
+
         if self.COVFORM:
+            assert isinstance(self.log_weight, float)
             return Gaussian(cov=self.cov.copy(),
                             mean=self.mean.copy(),
                             log_weight=self.log_weight,
                             var_names=copy.deepcopy(self._var_names))
         if self.CANFORM:
+            assert isinstance(self.g, float)
             return Gaussian(K=self.K.copy(),
                             h=self.h.copy(),
                             g=self.g,
@@ -816,6 +854,7 @@ class Gaussian(Factor):
         :param show_canform: Whether or not toshow the canonical form as well.
         :type show_canform: bool
         """
+
         np.set_printoptions(edgeitems=3)
         np.set_printoptions(precision=4)
         np.core.arrayprint._line_width = 200
@@ -827,7 +866,6 @@ class Gaussian(Factor):
             print('Cov = \n', self_copy.cov)
             print('mean = \n', self_copy.mean)
             print('log_weight = \n', self_copy.log_weight)
-            return
         if self_copy.CANFORM and show_canform:
             print('K = \n', self_copy.K)
             print('h = \n', self_copy.h)
@@ -1177,7 +1215,7 @@ class GaussianMixture(Factor):
         new_components = []
         for gauss in self.components:
             gauss_copy = gauss.copy()
-            gauss_copy._subtract_log_weight(unnormalized_log_weight)
+            gauss_copy._add_log_weight(-1.0*unnormalized_log_weight)
             new_components.append(gauss_copy)
         return GaussianMixture(new_components)
 
