@@ -14,13 +14,13 @@ import matplotlib.pyplot as plt
 from veroku.factors.gaussian import Gaussian
 
 
-# TODO: optimise pass_message
+# TODO: optimise _pass_message
 # TODO: improve sepsets selection for less loopiness
 # TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need
 #  new messages calculated.
 
 
-def evidence_reduce_factors(factors, evidence):
+def _evidence_reduce_factors(factors, evidence):
     """
     Observe relevant evidence for each factor.
     :param factors:
@@ -42,7 +42,7 @@ def make_factor_name(factor):
     return str(factor.var_names).replace("'", '')
 
 
-def absorb_subset_factors(factors):
+def _absorb_subset_factors(factors):
     """
     Absorb any factors that has a scope that is a subset of another factor into such a factor.
     :param factors:
@@ -77,10 +77,10 @@ def absorb_subset_factors(factors):
             factor_processed_mask[i] = 1
             final_graph_cluster_factors.append(factor_i)
     assert all(factor_processed_mask), 'Error: Some factors where not included during variable subset processing.'
-    return final_graph_cluster_factors, make_subset_factor_df(factors_absorbtion_dict)
+    return final_graph_cluster_factors, _make_subset_factor_df(factors_absorbtion_dict)
 
 
-def make_subset_factor_df(subset_dict):
+def _make_subset_factor_df(subset_dict):
     """
     Make a ...
     :param subset_dict: (dict) A dictionary mapping factors to factors that have subset scopes
@@ -135,21 +135,21 @@ class ClusterGraph(object):
             all_evidence_vars = all_evidence_vars.union(evidence_vars)
 
         prev_time = time.time()
-        all_factors_copy = evidence_reduce_factors(factors, evidence)
-        self.conditional_print(f'Debug: Copy factors and reduce evidence time duration: {time.time() - prev_time}')
+        all_factors_copy = _evidence_reduce_factors(factors, evidence)
+        self._conditional_print(f'Debug: Copy factors and reduce evidence time duration: {time.time() - prev_time}')
 
         prev_time = time.time()
-        final_graph_cluster_factors, absorbtion_df = absorb_subset_factors(all_factors_copy)
+        final_graph_cluster_factors, absorbtion_df = _absorb_subset_factors(all_factors_copy)
 
-        self.conditional_print(f'Debug: Absorbing subset factors time duration: {time.time() - prev_time}')
-        self.conditional_print(f"Info: Factor subset factors. (reduced number of factors: {len(final_graph_cluster_factors)}")
+        self._conditional_print(f'Debug: Absorbing subset factors time duration: {time.time() - prev_time}')
+        self._conditional_print(f"Info: Factor subset factors. (reduced number of factors: {len(final_graph_cluster_factors)}")
 
         prev_time = time.time()
         clusters = [Cluster(factor, cluster_name_prefix=f'c{i}#') for i, factor in
                     enumerate(final_graph_cluster_factors)]
         self._non_rip_sepsets = {}
 
-        self.conditional_print('Info: Calculating sepsets')
+        self._conditional_print('Info: Calculating sepsets')
 
         for i in tqdm(range(len(clusters)), disable=self.disable_tqdm):
             vars_i = clusters[i].var_names
@@ -163,14 +163,14 @@ class ClusterGraph(object):
         self._clusters = clusters
 
 
-        self.conditional_print(f'Debug: Calculating sepsets time duration: {time.time() - prev_time}')
-        self.conditional_print(f'Debug: number of clusters: {len(self._clusters)} (should be {len(final_graph_cluster_factors)})')
+        self._conditional_print(f'Debug: Calculating sepsets time duration: {time.time() - prev_time}')
+        self._conditional_print(f'Debug: number of clusters: {len(self._clusters)} (should be {len(final_graph_cluster_factors)})')
 
         prev_time = time.time()
 
-        self.conditional_print(f'Debug: building graph')
+        self._conditional_print(f'Debug: building graph')
         self._build_graph()
-        self.conditional_print(f'Debug: build graph time duration: {time.time() - prev_time}')
+        self._conditional_print(f'Debug: build graph time duration: {time.time() - prev_time}')
 
         # TODO: consolodate these two, if possible
         self.message_passing_log_df = None
@@ -181,16 +181,16 @@ class ClusterGraph(object):
         Add the cluster sepsets, graphviz graph and animation graph (for message_passing visualisation).
         """
         # Check for non-unique cluster_ids (This should never be the case)
-        cluster_ids = self.get_cluster_ids()
+        cluster_ids = self._get_cluster_ids()
         if len(set(cluster_ids)) != len(cluster_ids):
             raise ValueError(f'Non-unique cluster ids: {cluster_ids}')
         # self.graph_animation = Animation()
-        self.conditional_print('Info: Building graph.')
+        self._conditional_print('Info: Building graph.')
         self._graph = Graph(format='png')
         if rip_sepsets_dict is None:
-            rip_sepsets_dict = self.get_running_intersection_sepsets()
+            rip_sepsets_dict = self._get_running_intersection_sepsets()
 
-        self.conditional_print(f'Debug: number of clusters: {len(self._clusters)}')
+        self._conditional_print(f'Debug: number of clusters: {len(self._clusters)}')
         for i in tqdm(range(len(self._clusters)), disable=self.disable_tqdm):
             # TODO: add cleaner solution?
             self._clusters[i].remove_all_neighbours()
@@ -214,33 +214,34 @@ class ClusterGraph(object):
                     self._graph.edge(node_i_name, sepset_node_name, color='black', penwidth='2.0')
                     self._graph.edge(sepset_node_name, node_j_name, color='black', penwidth='2.0')
 
-    def conditional_print(self, message):
+    def _conditional_print(self, message):
         if self.verbose:
             print(message)
 
-    def get_cluster_ids(self):
+    def _get_cluster_ids(self):
         """
         Get all the ids for all the clusters.
         :return:
         """
         return [cluster.cluster_id for cluster in self._clusters]
 
-    def show_cluster_ids(self):
-        # TODO: delete this
-        for i, cluster in enumerate(self._clusters):
-            print(f'cluster {i} id: ', cluster.cluster_id, '   var_names: ', cluster.var_names)
-
     def plot_message_convergence(self, old=False):
+        """
+        Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
+        convergence.
+        :param old: Whether or not to use the older function for synchronous message passing convergence.
+        :type old: Bool
+        """
         if self.sync_message_passing_max_distances:
             assert self.message_passing_log_df is None, 'Error: it seems bot sync and async message passing was run.'
             plt.plot(self.sync_message_passing_max_distances)
         else:
             if old:
-                self.plot_message_convergence_old()
+                self._plot_message_convergence_old()
             else:
-                self.plot_message_convergence_new()
+                self._plot_message_convergence_new()
 
-    def plot_message_convergence_old(self):
+    def _plot_message_convergence_old(self):
         """
         Plot the message passing convergence over the consecutive iterations.
         """
@@ -256,7 +257,7 @@ class ClusterGraph(object):
         ax.set_ylabel('KLD', fontsize=15)
         ax.set_xlabel('message passing iteration', fontsize=15)
 
-    def plot_message_convergence_new(self, figsize=[10, 5]):
+    def _plot_message_convergence_new(self, figsize=[10, 5]):
         # TODO: improve this (inf value workaround is a bit hacky)
         df = self.message_passing_log_df
         kl_cols = [col for col in df.columns if 'distance' in col]
@@ -299,11 +300,11 @@ class ClusterGraph(object):
             var_spanning_trees[var] = nx.minimum_spanning_tree(var_graphs[var])
         return var_spanning_trees
 
-    def get_running_intersection_sepsets(self):
+    def _get_running_intersection_sepsets(self):
         edge_sepset_dict = {}
         unique_vars = self._get_unique_vars()
         min_span_trees = self._get_vars_min_spanning_trees()
-        self.conditional_print("Info: Getting unique variable spanning trees.")
+        self._conditional_print("Info: Getting unique variable spanning trees.")
         for i in tqdm(range(len(unique_vars)), disable=self.disable_tqdm):
             var = unique_vars[i]
             min_span_tree = min_span_trees[var]
@@ -351,8 +352,11 @@ class ClusterGraph(object):
         raise ValueError(f'No cluster with variables containing {vrs}')
 
     def get_posterior_joint(self):
+        """
+        Get the posterior joint distribution.
+        """
         # TODO: add functionality for efficiently getting a posterior marginal over any subset of variables and replace
-        # the get_marginal function above.
+        #  the get_marginal function above.
         cluster_product = self._clusters[0]._factor.joint_distribution
         for cluster in self._clusters[1:]:
             cluster_product = cluster_product.multiply(cluster._factor.joint_distribution)
@@ -366,7 +370,7 @@ class ClusterGraph(object):
         joint = cluster_product.cancel(message_product)
         return joint
 
-    def get_factor(self, cluster_id):
+    def _get_factor(self, cluster_id):
         """
         Get the factor associated with a specific cluster.
         :param cluster_id: The id of the cluster of which the factor will be returned.
@@ -379,7 +383,7 @@ class ClusterGraph(object):
                 return cluster._factor.copy()
         raise ValueError(f'Could not find cluster with id {cluster_id}')
 
-    def make_all_messages(self):
+    def _make_all_messages(self):
         """
         Iterate through all clusters and make messages to all the neighbours of a cluster for each of
         the clusters.
@@ -396,7 +400,7 @@ class ClusterGraph(object):
                 message_index += 1
         return messages
 
-    def get_ranked_message_df(self, previous_message_df=None):
+    def _get_ranked_message_df(self, previous_message_df=None):
         """
         Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
         previous iterations.
@@ -404,7 +408,7 @@ class ClusterGraph(object):
             (distance from vacuous will be used if this is None)
         :return: The ranked message dataframe sorted by the distance_from_previous column (from high to low)
         """
-        messages = self.make_all_messages()
+        messages = self._make_all_messages()
         factors_are_vacuous = [message.factor.is_vacuous for message in messages]
         if all(factors_are_vacuous) and self.verbose:
             print('Warning: All messages are vacuous')
@@ -440,7 +444,7 @@ class ClusterGraph(object):
 
         return ranked_message_df
 
-    def process_graph_async(self, tol, max_iter):
+    def _process_graph_async(self, tol, max_iter):
         """
         Perform message passing until convergence (or maximum iterations).
         """
@@ -455,12 +459,12 @@ class ClusterGraph(object):
 
         print('Info: Starting iterative message passing.*')
         for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
-            self.conditional_print(f'iteration: {iterations}/{max_iter}')
+            self._conditional_print(f'iteration: {iterations}/{max_iter}')
             if max_message_distance < tol:
-                self.conditional_print(f'Info: max_message_distance={max_message_distance} < tol={tol}. Stopping.')
+                self._conditional_print(f'Info: max_message_distance={max_message_distance} < tol={tol}. Stopping.')
                 break
 
-            ranked_message_df = self.get_ranked_message_df(previous_message_df)
+            ranked_message_df = self._get_ranked_message_df(previous_message_df)
             for indx, message_row in ranked_message_df.iterrows():
                 message = message_row['message_object']
                 distance_from_previous = message_row.iloc[-1]
@@ -475,11 +479,11 @@ class ClusterGraph(object):
                         else:
                             message.factor.show()
                         self.debug_passed_message_factors.append(message._factor.copy())
-                    self.pass_message(message)
+                    self._pass_message(message)
                     self.num_messages_passed += 1
 
             if self.num_messages_passed == 0:
-                self.conditional_print('Warning: no messages passed.')
+                self._conditional_print('Warning: no messages passed.')
             max_message_distance = ranked_message_df['distance_from_previous'].max()
             previous_message_df = ranked_message_df
 
@@ -491,11 +495,11 @@ class ClusterGraph(object):
                                                        right=new_message_distances_df,
                                                        on=['sender_id', 'receiver_id'],
                                                        suffixes=('', f'_iter_{iterations}'))
-        self.conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
+        self._conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
         if self.make_animation_gif:
-            self.make_message_passing_animation_gif()
+            self._make_message_passing_animation_gif()
 
-    def get_most_informative_message(self):
+    def _get_most_informative_message(self):
         """
         Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
         previous iterations.
@@ -503,7 +507,7 @@ class ClusterGraph(object):
          last calculated is returned) and the distance from the previous iteration.
         :rtype: Message, float
         """
-        messages = self.make_all_messages()
+        messages = self._make_all_messages()
         factors_are_vacuous = [message.factor.is_vacuous for message in messages]
         if all(factors_are_vacuous) and self.verbose:
             print('Warning: All messages are vacuous')
@@ -532,14 +536,14 @@ class ClusterGraph(object):
         :param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)
         """
         if sync:
-            self.process_graph_sync(tol=tol, max_iter=max_iter)
+            self._process_graph_sync(tol=tol, max_iter=max_iter)
         else:
-            self.process_graph_async(tol=tol, max_iter=max_iter)
+            self._process_graph_async(tol=tol, max_iter=max_iter)
 
     # New Synchronous version
     #  TODO: make this more efficient, if no messages have been received by a cluster in the previous round, the next
     #        message iterations from that cluster will be the same.
-    def process_graph_sync(self, tol, max_iter):
+    def _process_graph_sync(self, tol, max_iter):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
         """
@@ -552,26 +556,26 @@ class ClusterGraph(object):
 
         print('Info: Starting iterative message passing.*')
         for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
-            self.conditional_print(f'iteration: {iterations}/{max_iter}')
+            self._conditional_print(f'iteration: {iterations}/{max_iter}')
             
             #try:
-            message, distance_from_previous = self.get_most_informative_message()
+            message, distance_from_previous = self._get_most_informative_message()
             self.sync_message_passing_max_distances.append(distance_from_previous)
             if distance_from_previous < tol:
-                self.conditional_print(f'Info: distance_from_previous={distance_from_previous} < tol={tol}. Stopping.')
+                self._conditional_print(f'Info: distance_from_previous={distance_from_previous} < tol={tol}. Stopping.')
                 break
-            self.pass_message(message)
+            self._pass_message(message)
             self.num_messages_passed += 1
             #except
 
             if self.num_messages_passed == 0:
-                self.conditional_print('Warning: no messages passed.')
+                self._conditional_print('Warning: no messages passed.')
 
-        self.conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
+        self._conditional_print(f'Info: num_messages_passed = {self.num_messages_passed}')
         if self.make_animation_gif:
-            self.make_message_passing_animation_gif()
+            self._make_message_passing_animation_gif()
 
-    def pass_message(self, message):
+    def _pass_message(self, message):
         """
         Pass message to the relevant receiver.
         :param message: The message to pass
@@ -589,7 +593,7 @@ class ClusterGraph(object):
                                                                    node_a_name=message.sender_id,
                                                                    node_b_name=receiver_cluster_id)
 
-    def make_message_passing_animation_gif(self):
+    def _make_message_passing_animation_gif(self):
         print('Making message passing animation.')
         self.message_passing_animation_frames[0].save(fp='./graph_animation.gif',
                                                       format='GIF',
