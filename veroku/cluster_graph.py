@@ -162,6 +162,9 @@ class ClusterGraph(object):
                     clusters[i].add_neighbour(clusters[j])
         self._clusters = clusters
 
+        #TODO: copy here?
+        self._cluster_id_cluster_dict = {c._cluster_id: c for c in self._clusters}
+
 
         self._conditional_print(f'Debug: Calculating sepsets time duration: {time.time() - prev_time}')
         self._conditional_print(f'Debug: number of clusters: {len(self._clusters)} (should be {len(final_graph_cluster_factors)})')
@@ -383,22 +386,39 @@ class ClusterGraph(object):
                 return cluster._factor.copy()
         raise ValueError(f'Could not find cluster with id {cluster_id}')
 
+    def _make_cluster_messages(self, cluster):
+        messages = []
+        for neighbour_id in cluster.neighbour_ids:
+            message = cluster.make_message(neighbour_id, evidence=self.special_evidence)
+            messages.append(message)
+        return messages
+
     def _make_all_messages(self):
         """
         Iterate through all clusters and make messages to all the neighbours of a cluster for each of
         the clusters.
         """
         self.full_mp_iters += 1
-        message_index = 0
-        messages = []
+        all_messages = []
 
         for cluster in self._clusters:
-            for neighbour_id in cluster.neighbour_ids:
-                message = cluster.make_message(neighbour_id, evidence=self.special_evidence)
-                messages.append(message)
+            cluster_messages = self._make_cluster_messages(cluster)
+            all_messages += cluster_messages
+        return all_messages
 
-                message_index += 1
-        return messages
+    def _make_clusters_messages_dict(self):
+        """
+        Iterate through all clusters and make messages to all the neighbours of a cluster for each of
+        the clusters.
+        :return: A dictionary of cluster_id's mapped to the messages from the respective clusters.
+        :rtype: dict
+        """
+        self.full_mp_iters += 1
+        clusters_messages_dict = dict()
+        for cluster in self._clusters:
+            cluster_messages = self._make_cluster_messages(cluster)
+            clusters_messages_dict[cluster.cluster_id] = cluster_messages
+        return clusters_messages_dict
 
     def _get_ranked_message_df(self, previous_message_df=None):
         """
@@ -499,15 +519,14 @@ class ClusterGraph(object):
         if self.make_animation_gif:
             self._make_message_passing_animation_gif()
 
-    def _get_most_informative_message(self):
+    def _get_most_informative_message(self, messages):
         """
-        Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
-        previous iterations.
+        Find and remove the most informative message from a list of messages.
         :return: The message with the highest KL between its current and previous iteration (if more than one, only the
          last calculated is returned) and the distance from the previous iteration.
         :rtype: Message, float
         """
-        messages = self._make_all_messages()
+
         factors_are_vacuous = [message.factor.is_vacuous for message in messages]
         if all(factors_are_vacuous) and self.verbose:
             print('Warning: All messages are vacuous')
@@ -517,7 +536,7 @@ class ClusterGraph(object):
         max_distance = -np.inf
         max_distance_message = None
         distances = []
-        for msg in messages:
+        for i, msg in enumerate(messages):
             if (msg.sender_id, msg.receiver_id) not in self.last_passed_message_factors_dict:
                 # We imagine that vacuous messages were sent at step -1.
                 distance = msg.factor.distance_from_vacuous()
@@ -528,6 +547,7 @@ class ClusterGraph(object):
             if distance > max_distance:
                 max_distance_message = msg
                 max_distance = distance
+
         return max_distance_message, max_distance
 
     def process_graph(self, tol=1e-3, max_iter=50, sync=True):
@@ -555,19 +575,22 @@ class ClusterGraph(object):
             return
 
         print('Info: Starting iterative message passing.*')
+        cluster_messages_dict = self._make_clusters_messages_dict()
+
         for iterations in tqdm(range(max_iter), disable=self.disable_tqdm):
+
             self._conditional_print(f'iteration: {iterations}/{max_iter}')
-            
-            #try:
-            message, distance_from_previous = self._get_most_informative_message()
+            messages = sum(cluster_messages_dict.values(), [])
+            message, distance_from_previous = self._get_most_informative_message(messages)
             self.sync_message_passing_max_distances.append(distance_from_previous)
             if distance_from_previous < tol:
                 self._conditional_print(f'Info: distance_from_previous={distance_from_previous} < tol={tol}. Stopping.')
                 break
             self._pass_message(message)
+            # recompute the messages for the cluster that received the message
+            cluster_that_received_msg = self._cluster_id_cluster_dict[message.receiver_id]
+            cluster_messages_dict[message.receiver_id] = self._make_cluster_messages(cluster_that_received_msg)
             self.num_messages_passed += 1
-            #except
-
             if self.num_messages_passed == 0:
                 self._conditional_print('Warning: no messages passed.')
 
@@ -586,7 +609,7 @@ class ClusterGraph(object):
                 error_msg = f'Error: {message.var_names} is not a subset of {cluster.var_names}'
                 assert set(message.var_names) <= set(cluster.var_names), error_msg
                 cluster.receive_message(message)
-                self.last_passed_message_factors_dict[(message.sender_id, message.receiver_id)] = message.factor.copy() #old
+                self.last_passed_message_factors_dict[(message.sender_id, message.receiver_id)] = message.factor.copy()
                 if self.make_animation_gif:
                     cg_animation.add_message_pass_animation_frames(graph=self._graph,
                                                                    frames=self.message_passing_animation_frames,
