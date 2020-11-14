@@ -18,6 +18,7 @@ from scipy import special
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
+from veroku.factors._factor_template import FactorTemplate
 
 def assert_consistent_forms(gaussian):
     if gaussian.COVFORM:
@@ -104,6 +105,60 @@ def split_gaussian(gaussian):
     gm = GaussianMixture(gaussians)
     return gm
 
+
+def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templates):
+    """
+    Make a linear Gaussian factor template.
+    :param A: The linear transform matrix.
+    :type A: Numpy array
+    :param N: The additive noise covarannce matrix.
+    :type A: Numpy array
+    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
+    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
+    :return: The linear Gaussian Template
+    :rtype: GaussianTemplate
+    """
+    X_dim = len(conditioning_var_templates)
+    Sxx = np.eye(X_dim)
+    Kxx = np.linalg.inv(Sxx)
+
+    # LinGauss Investigation
+    # A_1 = np.linalg.inv(A)
+    # I = np.eye(2)
+    # result = np.linalg.inv(Kxx@(I - np.linalg.inv(I + A_1@N@A.T@Kxx)))
+    # print('result = ', result)
+
+    ux = np.zeros([X_dim, 1])
+
+    S = np.block([[Sxx, Sxx @ A.T],
+                  [A @ Sxx, A @ Sxx @ A.T + N]])
+    K_joint = np.linalg.inv(S)
+    K_cpd = K_joint.copy()
+    K_cpd[:X_dim, :X_dim] = K_cpd[:X_dim, :X_dim] - Kxx
+
+    mean_joint = np.block([[ux], [A.T @ ux]])
+
+    h_joint = K_joint @ mean_joint
+    h_cpd = h_joint.copy()
+    h_cpd[:X_dim] = h_cpd[:X_dim] - ux
+
+    var_names = conditioning_var_templates + conditional_var_templates
+
+    return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=0.0)
+
+
+def make_linear_gaussian_cpd_template(A, N, conditioning_var_templates, conditional_var_templates):
+    assert len(conditioning_var_templates) == A.shape[0]
+    assert N.shape[0] == A.shape[0]
+    nlg = make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templates)
+    var_templates = conditioning_var_templates + conditional_var_templates
+    gaussian_parameters = {'K': nlg.get_K(), 'h': nlg.get_h(), 'g': 0}
+    return GaussianTemplate(gaussian_parameters, var_templates)
+
+
+############################################################################################################
+#   Gaussian
+############################################################################################################
 
 class Gaussian(Factor):
     """
@@ -965,6 +1020,49 @@ class Gaussian(Factor):
         else:
             raise NotImplementedError('Plotting not implemented for dim!=1.')
 
+
+class GaussianTemplate(FactorTemplate):
+
+    def __init__(self, gaussian_parameters, var_templates):
+        """
+        Create a Categorical factor template.
+
+        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.
+        :type log_probs_table: tuple:float dict
+        :param var_templates: A list of formattable strings.
+        :type var_templates: str list
+
+        >>>gaussian_parameters = {'K': np.array([1,0][0,1]]),
+        >>>                       'h': np.array([0][1]]),
+        >>>                       'g': 0}
+        """
+        # TODO: Complete and improve docstring.
+        super().__init__(var_templates=var_templates)
+        self.K = gaussian_parameters['K']
+        self.h = gaussian_parameters['h']
+        self.g = gaussian_parameters['g']
+
+    def make_factor(self, format_dict=None, var_names=None):
+        """
+        Make a factor with var_templates formatted by format_dict to create specific var names.
+
+        :param format_dict: The dictionary to be used to format the var_templates strings.
+        :type format_dict: str dict
+        :return: The instantiated factor.
+        :rtype: Categorical
+        """
+        if format_dict is not None:
+            assert var_names is None
+            var_names = [vt.format(**format_dict) for vt in self._var_templates]
+        # TODO: remove this and find better solution
+        g = Gaussian(K=self.K.copy(), h=self.h.copy(), g=self.g, var_names=var_names)
+        g._is_vacuous = True
+        return g
+
+
+############################################################################################################
+#   Gaussian Mixture
+############################################################################################################
 
 class GaussianMixture(Factor):
     """
