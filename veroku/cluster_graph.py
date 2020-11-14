@@ -165,7 +165,6 @@ class ClusterGraph(object):
         #TODO: copy here?
         self._cluster_id_cluster_dict = {c._cluster_id: c for c in self._clusters}
 
-
         self._conditional_print(f'Debug: Calculating sepsets time duration: {time.time() - prev_time}')
         self._conditional_print(f'Debug: number of clusters: {len(self._clusters)} (should be {len(final_graph_cluster_factors)})')
 
@@ -526,7 +525,6 @@ class ClusterGraph(object):
          last calculated is returned) and the distance from the previous iteration.
         :rtype: Message, float
         """
-
         factors_are_vacuous = [message.factor.is_vacuous for message in messages]
         if all(factors_are_vacuous) and self.verbose:
             print('Warning: All messages are vacuous')
