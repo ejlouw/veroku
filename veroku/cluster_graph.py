@@ -146,13 +146,23 @@ class ClusterGraph(object):
                     enumerate(final_graph_cluster_factors)]
 
         self._set_non_rip_sepsets_dict(clusters, all_evidence_vars)
+
+        #TODO: see why this is necessary and improve (1) - see (2) also
+        for i in tqdm(range(len(clusters)), disable=self.disable_tqdm):
+            vars_i = clusters[i].var_names
+            for j in range(i + 1, len(clusters)):
+                vars_j = clusters[j].var_names
+                sepset = set(vars_j).intersection(set(vars_i)) - all_evidence_vars
+                self._non_rip_sepsets[(i, j)] = sepset
+                self._non_rip_sepsets[(j, i)] = sepset
+                if len(sepset) > 0:
+                    clusters[i].add_neighbour(clusters[j])
+
         self._clusters = clusters
 
         # Add special evidence to factors
         for cluster in self._clusters:
             cluster_special_evidence_vars, cluster_special_evidence_values = get_subset_evidence(self.special_evidence, cluster.var_names)
-            print('cluster_special_evidence_vars = ', cluster_special_evidence_vars)
-            print('cluster_special_evidence_values = ', cluster_special_evidence_values)
             cluster_special_evidence = dict(zip(cluster_special_evidence_vars, cluster_special_evidence_values))
             cluster.add_special_evidence(cluster_special_evidence)
 
@@ -192,6 +202,10 @@ class ClusterGraph(object):
         self._graph = Graph(format='png')
 
         rip_sepsets_dict = self._get_running_intersection_sepsets()
+
+        # TODO: see why this is necessary and improve (2) - see (1) also
+        for i in tqdm(range(len(self._clusters)), disable=self.disable_tqdm):
+            self._clusters[i].remove_all_neighbours()
 
         self._conditional_print(f'Debug: number of clusters: {len(self._clusters)}')
         for i in tqdm(range(len(self._clusters)), disable=self.disable_tqdm):
