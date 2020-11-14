@@ -28,6 +28,12 @@ class Cluster(object):
         self._cluster_id = cluster_name_prefix + ','.join(factor.var_names)
         self._neighbour_sepsets = {}  # neighbour_id as key
         self._received_message_factors = {}  # neighbour_id as key
+        self._neighbour_references = []
+        self._outward_message_paths = []
+        self._special_evidence = None
+
+    def add_special_evidence(self, special_evidence):
+        self._special_evidence = special_evidence
 
     def remove_all_neighbours(self):
         self._neighbour_sepsets = {}  # neighbour_id as key
@@ -57,9 +63,14 @@ class Cluster(object):
         if sepset is None:
             sepset = sorted(this_cluster_var_set.intersection(set(other_cluster.var_names)))
         assert len(sepset) > 0, 'Error: cant add neighbour with no overlapping variable scope.'
+        self._neighbour_references.append(other_cluster)
         self._neighbour_sepsets[other_cluster.cluster_id] = list(sepset)
 
-    def make_message(self, neighbour_id, evidence=dict()):
+    #TODO: merge this with add_neighbour
+    def add_outward_message_path(self, outward_message_path):
+        self._outward_message_paths.append(outward_message_path)
+
+    def make_message(self, neighbour_id):
         """
         Make a Message to send to the neighbour with a specified id.
         :param neighbour_id: The specified id corresponding to the neighbour cluster.
@@ -69,11 +80,14 @@ class Cluster(object):
         self.debug_count += 1
 
         sepset_vars = self._neighbour_sepsets[neighbour_id]
-        factor_scope_evidence = {v: evidence[v] for v in self._factor.var_names if v in evidence}
-        evidence_vrs = list(factor_scope_evidence.keys())
-        evidence_values = list(factor_scope_evidence.values())
+        print('self._special_evidence: ', self._special_evidence)
+
         message_factor = self._factor.copy()
-        if len(evidence_vrs) > 0:
+
+        print('cluster_id = ', self.cluster_id)
+        if self._special_evidence is not None:
+            evidence_vrs = list(self._special_evidence.keys())
+            evidence_values = list(self._special_evidence.values())
             message_factor = message_factor.reduce(evidence_vrs, evidence_values)
         message_factor = message_factor.marginalize(sepset_vars, keep=True)
         if neighbour_id in self._received_message_factors:
@@ -198,17 +212,17 @@ class Message(object):
         # TODO: the naming convention seems a bit strange here - improve it
         return self.factor.distance_from_vacuous()
 
-    def distance_from_other(self, other_message):
+    def kl_divergence(self, message):
         """
-        Get the Kullback-Leibler (KL) divergence between the message factor and another message's factor.
-        :param other_message: The other message of which the factor will be used to compare to this message's factor.
+        Get the KL-divergence D_KL(self.factor||message.factor) between a this message factor and another message factor.
+        :param message: The other message of which the factor will be used to compare to this message's factor.
         :return: The KL-divergence
         """
-        #try:
-        distance = self.factor.kl_divergence(other_message.factor)
-        #except np.linalg.LinAlgError:
-        #    # TODO: find better solution
-        #    distance = np.inf
+
+
+        # TODO: change function and variable names to reflect this better
+        distance = self.factor.kl_divergence(message.factor)
+
         return distance
 
     @property

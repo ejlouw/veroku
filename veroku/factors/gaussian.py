@@ -753,7 +753,8 @@ class Gaussian(Factor):
     def distance_from_vacuous(self):
         """
         Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
-
+        Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)
+        or inf (if one is not).
         :return: The KL divergence.
         :rtype: float
         """
