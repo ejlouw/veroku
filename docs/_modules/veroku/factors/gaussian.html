@@ -52,6 +52,25 @@
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
 <span class="kn">from</span> <span class="nn">veroku.factors</span> <span class="kn">import</span> <span class="n">_factor_utils</span>
+<span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
+
+<div class="viewcode-block" id="assert_consistent_forms"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.assert_consistent_forms">[docs]</a><span class="k">def</span> <span class="nf">assert_consistent_forms</span><span class="p">(</span><span class="n">gaussian</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gaussian</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">gaussian</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
+            <span class="n">g_copy_covform</span> <span class="o">=</span> <span class="n">gaussian</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">g_copy_covform</span><span class="o">.</span><span class="n">CANFORM</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">g_copy_canform</span> <span class="o">=</span> <span class="n">gaussian</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">g_copy_canform</span><span class="o">.</span><span class="n">COVFORM</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">g_copy_covform</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">g_copy_canform</span><span class="p">):</span>
+                <span class="n">g_copy_covform</span><span class="o">.</span><span class="n">CANFORM</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">g_copy_canform</span><span class="o">.</span><span class="n">COVFORM</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n\n</span><span class="s1">FROM INCONSISTENCY:&#39;</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">COVFORM FACTOR:&#39;</span><span class="p">)</span>
+                <span class="n">g_copy_covform</span><span class="o">.</span><span class="n">_update_canform</span><span class="p">()</span>
+                <span class="n">g_copy_covform</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">update_covform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_canform</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">CANFORM FACTOR:&#39;</span><span class="p">)</span>
+                <span class="n">g_copy_canform</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">update_covform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_canform</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="make_random_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_random_gaussian">[docs]</a><span class="k">def</span> <span class="nf">make_random_gaussian</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">mean_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">cov_range</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">]):</span>
@@ -121,6 +140,60 @@
     <span class="k">return</span> <span class="n">gm</span></div>
 
 
+<div class="viewcode-block" id="make_linear_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_linear_gaussian">[docs]</a><span class="k">def</span> <span class="nf">make_linear_gaussian</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a linear Gaussian factor template.</span>
+<span class="sd">    :param A: The linear transform matrix.</span>
+<span class="sd">    :type A: Numpy array</span>
+<span class="sd">    :param N: The additive noise covarannce matrix.</span>
+<span class="sd">    :type A: Numpy array</span>
+<span class="sd">    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
+<span class="sd">    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
+<span class="sd">    :return: The linear Gaussian Template</span>
+<span class="sd">    :rtype: GaussianTemplate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="p">)</span>
+    <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">X_dim</span><span class="p">)</span>
+    <span class="n">Kxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Sxx</span><span class="p">)</span>
+
+    <span class="c1"># LinGauss Investigation</span>
+    <span class="c1"># A_1 = np.linalg.inv(A)</span>
+    <span class="c1"># I = np.eye(2)</span>
+    <span class="c1"># result = np.linalg.inv(Kxx@(I - np.linalg.inv(I + A_1@N@A.T@Kxx)))</span>
+    <span class="c1"># print(&#39;result = &#39;, result)</span>
+
+    <span class="n">ux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">X_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Sxx</span><span class="p">,</span> <span class="n">Sxx</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">],</span>
+                  <span class="p">[</span><span class="n">A</span> <span class="o">@</span> <span class="n">Sxx</span><span class="p">,</span> <span class="n">A</span> <span class="o">@</span> <span class="n">Sxx</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">N</span><span class="p">]])</span>
+    <span class="n">K_joint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">K_cpd</span> <span class="o">=</span> <span class="n">K_joint</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">K_cpd</span><span class="p">[:</span><span class="n">X_dim</span><span class="p">,</span> <span class="p">:</span><span class="n">X_dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_cpd</span><span class="p">[:</span><span class="n">X_dim</span><span class="p">,</span> <span class="p">:</span><span class="n">X_dim</span><span class="p">]</span> <span class="o">-</span> <span class="n">Kxx</span>
+
+    <span class="n">mean_joint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">ux</span><span class="p">],</span> <span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">ux</span><span class="p">]])</span>
+
+    <span class="n">h_joint</span> <span class="o">=</span> <span class="n">K_joint</span> <span class="o">@</span> <span class="n">mean_joint</span>
+    <span class="n">h_cpd</span> <span class="o">=</span> <span class="n">h_joint</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">h_cpd</span><span class="p">[:</span><span class="n">X_dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_cpd</span><span class="p">[:</span><span class="n">X_dim</span><span class="p">]</span> <span class="o">-</span> <span class="n">ux</span>
+
+    <span class="n">var_names</span> <span class="o">=</span> <span class="n">conditioning_var_templates</span> <span class="o">+</span> <span class="n">conditional_var_templates</span>
+
+    <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="n">K_cpd</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">h_cpd</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="make_linear_gaussian_cpd_template"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_linear_gaussian_cpd_template">[docs]</a><span class="k">def</span> <span class="nf">make_linear_gaussian_cpd_template</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="p">)</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">N</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nlg</span> <span class="o">=</span> <span class="n">make_linear_gaussian</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">)</span>
+    <span class="n">var_templates</span> <span class="o">=</span> <span class="n">conditioning_var_templates</span> <span class="o">+</span> <span class="n">conditional_var_templates</span>
+    <span class="n">gaussian_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="n">nlg</span><span class="o">.</span><span class="n">get_K</span><span class="p">(),</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="n">nlg</span><span class="o">.</span><span class="n">get_h</span><span class="p">(),</span> <span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">GaussianTemplate</span><span class="p">(</span><span class="n">gaussian_parameters</span><span class="p">,</span> <span class="n">var_templates</span><span class="p">)</span></div>
+
+
+<span class="c1">############################################################################################################</span>
+<span class="c1">#   Gaussian</span>
+<span class="c1">############################################################################################################</span>
+
 <div class="viewcode-block" id="Gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian">[docs]</a><span class="k">class</span> <span class="nc">Gaussian</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for instantiating and performing operations om multivariate Gaussian distributions.</span>
@@ -173,8 +246,8 @@
                 <span class="k">pass</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Error: Precision matrix must be two dimensional.&quot;</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="s2">&quot;Error: Precision matrix dimension inconsistency.&quot;</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span>
-                       <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Error: h vector dimension inconsistency: </span><span class="si">{</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="n">h_error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: h vector dimension inconsistency: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">h_error_msg</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">make_scalar</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span> <span class="o">=</span> <span class="kc">True</span>
@@ -182,7 +255,7 @@
 
             <span class="c1"># Note: this is important to allow vacuous Gaussians (that arise, for exmaple, when Gaussians are divided by</span>
             <span class="c1"># identical distributions or with unconditioned nonlinear Gaussians) to be merginalised.</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">]),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_vacuous</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># pylint: enable=invalid-name</span>
@@ -397,6 +470,7 @@
         <span class="n">gaussian_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">_destroy_canform</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">gaussian_copy</span></div>
 
 <div class="viewcode-block" id="Gaussian.get_complex_weight"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_complex_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_complex_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -435,18 +509,8 @@
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span>
+        <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">_destroy_covform</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">gaussian_copy</span>
-
-    <span class="k">def</span> <span class="nf">_subtract_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_weight_to_subtract</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Subtract log value to the log weight.</span>
-
-<span class="sd">        :param log_weight_to_subtract: The log value to subtract from the weight.</span>
-<span class="sd">        :type log_weight_to_subtract: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: replace with _add_log_weight</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">-=</span> <span class="n">log_weight_to_subtract</span>
 
     <span class="k">def</span> <span class="nf">_add_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_weight_to_add</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -470,9 +534,12 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span></div>
 
     <span class="k">def</span> <span class="nf">_fix_non_psd_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># TODO: how to ensure these are consistent?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">get_closest_psd_from_symmetric_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">get_closest_psd_from_symmetric_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
@@ -530,6 +597,14 @@
         <span class="n">marginal_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">indices_to_keep</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
         <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="n">marginal_cov</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">marginal_mean</span><span class="p">,</span> <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
                         <span class="n">var_names</span><span class="o">=</span><span class="n">marginal_var_names</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_destroy_canform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_destroy_covform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">_update_canform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -690,7 +765,6 @@
 <span class="sd">        :return: the resulting Gaussian</span>
 <span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">observed_vec</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">make_column_vector</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
 
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>  <span class="c1"># just to future-proof interface</span>
@@ -717,6 +791,7 @@
 <span class="sd">        :return: The KL divergence.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">else</span><span class="p">:</span>
@@ -734,12 +809,13 @@
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="n">factor</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot get KL-divergence between Gaussians of different dimensionalities.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="ow">and</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="ow">or</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
             <span class="k">return</span> <span class="mf">0.0</span>
@@ -767,15 +843,23 @@
         <span class="n">mahalanobis_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_p</span> <span class="o">-</span> <span class="n">u_q</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">inv_cov_q</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_p</span> <span class="o">-</span> <span class="n">u_q</span><span class="p">)</span>
         <span class="n">dim_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">normalized_self</span><span class="o">.</span><span class="n">dim</span>
         <span class="n">kld</span> <span class="o">=</span> <span class="n">det_term</span> <span class="o">+</span> <span class="n">trace_term</span> <span class="o">+</span> <span class="n">mahalanobis_term</span> <span class="o">-</span> <span class="n">dim_term</span>
-        <span class="c1"># TODO:Add warning or error if this is negative and remove abs below</span>
+        <span class="c1"># TODO: Add warning or error if this is negative and remove abs below</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">kld</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components</span>
-        <span class="c1">#  are vacuous? Maybe make a contains vacuous function as well.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.</span>
+<span class="sd">        :return: The result of the check.</span>
+<span class="sd">        :rtype: Bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="Gaussian.copy"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -785,12 +869,28 @@
 <span class="sd">        :return: The copied Gaussian.</span>
 <span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+            <span class="n">gaussian_copy</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                                     <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                                     <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
+                                     <span class="n">var_names</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="p">))</span>
+            <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span>
+            <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">CANFORM</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">gaussian_copy</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                             <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                             <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
                             <span class="n">var_names</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANFORM</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                             <span class="n">h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                             <span class="n">g</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
@@ -850,6 +950,7 @@
 <span class="sd">        :param show_canform: Whether or not toshow the canonical form as well.</span>
 <span class="sd">        :type show_canform: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">arrayprint</span><span class="o">.</span><span class="n">_line_width</span> <span class="o">=</span> <span class="mi">200</span>
@@ -861,7 +962,6 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cov = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mean = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;log_weight = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">log_weight</span><span class="p">)</span>
-            <span class="k">return</span>
         <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">CANFORM</span> <span class="ow">and</span> <span class="n">show_canform</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;K = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;h = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
@@ -954,6 +1054,49 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Plotting not implemented for dim!=1.&#39;</span><span class="p">)</span></div></div>
 
+
+<div class="viewcode-block" id="GaussianTemplate"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianTemplate">[docs]</a><span class="k">class</span> <span class="nc">GaussianTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaussian_parameters</span><span class="p">,</span> <span class="n">var_templates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a Categorical factor template.</span>
+
+<span class="sd">        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.</span>
+<span class="sd">        :type log_probs_table: tuple:float dict</span>
+<span class="sd">        :param var_templates: A list of formattable strings.</span>
+<span class="sd">        :type var_templates: str list</span>
+
+<span class="sd">        &gt;&gt;&gt;gaussian_parameters = {&#39;K&#39;: np.array([1,0][0,1]]),</span>
+<span class="sd">        &gt;&gt;&gt;                       &#39;h&#39;: np.array([0][1]]),</span>
+<span class="sd">        &gt;&gt;&gt;                       &#39;g&#39;: 0}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Complete and improve docstring.</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_templates</span><span class="o">=</span><span class="n">var_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">gaussian_parameters</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">gaussian_parameters</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">gaussian_parameters</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="GaussianTemplate.make_factor"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianTemplate.make_factor">[docs]</a>    <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make a factor with var_templates formatted by format_dict to create specific var names.</span>
+
+<span class="sd">        :param format_dict: The dictionary to be used to format the var_templates strings.</span>
+<span class="sd">        :type format_dict: str dict</span>
+<span class="sd">        :return: The instantiated factor.</span>
+<span class="sd">        :rtype: Categorical</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_templates</span><span class="p">]</span>
+        <span class="c1"># TODO: remove this and find better solution</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">g</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">_is_vacuous</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">g</span></div></div>
+
+
+<span class="c1">############################################################################################################</span>
+<span class="c1">#   Gaussian Mixture</span>
+<span class="c1">############################################################################################################</span>
 
 <div class="viewcode-block" id="GaussianMixture"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture">[docs]</a><span class="k">class</span> <span class="nc">GaussianMixture</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1211,7 +1354,7 @@
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="n">gauss_copy</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">gauss_copy</span><span class="o">.</span><span class="n">_subtract_log_weight</span><span class="p">(</span><span class="n">unnormalized_log_weight</span><span class="p">)</span>
+            <span class="n">gauss_copy</span><span class="o">.</span><span class="n">_add_log_weight</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">unnormalized_log_weight</span><span class="p">)</span>
             <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_copy</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 

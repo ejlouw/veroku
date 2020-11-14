@@ -39,26 +39,6 @@
 <em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.conditional_print">
-<code class="sig-name descname">conditional_print</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.conditional_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.conditional_print" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_cluster_ids">
-<code class="sig-name descname">get_cluster_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_cluster_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_cluster_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all the ids for all the clusters.
-:return:</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_factor">
-<code class="sig-name descname">get_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_factor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the factor associated with a specific cluster.
-:param cluster_id: The id of the cluster of which the factor will be returned.
-:return: The factor.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_factors">
 <code class="sig-name descname">get_factors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_factors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the cluster factor for each cluster in the graph
@@ -74,46 +54,10 @@ has been run previously).
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_most_informative_message">
-<code class="sig-name descname">get_most_informative_message</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_most_informative_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_most_informative_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
-previous iterations.
-:return: The message with the highest KL between its current and previous iteration (if more than one, only the</p>
-<blockquote>
-<div><p>last calculated is returned) and the distance from the previous iteration.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Message, float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_posterior_joint">
 <code class="sig-name descname">get_posterior_joint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_posterior_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_posterior_joint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_ranked_message_df">
-<code class="sig-name descname">get_ranked_message_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_message_df</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_ranked_message_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_ranked_message_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a dataframe containing message objects, their sender and receiver cluster ids, and the distance from their
-previous iterations.
-:param previous_message_df: The message dataframe to use to compute the distances</p>
-<blockquote>
-<div><p>(distance from vacuous will be used if this is None)</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The ranked message dataframe sorted by the distance_from_previous column (from high to low)</p>
-</dd>
-</dl>
+<dd><p>Get the posterior joint distribution.</p>
 </dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_running_intersection_sepsets">
-<code class="sig-name descname">get_running_intersection_sepsets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_running_intersection_sepsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_running_intersection_sepsets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.graph">
@@ -121,52 +65,19 @@ previous iterations.
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.make_all_messages">
-<code class="sig-name descname">make_all_messages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.make_all_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.make_all_messages" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterate through all clusters and make messages to all the neighbours of a cluster for each of
-the clusters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif">
-<code class="sig-name descname">make_message_passing_animation_gif</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.make_message_passing_animation_gif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.pass_message">
-<code class="sig-name descname">pass_message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.pass_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.pass_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pass message to the relevant receiver.
-:param message: The message to pass</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
-<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the message passing convergence over the consecutive iterations.</p>
+<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">old</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
+convergence.
+:param old: Whether or not to use the older function for synchronous message passing convergence.
+:type old: Bool</p>
 </dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence_new">
-<code class="sig-name descname">plot_message_convergence_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[10, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence_new"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence_new" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.process_graph">
 <code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">sync</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process the graph by performing message passing until convergece.
 :param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.process_graph_async">
-<code class="sig-name descname">process_graph_async</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span></em>, <em class="sig-param"><span class="n">max_iter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform message passing until convergence (or maximum iterations).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.process_graph_sync">
-<code class="sig-name descname">process_graph_sync</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span></em>, <em class="sig-param"><span class="n">max_iter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph_sync"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph_sync" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform synchronous message passing until convergence (or maximum iterations).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -181,42 +92,12 @@ the clusters.</p>
 <code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.show" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.show_cluster_ids">
-<code class="sig-name descname">show_cluster_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.show_cluster_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.show_cluster_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.cluster_graph.absorb_subset_factors">
-<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">absorb_subset_factors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#absorb_subset_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.absorb_subset_factors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Absorb any factors that has a scope that is a subset of another factor into such a factor.
-:param factors:
-:return:</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.cluster_graph.evidence_reduce_factors">
-<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">evidence_reduce_factors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#evidence_reduce_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.evidence_reduce_factors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe relevant evidence for each factor.
-:param factors:
-:param evidence:
-:return:</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="veroku.cluster_graph.make_factor_name">
 <code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">make_factor_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#make_factor_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.make_factor_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py function">
-<dt id="veroku.cluster_graph.make_subset_factor_df">
-<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">make_subset_factor_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subset_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#make_subset_factor_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.make_subset_factor_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a …
-:param subset_dict: (dict) A dictionary mapping factors to factors that have subset scopes
-:return:</p>
-</dd></dl>
 
 </div>
 

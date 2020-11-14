@@ -15,8 +15,8 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="veroku.factors.sparse_categorical module" href="veroku.factors.sparse_categorical.html" />
-    <link rel="prev" title="veroku.factors.categorical module" href="veroku.factors.categorical.html" />
+    <link rel="next" title="veroku.factors.nonlinear_gaussian module" href="veroku.factors.nonlinear_gaussian.html" />
+    <link rel="prev" title="veroku.factors.factorised_factor module" href="veroku.factors.factorised_factor.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -207,7 +207,10 @@
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.is_vacuous">
 <em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.
+:return: The result of the check.
+:rtype: Bool</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.kl_divergence">
@@ -646,6 +649,53 @@ approximation of the Gaussian Mixture.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt id="veroku.factors.gaussian.GaussianTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">GaussianTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian_parameters</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<dl class="py method">
+<dt id="veroku.factors.gaussian.GaussianTemplate.make_factor">
+<code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianTemplate.make_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a factor with var_templates formatted by format_dict to create specific var names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>format_dict</strong> (<em>str dict</em>) – The dictionary to be used to format the var_templates strings.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The instantiated factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="veroku.factors.categorical.html#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.assert_consistent_forms">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">assert_consistent_forms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#assert_consistent_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.assert_consistent_forms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.make_linear_gaussian">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a linear Gaussian factor template.
+:param A: The linear transform matrix.
+:type A: Numpy array
+:param N: The additive noise covarannce matrix.
+:type A: Numpy array
+:param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [‘var_a{i}_{t}’, ‘var_b{i}_{t}’])
+:param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [‘var_c{i}_{t}’, ‘var_d{i}_{t}’])
+:return: The linear Gaussian Template
+:rtype: GaussianTemplate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="veroku.factors.gaussian.make_linear_gaussian_cpd_template">
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_random_gaussian">
 <code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">[- 10, 10]</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">[1, 10]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
@@ -733,8 +783,8 @@ distributions.</p>
   <li><a href="modules.html">veroku</a><ul>
   <li><a href="veroku.html">veroku package</a><ul>
   <li><a href="veroku.factors.html">veroku.factors package</a><ul>
-      <li>Previous: <a href="veroku.factors.categorical.html" title="previous chapter">veroku.factors.categorical module</a></li>
-      <li>Next: <a href="veroku.factors.sparse_categorical.html" title="next chapter">veroku.factors.sparse_categorical module</a></li>
+      <li>Previous: <a href="veroku.factors.factorised_factor.html" title="previous chapter">veroku.factors.factorised_factor module</a></li>
+      <li>Next: <a href="veroku.factors.nonlinear_gaussian.html" title="next chapter">veroku.factors.nonlinear_gaussian module</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
