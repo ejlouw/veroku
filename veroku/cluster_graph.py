@@ -18,19 +18,17 @@ import collections
 #  new messages calculated.
 
 
+# TODO: consider removing this
 def sort_almost_sorted(a_deque, key_func):
     """
     Sort a deque like that where only the first element is potentially unsorted
     and should probably be last and the rest of the deque is sorted in descending order.
     """
     a_deque.append(a_deque.popleft())
-    if key_func(a_deque[-2]) <= key_func(a_deque[-1]) :
-        return
-    else:
-        print('key_func(a_deque[-1]) = ', key_func(a_deque[-1]))
-        print('key_func(a_deque[-2]) = ', key_func(a_deque[-2]))
-        print()
-        raise NotImplementedError('not implemented, add efficient sorting here.')
+    if key_func(a_deque[-1]) <= key_func(a_deque[-2]):
+        return a_deque
+    a_deque = collections.deque(sorted(a_deque, key=key_func, reverse=True))
+    return a_deque
 
 
 def _evidence_reduce_factors(factors, evidence):
@@ -123,6 +121,7 @@ class ClusterGraph(object):
             non-linear Gaussian to be iteratively refined.
         """
 
+        #TODO: see if evidence and special_evidence can be replaced by a single variable.
         self.num_messages_passed = 0
         self.make_animation_gif = make_animation_gif
         self.special_evidence = special_evidence
@@ -132,8 +131,7 @@ class ClusterGraph(object):
         # new
         self.last_sent_message_dict = {}  # {(rec_cluster_id1, rec_cluster_id1): msg1, ...}
 
-        self.sync_message_passing_max_distances = None
-        self.sync_message_passing_max_distances = None
+        self.sync_message_passing_max_distances = []
 
         all_evidence_vars = set(self.special_evidence.keys())
         if evidence is not None:
@@ -146,18 +144,6 @@ class ClusterGraph(object):
                     enumerate(final_graph_cluster_factors)]
 
         self._set_non_rip_sepsets_dict(clusters, all_evidence_vars)
-
-        #TODO: see why this is necessary and improve (1) - see (2) also
-        for i in tqdm(range(len(clusters)), disable=self.disable_tqdm):
-            vars_i = clusters[i].var_names
-            for j in range(i + 1, len(clusters)):
-                vars_j = clusters[j].var_names
-                sepset = set(vars_j).intersection(set(vars_i)) - all_evidence_vars
-                self._non_rip_sepsets[(i, j)] = sepset
-                self._non_rip_sepsets[(j, i)] = sepset
-                if len(sepset) > 0:
-                    clusters[i].add_neighbour(clusters[j])
-
         self._clusters = clusters
 
         # Add special evidence to factors
@@ -203,7 +189,7 @@ class ClusterGraph(object):
 
         rip_sepsets_dict = self._get_running_intersection_sepsets()
 
-        # TODO: see why this is necessary and improve (2) - see (1) also
+        # TODO: see why this is necessary, remove if not
         for i in tqdm(range(len(self._clusters)), disable=self.disable_tqdm):
             self._clusters[i].remove_all_neighbours()
 
@@ -220,8 +206,8 @@ class ClusterGraph(object):
                     self._clusters[i].add_neighbour(self._clusters[j], sepset=sepset)
                     self._clusters[j].add_neighbour(self._clusters[i], sepset=sepset)
 
-                    gmp_ij = GraphMessagePath(self._clusters[i], self._clusters[j])
-                    gmp_ji = GraphMessagePath(self._clusters[j], self._clusters[i])
+                    gmp_ij = _GraphMessagePath(self._clusters[i], self._clusters[j])
+                    gmp_ji = _GraphMessagePath(self._clusters[j], self._clusters[i])
                     self.graph_message_paths.append(gmp_ij)
                     self.graph_message_paths.append(gmp_ji)
                     self._clusters[i].add_outward_message_path(gmp_ij)
@@ -240,59 +226,33 @@ class ClusterGraph(object):
         if self.verbose:
             print(message)
 
-    def plot_message_convergence(self, old=False):
+    def plot_message_convergence(self):
         """
         Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
         convergence.
-        :param old: Whether or not to use the older function for synchronous message passing convergence.
-        :type old: Bool
         """
-        if self.sync_message_passing_max_distances:
-            assert self.message_passing_log_df is None, 'Error: it seems bot sync and async message passing was run.'
-            plt.plot(self.sync_message_passing_max_distances)
-        else:
-            if old:
-                self._plot_message_convergence_old()
-            else:
-                self._plot_message_convergence_new()
 
-    def _plot_message_convergence_old(self):
-        """
-        Plot the message passing convergence over the consecutive iterations.
-        """
-        # TODO: combine with one below - this one gets messed up by inf values
-        message_kld_df = self.message_passing_log_df
-        columns_mask = message_kld_df.columns.to_series().str.contains('distance_from_previous')
-        message_kld_distances_only_df = message_kld_df[message_kld_df.columns[columns_mask]]
-        message_kld_distances_only_df.columns = range(message_kld_distances_only_df.shape[1])
+        mp_max_dists = self.sync_message_passing_max_distances
+        log_mp_max_dists = np.log(mp_max_dists)
+        num_iterations = len(log_mp_max_dists)
 
-        title = 'KL Divegences between Messages and Previous Iteration Messages'
-        ax = message_kld_distances_only_df.plot.box(figsize=[20, 10], title=title)
-        ax.title.set_size(20)
-        ax.set_ylabel('KLD', fontsize=15)
-        ax.set_xlabel('message passing iteration', fontsize=15)
+        iterations = list(range(num_iterations))
+        non_inf_max_distances = [d for d in log_mp_max_dists if d != np.inf]
+        max_non_inf = max(non_inf_max_distances)
+        new_inf_value = max_non_inf
+        max_distances_replaces_infs = [v if v != np.inf else new_inf_value for v in log_mp_max_dists]
 
-    def _plot_message_convergence_new(self, figsize=[10, 5]):
-        # TODO: improve this (inf value workaround is a bit hacky)
-        df = self.message_passing_log_df
-        kl_cols = [col for col in df.columns if 'distance' in col]
-        kl_df = df[kl_cols]
+        inf_values = np.ma.masked_where(max_distances_replaces_infs != new_inf_value, max_distances_replaces_infs)
+        non_inf_values = np.ma.masked_where(max_distances_replaces_infs == new_inf_value, max_distances_replaces_infs)
 
-        no_inf_df = kl_df.replace([np.inf], 0) * 2
-        max_no_inf = np.max(no_inf_df.values)
-
-        no_inf_df = kl_df.replace([-np.inf], 0) * 2
-        min_no_inf = np.min(no_inf_df.values)
-
-        inf_to_max_df = kl_df.replace([np.inf], max_no_inf * 2)
-        inf_to_max_min_df = inf_to_max_df.replace([-np.inf], min_no_inf * 2)
-        data = inf_to_max_min_df.values
-        max_kl_div_per_iteration = np.max(data, axis=0)
-        plt.figure(figsize=figsize)
-        plt.plot(np.log(max_kl_div_per_iteration))
-        plt.title('Message Passing Convergence', fontsize=15)
-        plt.ylabel('log max message kld')
-        plt.xlabel('message passing iteration')
+        plt.figure(figsize=[15, 5])
+        plt.plot(iterations, inf_values, c='r')
+        plt.plot(iterations, non_inf_values)
+        plt.legend(['infinity'])
+        plt.title('Message Passing Convergence')
+        plt.xlabel('iteration')
+        plt.ylabel('log max D_KL(prev_msg||msg)')
+        plt.show()
 
     def _get_unique_vars(self):
         all_vars = []
@@ -381,19 +341,14 @@ class ClusterGraph(object):
         joint = cluster_product.cancel(message_product)
         return joint
 
-    def process_graph(self, tol=1e-3, max_iter=50):
-        """
-        Process the graph by performing message passing until convergence.
-        """
-        self._process_graph_sync(tol=tol, max_iter=max_iter)
-
-    # New Synchronous version
-    #  TODO: make this more efficient, if no messages have been received by a cluster in the previous round, the next
-    #        message iterations from that cluster will be the same.
-    def _process_graph_sync(self, tol, max_iter):
+    def process_graph(self, tol=1e-3, max_iter=50, debug=False):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
         """
+
+        # for debugging and testing
+        self.messages_passed = []
+
         self.sync_message_passing_max_distances = []
         if len(self._clusters) == 1:
             # The Cluster Graph contains only single cluster. Message passing not possible or necessary.
@@ -404,22 +359,30 @@ class ClusterGraph(object):
         # TODO: see if the definition of max_iter can be improved
         key_func = lambda x: x.next_information_gain
         max_message_passes = max_iter*len(self.graph_message_paths)
-        #TODO: find a better solution than converting back to deque
+
         self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
-        print('[gmp.next_information_gain for gmp in graph_message_paths]: \n', [gmp.next_information_gain for gmp in self.graph_message_paths])
-        for i in range(max_message_passes):
+
+        for _ in tqdm(range(max_message_passes), disable=self.disable_tqdm):
+            self.sync_message_passing_max_distances.append(self.graph_message_paths[0].next_information_gain)
+            sender_cluster_id = self.graph_message_paths[0].sender_cluster.cluster_id
+            receiver_cluster_id = self.graph_message_paths[0].receiver_cluster.cluster_id
+
+            # for debugging and testing
+            if debug:
+                self.messages_passed.append(self.graph_message_paths[0].next_message.copy())
+
             self.graph_message_paths[0].pass_next_message()
-            sort_almost_sorted(self.graph_message_paths, key_func=key_func)
-            print(i)
-            if self.graph_message_paths[0].next_information_gain < tol:
+            self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
+            max_next_information_gain = self.graph_message_paths[0].next_information_gain
+            if max_next_information_gain <= tol:
                 print(f'{self.graph_message_paths[0].next_information_gain} < tol')
                 return
 
-        #if self.make_animation_gif:
-        #    cg_animation.add_message_pass_animation_frames(graph=self._graph,
-        #                                                   frames=self.message_passing_animation_frames,
-        #                                                   node_a_name=message.sender_id,
-        #                                                   node_b_name=receiver_cluster_id)
+            if self.make_animation_gif:
+                cg_animation.add_message_pass_animation_frames(graph=self._graph,
+                                                               frames=self.message_passing_animation_frames,
+                                                               node_a_name=sender_cluster_id,
+                                                               node_b_name=receiver_cluster_id)
 
     def _make_message_passing_animation_gif(self):
         print('Making message passing animation.')
@@ -428,25 +391,26 @@ class ClusterGraph(object):
                                                       append_images=self.message_passing_animation_frames[1:],
                                                       save_all=True, duration=400, loop=0)
 
-    @property
-    def graph(self):
-        return self._graph
 
-
-class GraphMessagePath:
+class _GraphMessagePath:
     """
     A specific path (direction along an edge) in a graph along which a message can be passed.
     """
-
     def __init__(self, sender_cluster, receiver_cluster):
+        """
+        The initialiser.
+        :param sender_cluster: The cluster that defines the starting point of the path.
+        :param receiver_cluster: The cluster that defines the end point of the path.
+        """
         self.sender_cluster = sender_cluster
         self.receiver_cluster = receiver_cluster
-        self.previous_message = None
+        self.previously_sent_message = None
         self.next_message = self.sender_cluster.make_message(self.receiver_cluster._cluster_id)
+        self.next_information_gain = None
         self.update_next_information_gain()
 
     def update_next_information_gain(self):
-        if self.previous_message is None:
+        if self.previously_sent_message is None:
             self.next_information_gain = self.next_message.distance_from_vacuous()
         else:
             # "In the context of machine learning, KL(P||Q) is often called the information gain achieved if Q is
@@ -455,18 +419,24 @@ class GraphMessagePath:
             # the message (P)
             # message: previous_message (P)
             # factor: next message (Q)
-            self.next_information_gain = self.next_message.kl_divergence(self.previous_message)
+            self.next_information_gain = self.next_message.kl_divergence(self.previously_sent_message)
 
     def recompute_next_message(self):
         """
-        Recompute the next message
-
+        Recompute the next message.
         """
         new_next_message = self.sender_cluster.make_message(self.receiver_cluster._cluster_id)
-        self.previous_message, self.next_message = self.next_message, new_next_message
+        self.next_message = new_next_message.copy()
         self.update_next_information_gain()
 
     def pass_next_message(self):
+        """
+        Pass the next message along this path.
+        """
         self.receiver_cluster.receive_message(self.next_message)
+        # we 'recompute' the next message - but it will be the same
+        self.previously_sent_message = self.next_message.copy()
+        self.next_information_gain = 0.0
+
         for gmp in self.receiver_cluster._outward_message_paths:
             gmp.recompute_next_message()

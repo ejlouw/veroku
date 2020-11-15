@@ -35,3 +35,11 @@ class TestSudoku(unittest.TestCase):
         """
         with Notebook():
             import veroku.notebooks.slip_on_grass_example
+
+    def test_kalman_filter(self):
+        """
+        Test that the sudoku notebook runs successfully and computes the correct solution (checked in notebook)
+        :return:
+        """
+        with Notebook():
+            import veroku.notebooks.Kalman_filter

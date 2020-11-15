@@ -4,6 +4,7 @@ import uuid
 # TODO: add evidence observation functionality
 # (perhaps only important for non-linear gaussian and similar approximate transformation factors)
 from veroku.factors.gaussian import Gaussian
+import copy
 #from veroku.factors.nonlinear_gaussian import NonLinearGaussianMixture
 #from veroku.factors.gaussian import split_gaussian
 
@@ -21,7 +22,6 @@ class Cluster(object):
         :param factor: () The factor to use in the cluster
         :param name: The name of the cluster.
         """
-        self.debug_count = 0
         self._factor = factor
         # self._cluster_id = name if name is not None else str(uuid.uuid1())
         # self._cluster_id = name if name is not None else str(factor.var_names)
@@ -76,15 +76,8 @@ class Cluster(object):
         :param neighbour_id: The specified id corresponding to the neighbour cluster.
         :return: (Message) The Message
         """
-
-        self.debug_count += 1
-
         sepset_vars = self._neighbour_sepsets[neighbour_id]
-        print('self._special_evidence: ', self._special_evidence)
-
         message_factor = self._factor.copy()
-
-        print('cluster_id = ', self.cluster_id)
         if self._special_evidence is not None:
             evidence_vrs = list(self._special_evidence.keys())
             evidence_values = list(self._special_evidence.values())
@@ -176,9 +169,24 @@ class Message(object):
         :param receiver_id: The cluster_id of the receiver cluster
         """
         self.uuid = str(uuid.uuid1())
-        self._factor = factor
         self._sender_id = sender_id
         self._receiver_id = receiver_id
+        self._factor = factor
+
+    def equals(self, other, rtol=1e-05, atol=1e-05):
+        if self._sender_id != other.sender_id:
+            return False
+        if self._receiver_id != other._receiver_id:
+            return False
+        if not self._factor.equals(other._factor, rtol=rtol, atol=atol):
+            return False
+        return True
+
+    def __repr__(self):
+        repr_str = 'sender_id: ' + self._sender_id + '\n' + \
+                   'receiver_id: ' + self._receiver_id + '\n' + \
+                   'factor: \n' + self._factor.__repr__()
+        return repr_str
 
     @property
     def sender_id(self):
@@ -209,7 +217,6 @@ class Message(object):
         Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous version of it.
         :return: The KL-divergence
         """
-        # TODO: the naming convention seems a bit strange here - improve it
         return self.factor.distance_from_vacuous()
 
     def kl_divergence(self, message):
@@ -218,11 +225,7 @@ class Message(object):
         :param message: The other message of which the factor will be used to compare to this message's factor.
         :return: The KL-divergence
         """
-
-
-        # TODO: change function and variable names to reflect this better
         distance = self.factor.kl_divergence(message.factor)
-
         return distance
 
     @property
@@ -232,3 +235,6 @@ class Message(object):
         :return: the var_names
         """
         return self._factor.var_names
+
+    def copy(self):
+        return Message(self.factor.copy(), copy.deepcopy(self.sender_id), copy.deepcopy(self.receiver_id))
