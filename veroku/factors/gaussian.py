@@ -20,6 +20,7 @@ from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 
+
 def assert_consistent_forms(gaussian):
     if gaussian.COVFORM:
         if gaussian.CANFORM:
@@ -908,31 +909,36 @@ class Gaussian(Factor):
 
     # pylint: enable=invalid-name
 
+    def get_cov_repr_str(self):
+        self_copy = self.copy()
+        self_copy._update_covform()
+        repr_str = 'Cov        = \n' + str(self_copy.cov) + '\n' + \
+                   'mean       = \n' + str(self_copy.mean) + '\n' + \
+                   'log_weight = \n' + str(self_copy.log_weight) + '\n'
+        return repr_str
+
+    def get_can_repr_str(self):
+        self_copy = self.copy()
+        self_copy._update_canform()
+        repr_str = 'K = \n' + str(self_copy.K) + '\n' + \
+                   'h = \n' + str(self_copy.h) + '\n' + \
+                   'g = \n' + str(self_copy.g) + '\n' + \
+                   'is_vacuous: ' + str(self_copy._is_vacuous) + '\n'
+        return repr_str
+
     def __repr__(self):  # pragma: no cover
         """
         Get the string representation of the Gaussian factor.
         """
-
         np.set_printoptions(edgeitems=3)
         np.set_printoptions(precision=4)
         np.core.arrayprint._line_width = 200
-        self_copy = self.copy()
+        repr_str = 'vars = ' + str(self.var_names) + '\n'
         if not self._is_vacuous:
-            self_copy._update_covform()
-
-        repr_str = 'vars = ' + str(self_copy.var_names) + '\n'
-        if self_copy.COVFORM:
-            repr_str += 'Cov        = \n' + str(self_copy.cov) + '\n' + \
-                        'mean       = \n' + str(self_copy.mean) + '\n' + \
-                        'log_weight = \n' + str(self_copy.log_weight) + '\n'
-        if self_copy.CANFORM:
-            repr_str += 'K = \n' + str(self_copy.K) + '\n' + \
-                        'h = \n' + str(self_copy.h) + '\n' + \
-                        'g = \n' + str(self_copy.g) + '\n' + \
-                        'is_vacuous: ' + str(self_copy._is_vacuous)  + '\n'
+            repr_str += self.get_can_repr_str()
+        repr_str += self.get_can_repr_str()
         return repr_str
 
-    #TODO: replace this with __repr__
     def show(self, update_covform=True, show_canform=False):  # pragma: no cover
         """
         Print the parameters of the Gaussian distribution
@@ -949,17 +955,11 @@ class Gaussian(Factor):
         self_copy = self.copy()
         if not self._is_vacuous and update_covform:
             self_copy._update_covform()
-
         print('vars = ', self_copy.var_names)
         if self_copy.COVFORM:
-            print('Cov = \n', self_copy.cov)
-            print('mean = \n', self_copy.mean)
-            print('log_weight = \n', self_copy.log_weight)
+            print(self_copy.get_cov_repr_str())
         if self_copy.CANFORM and show_canform:
-            print('K = \n', self_copy.K)
-            print('h = \n', self_copy.h)
-            print('g = \n', self_copy.g)
-        print('is_vacuous: ', self_copy._is_vacuous)
+            print(self_copy.get_can_repr_str())
 
     def show_vis(self, figsize=(10, 8)):
         """
