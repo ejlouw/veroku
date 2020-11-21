@@ -119,6 +119,9 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
     :return: The linear Gaussian Template
     :rtype: GaussianTemplate
     """
+
+    # TODO: improve this by adding the correct equations for calculating the linear Gaussian parameters that do not rely
+    #  on the dummy factor multiplication.
     X_dim = len(conditioning_var_templates)
     Sxx = np.eye(X_dim)
     Kxx = np.linalg.inv(Sxx)
@@ -130,6 +133,8 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
     # print('result = ', result)
 
     ux = np.zeros([X_dim, 1])
+    uxTKxxux = ux.transpose() @ Kxx @ ux
+    gx = 0.0 - 0.5 * uxTKxxux - 0.5 * np.log(np.linalg.det(2.0 * np.pi * Sxx))
 
     S = np.block([[Sxx, Sxx @ A.T],
                   [A @ Sxx, A @ Sxx @ A.T + N]])
@@ -143,9 +148,10 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
     h_cpd = h_joint.copy()
     h_cpd[:X_dim] = h_cpd[:X_dim] - ux
 
+    g_cpd = 0.0 - gx
     var_names = conditioning_var_templates + conditional_var_templates
 
-    return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=0.0)
+    return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=g_cpd)
 
 
 def make_linear_gaussian_cpd_template(A, N, conditioning_var_templates, conditional_var_templates):
@@ -341,6 +347,7 @@ class Gaussian(Factor):
         if self.CANFORM:
             if not self._canform_equals(factor, rtol, atol):
                 return False
+        self._update_covform()
         if self.COVFORM:
             if not self._covform_equals(factor, rtol, atol):
                 return False
@@ -759,7 +766,6 @@ class Gaussian(Factor):
         :return: The KL divergence.
         :rtype: float
         """
-
         if self._is_vacuous:
             return 0.0
         else:
@@ -777,7 +783,6 @@ class Gaussian(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-
         if self.dim != factor.dim:
             raise ValueError('cannot get KL-divergence between Gaussians of different dimensionalities.')
         if self._is_vacuous and factor._is_vacuous:
@@ -787,6 +792,7 @@ class Gaussian(Factor):
 
         if self.equals(factor):
             return 0.0
+        # TODO: can we compute the correct ('normalised') KL divergence without explicitly normalizing?
         normalized_self = self.normalize()
         factor_ = factor
         if normalize_factor:
@@ -905,13 +911,12 @@ class Gaussian(Factor):
 
         return log_potx[0, 0]
 
-        raise Exception('Gaussian is neither in canonical form nor in covariance form?')
-
     # pylint: enable=invalid-name
 
     def get_cov_repr_str(self):
         self_copy = self.copy()
         self_copy._update_covform()
+        np.set_printoptions(linewidth=np.inf)
         repr_str = 'Cov        = \n' + str(self_copy.cov) + '\n' + \
                    'mean       = \n' + str(self_copy.mean) + '\n' + \
                    'log_weight = \n' + str(self_copy.log_weight) + '\n'
@@ -920,6 +925,7 @@ class Gaussian(Factor):
     def get_can_repr_str(self):
         self_copy = self.copy()
         self_copy._update_canform()
+        np.set_printoptions(linewidth=np.inf)
         repr_str = 'K = \n' + str(self_copy.K) + '\n' + \
                    'h = \n' + str(self_copy.h) + '\n' + \
                    'g = \n' + str(self_copy.g) + '\n' + \
@@ -936,7 +942,7 @@ class Gaussian(Factor):
         repr_str = 'vars = ' + str(self.var_names) + '\n'
         if not self._is_vacuous:
             repr_str += self.get_can_repr_str()
-        repr_str += self.get_can_repr_str()
+        repr_str += self.get_cov_repr_str()
         return repr_str
 
     def show(self, update_covform=True, show_canform=False):  # pragma: no cover
@@ -948,7 +954,6 @@ class Gaussian(Factor):
         :param show_canform: Whether or not toshow the canonical form as well.
         :type show_canform: bool
         """
-
         np.set_printoptions(edgeitems=3)
         np.set_printoptions(precision=4)
         np.core.arrayprint._line_width = 200

@@ -19,15 +19,15 @@ import collections
 
 
 # TODO: consider removing this
-def sort_almost_sorted(a_deque, key_func):
+def sort_almost_sorted(a_deque, key):
     """
     Sort a deque like that where only the first element is potentially unsorted
     and should probably be last and the rest of the deque is sorted in descending order.
     """
     a_deque.append(a_deque.popleft())
-    if key_func(a_deque[-1]) <= key_func(a_deque[-2]):
+    if key(a_deque[-1]) <= key(a_deque[-2]):
         return a_deque
-    a_deque = collections.deque(sorted(a_deque, key=key_func, reverse=True))
+    a_deque = collections.deque(sorted(a_deque, key=key, reverse=True))
     return a_deque
 
 
@@ -248,7 +248,8 @@ class ClusterGraph(object):
         plt.figure(figsize=[15, 5])
         plt.plot(iterations, inf_values, c='r')
         plt.plot(iterations, non_inf_values)
-        plt.legend(['infinity'])
+        if len(non_inf_max_distances) != len(log_mp_max_dists):
+            plt.legend(['infinity'])
         plt.title('Message Passing Convergence')
         plt.xlabel('iteration')
         plt.ylabel('log max D_KL(prev_msg||msg)')
@@ -370,9 +371,14 @@ class ClusterGraph(object):
             # for debugging and testing
             if debug:
                 self.messages_passed.append(self.graph_message_paths[0].next_message.copy())
+                data = [(gmp.sender_cluster._cluster_id, gmp.receiver_cluster._cluster_id, gmp.next_information_gain) for
+                        gmp in self.graph_message_paths]
+                df = pd.DataFrame(data=data, columns=['sender', 'receiver', 'info'])
 
             self.graph_message_paths[0].pass_next_message()
             self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
+            # self.graph_message_paths = sort_almost_sorted(self.graph_message_paths, key=key_func)
+
             max_next_information_gain = self.graph_message_paths[0].next_information_gain
             if max_next_information_gain <= tol:
                 print(f'{self.graph_message_paths[0].next_information_gain} < tol')
@@ -419,7 +425,8 @@ class _GraphMessagePath:
             # the message (P)
             # message: previous_message (P)
             # factor: next message (Q)
-            self.next_information_gain = self.next_message.kl_divergence(self.previously_sent_message)
+            # P.kl_divergence(Q)
+            self.next_information_gain = self.previously_sent_message.kl_divergence(self.next_message)
 
     def recompute_next_message(self):
         """

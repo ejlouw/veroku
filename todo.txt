@@ -1,0 +1,2 @@
+* Investigate why message passing does not instantly converge after all messages has been passed once in Kalman filter
+example.
