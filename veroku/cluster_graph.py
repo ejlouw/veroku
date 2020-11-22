@@ -120,8 +120,7 @@ class ClusterGraph(object):
             the calculation of messages, and not to reduce factors. This allows factor approximations - such as the
             non-linear Gaussian to be iteratively refined.
         """
-
-        #TODO: see if evidence and special_evidence can be replaced by a single variable.
+        # TODO: see if evidence and special_evidence can be replaced by a single variable.
         self.num_messages_passed = 0
         self.make_animation_gif = make_animation_gif
         self.special_evidence = special_evidence
@@ -186,7 +185,6 @@ class ClusterGraph(object):
 
         self._conditional_print('Info: Building graph.')
         self._graph = Graph(format='png')
-
         rip_sepsets_dict = self._get_running_intersection_sepsets()
 
         # TODO: see why this is necessary, remove if not
@@ -226,30 +224,52 @@ class ClusterGraph(object):
         if self.verbose:
             print(message)
 
-    def plot_message_convergence(self):
+    def plot_next_messages_info_gain(self, legend_on=False, figsize=[15, 5]):
+        """
+        Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the
+            graph.
+        :param bool legend_on: Whether or not to show the message paths (specified by connected cluster pairs) in the
+            plot legend.
+        :param list figsize: The matplotlib figure size.
+        """
+        plt.figure(figsize=figsize)
+        all_paths_information_gains_with_iters = [gmp.information_gains_with_iters for gmp in self.graph_message_paths]
+        for paths_information_gains_with_iters in all_paths_information_gains_with_iters:
+            plt.plot(paths_information_gains_with_iters)
+        plt.title('Information Gain of Messages along Graph Message Paths')
+        plt.xlabel('iteration')
+        plt.ylabel('D_KL(prev_msg||msg)')
+        if legend_on:
+            legend = [f"{gmp.sender_cluster.cluster_id}->{gmp.receiver_cluster.cluster_id}" for gmp in
+                      self.graph_message_paths]
+            plt.legend(legend)
+
+    def plot_message_convergence(self, log=False, figsize=[15, 5]):
         """
         Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
         convergence.
         """
 
         mp_max_dists = self.sync_message_passing_max_distances
-        log_mp_max_dists = np.log(mp_max_dists)
-        num_iterations = len(log_mp_max_dists)
+        if log:
+            mp_max_dists = np.log(mp_max_dists)
+        from matplotlib.lines import Line2D
+        # here we tile an flatten to prevent the plot omission of values with inf on either side.
+        mp_max_dists = np.tile(mp_max_dists, [2, 1]).flatten(order='F')
+        num_iterations = len(mp_max_dists)
 
-        iterations = list(range(num_iterations))
-        non_inf_max_distances = [d for d in log_mp_max_dists if d != np.inf]
+        iterations = np.array(list(range(num_iterations))) / 2  # divide by 2 to correct for tile and flatten
+        non_inf_max_distances = [d for d in mp_max_dists if d != np.inf]
         max_non_inf = max(non_inf_max_distances)
-        new_inf_value = max_non_inf
-        max_distances_replaces_infs = [v if v != np.inf else new_inf_value for v in log_mp_max_dists]
-
+        new_inf_value = max_non_inf * 1.5
+        max_distances_replaces_infs = np.array([v if v != np.inf else new_inf_value for v in mp_max_dists])
         inf_values = np.ma.masked_where(max_distances_replaces_infs != new_inf_value, max_distances_replaces_infs)
-        non_inf_values = np.ma.masked_where(max_distances_replaces_infs == new_inf_value, max_distances_replaces_infs)
-
-        plt.figure(figsize=[15, 5])
-        plt.plot(iterations, inf_values, c='r')
-        plt.plot(iterations, non_inf_values)
-        if len(non_inf_max_distances) != len(log_mp_max_dists):
-            plt.legend(['infinity'])
+        plt.figure(figsize=figsize)
+        plt.plot(iterations, max_distances_replaces_infs)
+        plt.plot(iterations, inf_values, c='r', linewidth=2)
+        if len(non_inf_max_distances) != len(mp_max_dists):
+            custom_lines = [Line2D([0], [0], color='r', lw=4)]
+            plt.legend(custom_lines, ['infinity'])
         plt.title('Message Passing Convergence')
         plt.xlabel('iteration')
         plt.ylabel('log max D_KL(prev_msg||msg)')
@@ -273,7 +293,8 @@ class ClusterGraph(object):
                     var_graphs[var].add_edge(i, j, weight=1)
         var_spanning_trees = dict()
         for var in all_vars:
-            var_spanning_trees[var] = nx.minimum_spanning_tree(var_graphs[var])
+            var_graph = var_graphs[var]
+            var_spanning_trees[var] = nx.minimum_spanning_tree(var_graph)
         return var_spanning_trees
 
     def _get_running_intersection_sepsets(self):
@@ -364,7 +385,6 @@ class ClusterGraph(object):
         self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
 
         for _ in tqdm(range(max_message_passes), disable=self.disable_tqdm):
-            self.sync_message_passing_max_distances.append(self.graph_message_paths[0].next_information_gain)
             sender_cluster_id = self.graph_message_paths[0].sender_cluster.cluster_id
             receiver_cluster_id = self.graph_message_paths[0].receiver_cluster.cluster_id
 
@@ -380,8 +400,8 @@ class ClusterGraph(object):
             # self.graph_message_paths = sort_almost_sorted(self.graph_message_paths, key=key_func)
 
             max_next_information_gain = self.graph_message_paths[0].next_information_gain
+            self.sync_message_passing_max_distances.append(max_next_information_gain)
             if max_next_information_gain <= tol:
-                print(f'{self.graph_message_paths[0].next_information_gain} < tol')
                 return
 
             if self.make_animation_gif:
@@ -413,6 +433,7 @@ class _GraphMessagePath:
         self.previously_sent_message = None
         self.next_message = self.sender_cluster.make_message(self.receiver_cluster._cluster_id)
         self.next_information_gain = None
+        self.information_gains_with_iters = []
         self.update_next_information_gain()
 
     def update_next_information_gain(self):
@@ -427,6 +448,7 @@ class _GraphMessagePath:
             # factor: next message (Q)
             # P.kl_divergence(Q)
             self.next_information_gain = self.previously_sent_message.kl_divergence(self.next_message)
+        self.information_gains_with_iters.append(self.next_information_gain)
 
     def recompute_next_message(self):
         """
@@ -444,6 +466,7 @@ class _GraphMessagePath:
         # we 'recompute' the next message - but it will be the same
         self.previously_sent_message = self.next_message.copy()
         self.next_information_gain = 0.0
+        self.information_gains_with_iters.append(self.next_information_gain)
 
         for gmp in self.receiver_cluster._outward_message_paths:
             gmp.recompute_next_message()

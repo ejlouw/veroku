@@ -5,6 +5,7 @@ A module for instantiating sparse tables with log probabilities.
 # System imports
 import copy
 import operator
+import time
 
 # Third-party imports
 import numpy as np
@@ -247,6 +248,16 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     return resulting_factor_table
 
 
+def _fast_copy_probs_table(table):
+    """
+    Copy a dictionary representation of a probability table faster than the standard deepcopy.
+    :param dict table: A dictionary with the tuples of ints as keys and floats as values.
+    :return: The copied table.
+    """
+    table_copy = {tuple([a for a in assign]): value for assign, value in table.items()}
+    return table_copy
+
+
 class SparseCategorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
@@ -283,7 +294,7 @@ class SparseCategorical(Factor):
             raise ValueError('Either log_probs_table or probs_table must be specified')
         if log_probs_table is None:
             log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
-        self.log_probs_table = copy.deepcopy(log_probs_table)
+        self.log_probs_table = _fast_copy_probs_table(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
         self.default_log_prob = default_log_prob
@@ -351,7 +362,7 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
         return SparseCategorical(var_names=self.var_names.copy(),
-                                 log_probs_table=copy.deepcopy(self.log_probs_table),
+                                 log_probs_table=_fast_copy_probs_table(self.log_probs_table),
                                  cardinalities=copy.deepcopy(self.cardinalities),
                                  default_log_prob=self.default_log_prob)
 
@@ -731,7 +742,7 @@ class SparseCategorical(Factor):
 
 class SparseCategoricalTemplate(FactorTemplate):
 
-    def __init__(self, log_probs_table, var_templates):
+    def __init__(self, log_probs_table, cardinalities, var_templates=None):
         """
         Create a Categorical factor template.
 
@@ -748,7 +759,8 @@ class SparseCategoricalTemplate(FactorTemplate):
         """
         # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)
-        self.log_probs_table = copy.deepcopy(log_probs_table)
+        self.log_probs_table = _fast_copy_probs_table(log_probs_table)
+        self.cardinalities = cardinalities
 
     def make_factor(self, format_dict=None, var_names=None):
         """
@@ -759,9 +771,13 @@ class SparseCategoricalTemplate(FactorTemplate):
         :return: The instantiated factor.
         :rtype: SparseCategorical
         """
+        if (self._var_templates is None) and (var_names is None):
+            raise ValueError(
+                'var_names need to be supplied to make a factor from SparseCategoricalTemplate without var_templates')
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
-        cardinalities = list(self.var_cards.values())
-        return SparseCategorical(log_probs_table=copy.deepcopy(self.log_probs_table),
-                                 var_names=var_names, cardinalities=cardinalities)
+        cardinalities = list(self.cardinalities)
+        factor = SparseCategorical(log_probs_table=self.log_probs_table,
+                                   var_names=var_names, cardinalities=cardinalities)
+        return factor

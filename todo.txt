@@ -1,2 +1,4 @@
 * Investigate why message passing does not instantly converge after all messages has been passed once in Kalman filter
 example.
+* Investigate why the KL(P||Q) = KL(previously_sent_message||next_message) causes more oscilation in message passing
+in the sudoku example (while causing faster convergence in KF example).
