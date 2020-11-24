@@ -15,8 +15,7 @@ class TestNotebooks(unittest.TestCase):
         Run before every test.
         """
         when(ClusterGraph).show().thenReturn()
-        sys.path.append('../../../')
-        sys.path.append('../../../examples')
+        sys.path.append('../../examples')
 
     def tearDown(self):
         """
