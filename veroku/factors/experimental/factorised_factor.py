@@ -79,13 +79,13 @@ class FactorisedFactor(Factor):
         """
         factorised_factor_copy = self.copy()
         index = factorised_factor_copy.first_factor_with_vars_index(factor.var_names)
-        # TODO: fix or remove this. This is breaks when the factors do not have equals methods
-        # for i, factorised_comp in enumerate(self.factors):
-        #     if factorised_comp.equals(factor):
-        #         if len(self.factors) > 1:
-        #             del factorised_factor_copy.factors[i]
-        #             return factorised_factor_copy
-        #         # TODO: add else to make general vacuous factor (wont necessarily be Gaussian)
+
+        for i, factorised_comp in enumerate(self.factors):
+            if factorised_comp.equals(factor):
+                if len(self.factors) > 1:
+                    del factorised_factor_copy.factors[i]
+                    return factorised_factor_copy
+                # TODO: add else to make general vacuous factor (wont necessarily be Gaussian)
         if index is not None:
             factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].divide(factor)
         else:
@@ -94,6 +94,11 @@ class FactorisedFactor(Factor):
 
     @property
     def is_vacuous(self):
+        """
+        Check if the factor is vacuous (i.e uniform).
+        :return: The result of the check.
+        :rtype: Bool
+        """
         all_vacuous = all([factor._is_vacuous for factor in self.factors])
         if all_vacuous:
             return True
@@ -110,7 +115,6 @@ class FactorisedFactor(Factor):
     def kl_divergence(self, factor):
         # TODO: improve this
         return self.joint_distribution.kl_divergence(factor)
-
 
     @property
     def num_factors(self):
@@ -316,7 +320,8 @@ class FactorisedFactor(Factor):
         :rtype: bool
         """
         if not isinstance(factor, FactorisedFactor):
-            raise NotImplemented()
+            # TODO: find a better solution here
+            return self.equals(FactorisedFactor([factor]))
         if set(factor.var_names) != set(self.var_names):
             return False
         if len(self.factors) != len(factor.factors):

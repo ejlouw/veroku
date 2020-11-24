@@ -133,8 +133,9 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
     # print('result = ', result)
 
     ux = np.zeros([X_dim, 1])
-    uxTKxxux = ux.transpose() @ Kxx @ ux
-    gx = 0.0 - 0.5 * uxTKxxux - 0.5 * np.log(np.linalg.det(2.0 * np.pi * Sxx))
+    hx = Kxx @ ux
+    uxTKxxux = ux.transpose() @ hx
+    gx = - 0.5 * uxTKxxux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * Sxx))
 
     S = np.block([[Sxx, Sxx @ A.T],
                   [A @ Sxx, A @ Sxx @ A.T + N]])
@@ -146,9 +147,11 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
 
     h_joint = K_joint @ mean_joint
     h_cpd = h_joint.copy()
-    h_cpd[:X_dim] = h_cpd[:X_dim] - ux
+    h_cpd[:X_dim] = h_cpd[:X_dim] - hx
 
-    g_cpd = 0.0 - gx
+    uTKux = mean_joint.T @ K_joint @ mean_joint
+    g_joint = 0.5 * uTKux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * S))
+    g_cpd = g_joint - gx
     var_names = conditioning_var_templates + conditional_var_templates
 
     return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=g_cpd)
@@ -344,9 +347,12 @@ class Gaussian(Factor):
         # pylint: disable=protected-access
         if self._var_names != factor.var_names:
             gaussian_copy._reorder_parameters(self._var_names)
+        if gaussian_copy._is_vacuous and self._is_vacuous:
+            return True
         if self.CANFORM:
-            if not self._canform_equals(factor, rtol, atol):
-                return False
+            if self._canform_equals(factor, rtol, atol):
+                return True
+            return False
         self._update_covform()
         if self.COVFORM:
             if not self._covform_equals(factor, rtol, atol):
