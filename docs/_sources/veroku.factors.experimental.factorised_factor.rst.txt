@@ -1,0 +1,7 @@
+veroku.factors.experimental.factorised\_factor module
+=====================================================
+
+.. automodule:: veroku.factors.experimental.factorised_factor
+   :members:
+   :undoc-members:
+   :show-inheritance:

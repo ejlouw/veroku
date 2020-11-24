@@ -39,6 +39,7 @@
 <span class="c1"># System imports</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
 <span class="c1"># Third-party imports</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -281,6 +282,16 @@
     <span class="k">return</span> <span class="n">resulting_factor_table</span></div>
 
 
+<span class="k">def</span> <span class="nf">_fast_copy_probs_table</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy a dictionary representation of a probability table faster than the standard deepcopy.</span>
+<span class="sd">    :param dict table: A dictionary with the tuples of ints as keys and floats as values.</span>
+<span class="sd">    :return: The copied table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table_copy</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">assign</span><span class="p">]):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">table_copy</span>
+
+
 <div class="viewcode-block" id="SparseCategorical"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical">[docs]</a><span class="k">class</span> <span class="nc">SparseCategorical</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for instantiating sparse tables with log probabilities.</span>
@@ -317,7 +328,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either log_probs_table or probs_table must be specified&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">log_probs_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log_probs_table</span> <span class="o">=</span> <span class="p">{</span><span class="n">assignment</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">_fast_copy_probs_table</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">cardinalities</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">default_log_prob</span> <span class="o">=</span> <span class="n">default_log_prob</span>
@@ -385,7 +396,7 @@
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                                 <span class="n">log_probs_table</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">),</span>
+                                 <span class="n">log_probs_table</span><span class="o">=</span><span class="n">_fast_copy_probs_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">),</span>
                                  <span class="n">cardinalities</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">),</span>
                                  <span class="n">default_log_prob</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_log_prob</span><span class="p">)</span></div>
 
@@ -765,7 +776,7 @@
 
 <div class="viewcode-block" id="SparseCategoricalTemplate"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate">[docs]</a><span class="k">class</span> <span class="nc">SparseCategoricalTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="p">,</span> <span class="n">var_templates</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">var_templates</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a Categorical factor template.</span>
 
@@ -782,7 +793,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: Complete and improve docstring.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_templates</span><span class="o">=</span><span class="n">var_templates</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span> <span class="o">=</span> <span class="n">_fast_copy_probs_table</span><span class="p">(</span><span class="n">log_probs_table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">cardinalities</span>
 
 <div class="viewcode-block" id="SparseCategoricalTemplate.make_factor"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor">[docs]</a>    <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -793,12 +805,16 @@
 <span class="sd">        :return: The instantiated factor.</span>
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_var_templates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;var_names need to be supplied to make a factor from SparseCategoricalTemplate without var_templates&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_templates</span><span class="p">]</span>
-        <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">),</span>
-                                 <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span><span class="p">)</span></div></div>
+        <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">)</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
+                                   <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">factor</span></div></div>
 </pre></div>
 
           </div>

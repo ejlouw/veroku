@@ -1,7 +1,0 @@
-veroku.factors.nonlinear\_gaussian module
-=========================================
-
-.. automodule:: veroku.factors.nonlinear_gaussian
-   :members:
-   :undoc-members:
-   :show-inheritance:

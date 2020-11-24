@@ -36,15 +36,8 @@
 <span id="veroku-cluster-graph-module"></span><h1>veroku.cluster_graph module<a class="headerlink" href="#module-veroku.cluster_graph" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="veroku.cluster_graph.ClusterGraph">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_factors">
-<code class="sig-name descname">get_factors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_factors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the cluster factor for each cluster in the graph
-:return: A list of cluster factors.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_marginal">
 <code class="sig-name descname">get_marginal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_marginal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_marginal" title="Permalink to this definition">¶</a></dt>
@@ -60,24 +53,34 @@ has been run previously).
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.graph">
-<em class="property">property </em><code class="sig-name descname">graph</code><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.graph" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
+<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[15, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
+convergence.</p>
+</dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
-<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">old</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
-convergence.
-:param old: Whether or not to use the older function for synchronous message passing convergence.
-:type old: Bool</p>
+<dt id="veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">
+<code class="sig-name descname">plot_next_messages_info_gain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">legend_on</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[15, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_next_messages_info_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the</dt><dd><p>graph.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>legend_on</strong> (<em>bool</em>) – Whether or not to show the message paths (specified by connected cluster pairs) in the
+plot legend.</p></li>
+<li><p><strong>figsize</strong> (<em>list</em>) – The matplotlib figure size.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.process_graph">
-<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">sync</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Process the graph by performing message passing until convergece.
-:param bool sync: Whether or not to use a synchronous message passing (asynchronous message passing used if False)</p>
+<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform synchronous message passing until convergence (or maximum iterations).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -90,7 +93,8 @@ convergence.
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.show">
 <code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.show" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Show the cluster graph.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -98,6 +102,13 @@ convergence.
 <dt id="veroku.cluster_graph.make_factor_name">
 <code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">make_factor_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#make_factor_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.make_factor_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt id="veroku.cluster_graph.sort_almost_sorted">
+<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">sort_almost_sorted</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a_deque</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#sort_almost_sorted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.sort_almost_sorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort a deque like that where only the first element is potentially unsorted
+and should probably be last and the rest of the deque is sorted in descending order.</p>
+</dd></dl>
 
 </div>
 

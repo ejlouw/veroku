@@ -1,0 +1,19 @@
+veroku.factors.experimental package
+===================================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   veroku.factors.experimental.factorised_factor
+   veroku.factors.experimental.nonlinear_gaussian
+
+Module contents
+---------------
+
+.. automodule:: veroku.factors.experimental
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,6 +1,14 @@
 veroku.factors package
 ======================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   veroku.factors.experimental
+
 Submodules
 ----------
 
@@ -8,9 +16,7 @@ Submodules
    :maxdepth: 4
 
    veroku.factors.categorical
-   veroku.factors.factorised_factor
    veroku.factors.gaussian
-   veroku.factors.nonlinear_gaussian
    veroku.factors.sigma_points
    veroku.factors.sparse_categorical
 
