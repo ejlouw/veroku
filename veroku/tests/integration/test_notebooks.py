@@ -4,6 +4,7 @@ import unittest
 from veroku.cluster_graph import ClusterGraph
 import numpy as np
 import sys
+import os
 
 
 class TestNotebooks(unittest.TestCase):
@@ -15,6 +16,7 @@ class TestNotebooks(unittest.TestCase):
         Run before every test.
         """
         when(ClusterGraph).show().thenReturn()
+        print('                 pwd: ', os.getcwd())
         sys.path.append('./examples')
         sys.path.append('../examples')
         sys.path.append('../../examples')
