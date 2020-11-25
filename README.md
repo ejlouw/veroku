@@ -41,4 +41,5 @@ On the roadmap:
 * Normal-Wishart distribution
 
 <sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.
+
 <sup>2</sup>This implementation is still experimental.
