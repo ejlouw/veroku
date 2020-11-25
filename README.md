@@ -15,9 +15,11 @@ state of a process or system, given noisy measurements. PGMs can in principle be
 uncertainty and is therefore applicable to many problems.</div> 
 
 Veroku currently supports the following distributions:
-* Multivariate Gaussian
-* Multivariate Gaussian mixture
-* Multivariate categorical
+* Categorical
+* Gaussian
+* Gaussian mixture
+* Linear Gaussian<sup>1</sup>
+* Non-linear Gaussian<sup>2</sup>
 
 <div style="text-align: justify">
 These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
@@ -29,7 +31,7 @@ using message passing algorithms. Currently only the LBU (Loopy Belief Update) m
 
 ### Future Features
 To be added soon:
-* Example notebooks
+* More example notebooks
 * Non-linear Gaussian distribution
 * Plate models (for efficiently specifying PGMs as modular/hierarchical templates)
 
@@ -38,3 +40,5 @@ On the roadmap:
 * Wishart distribution
 * Normal-Wishart distribution
 
+<sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.
+<sup>2</sup>This implementation is still experimental.
