@@ -221,7 +221,7 @@ class Message(object):
 
     def kl_divergence(self, message):
         """
-        Get the KL-divergence D_KL(self.factor||message.factor) between a this message factor and another message factor.
+        Get the KL-divergence D_KL(self.factor || message.factor) between a this message factor and another message factor.
         :param message: The other message of which the factor will be used to compare to this message's factor.
         :return: The KL-divergence
         """

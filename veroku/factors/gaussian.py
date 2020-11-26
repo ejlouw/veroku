@@ -401,7 +401,7 @@ class Gaussian(Factor):
         return self.g
     # pylint: enable=invalid-name
 
-    def cov_exists(self):
+    def _cov_exists(self):
         if self.COVFORM:
             return True
         else:
@@ -646,6 +646,7 @@ class Gaussian(Factor):
     def multiply(self, factor):
         """
         Multiply this Gaussian with another factor.
+
         :param factor: the factor to multiply with
         :return: the resulting factor
         """
@@ -655,7 +656,8 @@ class Gaussian(Factor):
 
     def divide(self, factor):
         """
-        Divide this Gaussian by another facotr.
+        Divide this Gaussian by another factor.
+
         :param factor: the factor to divide by
         :return: the resulting factor
         """
@@ -664,6 +666,7 @@ class Gaussian(Factor):
     def _absorb_or_cancel(self, factor, operator_function):
         """
         A general function which can either perform Gaussian multiplication or division (which are very similar).
+
         :param factor: the gaussian to multiply or divide by
         :param operator_function: the operator to use one the Gaussian canonical parameters
                         ('+' for multiplication and '-' for division)
@@ -691,6 +694,7 @@ class Gaussian(Factor):
     def sample(self, num_samples):
         """
         Draw samples from the Gaussian distribution.
+
         :param num_samples: The number of samples to draw.
         :type num_samples:
         :return: The samples.
@@ -707,6 +711,7 @@ class Gaussian(Factor):
     def _get_observation_reduced_canonical_vars(self, observed_indices, unobserved_indices, observed_vec):
         """
         A helper function for reduce.
+
         :param observed_indices: The observed variable indices
         :type observed_indices: int list
         :param unobserved_indices: The unobserved variable indices
@@ -769,6 +774,7 @@ class Gaussian(Factor):
         Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
         Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)
         or inf (if one is not).
+
         :return: The KL divergence.
         :rtype: float
         """
@@ -779,7 +785,7 @@ class Gaussian(Factor):
 
     def kl_divergence(self, factor, normalize_factor=True):
         """
-        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.
+        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
@@ -830,6 +836,7 @@ class Gaussian(Factor):
     def is_vacuous(self):
         """
         Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.
+
         :return: The result of the check.
         :rtype: Bool
         """
@@ -919,7 +926,7 @@ class Gaussian(Factor):
 
     # pylint: enable=invalid-name
 
-    def get_cov_repr_str(self):
+    def _get_cov_repr_str(self):
         self_copy = self.copy()
         self_copy._update_covform()
         np.set_printoptions(linewidth=np.inf)
@@ -928,7 +935,7 @@ class Gaussian(Factor):
                    'log_weight = \n' + str(self_copy.log_weight) + '\n'
         return repr_str
 
-    def get_can_repr_str(self):
+    def _get_can_repr_str(self):
         self_copy = self.copy()
         self_copy._update_canform()
         np.set_printoptions(linewidth=np.inf)
@@ -947,8 +954,8 @@ class Gaussian(Factor):
         np.core.arrayprint._line_width = 200
         repr_str = 'vars = ' + str(self.var_names) + '\n'
         if not self._is_vacuous:
-            repr_str += self.get_can_repr_str()
-        repr_str += self.get_cov_repr_str()
+            repr_str += self._get_can_repr_str()
+        repr_str += self._get_cov_repr_str()
         return repr_str
 
     def show(self, update_covform=True, show_canform=False):  # pragma: no cover
@@ -968,9 +975,9 @@ class Gaussian(Factor):
             self_copy._update_covform()
         print('vars = ', self_copy.var_names)
         if self_copy.COVFORM:
-            print(self_copy.get_cov_repr_str())
+            print(self_copy._get_cov_repr_str())
         if self_copy.CANFORM and show_canform:
-            print(self_copy.get_can_repr_str())
+            print(self_copy._get_can_repr_str())
 
     def show_vis(self, figsize=(10, 8)):
         """
@@ -1364,6 +1371,13 @@ class GaussianMixture(Factor):
 
     @property
     def is_vacuous(self):
+        """
+        Check if a Gaussian mixture distribution contains no information. This is the case when the K matrices of all
+        components are zero matrices.
+
+        :return: The result of the check.
+        :rtype: Bool
+        """
         # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
         #  are vacuous? Maybe make a contains vacuous function as well.
         for gauss in self.components:

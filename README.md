@@ -40,6 +40,8 @@ On the roadmap:
 * Wishart distribution
 * Normal-Wishart distribution
 
+<br/><br/>
+
 <sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.
 
 <sup>2</sup>This implementation is still experimental.

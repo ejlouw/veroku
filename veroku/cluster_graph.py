@@ -19,16 +19,21 @@ import collections
 
 
 # TODO: consider removing this
-def sort_almost_sorted(a_deque, key):
+def _sort_almost_sorted(almost_sorted_deque, key):
     """
-    Sort a deque like that where only the first element is potentially unsorted
-    and should probably be last and the rest of the deque is sorted in descending order.
+    Sort a deque like that where only the first element is potentially unsorted and should probably be last and the rest
+     of the deque is sorted in descending order.
+    :param collections.deque almost_sorted_deque: The deque of size n, where the first n-1 elements are definitely
+        sorted (in descending order) and where the last element is also probably in the correct place, but needs to be
+        checked
+    :param key: The key (function) to use for sorting.
+    :return: The sorted (given that the conditions are met) deque.
     """
-    a_deque.append(a_deque.popleft())
-    if key(a_deque[-1]) <= key(a_deque[-2]):
-        return a_deque
-    a_deque = collections.deque(sorted(a_deque, key=key, reverse=True))
-    return a_deque
+    almost_sorted_deque.append(almost_sorted_deque.popleft())
+    if key(almost_sorted_deque[-1]) <= key(almost_sorted_deque[-2]):
+        return almost_sorted_deque
+    almost_sorted_deque = collections.deque(sorted(almost_sorted_deque, key=key, reverse=True))
+    return almost_sorted_deque
 
 
 def _evidence_reduce_factors(factors, evidence):
@@ -47,11 +52,6 @@ def _evidence_reduce_factors(factors, evidence):
                 factor = factor.reduce(vrs, values)
         reduced_factors.append(factor.copy())
     return reduced_factors
-
-
-def make_factor_name(factor):
-    return str(factor.var_names).replace("'", '')
-
 
 def _absorb_subset_factors(factors):
     """
@@ -157,6 +157,7 @@ class ClusterGraph(object):
         # TODO: consolidate these two, if possible
         self.message_passing_log_df = None
         self.message_passing_animation_frames = []
+        self.messages_passed = []
 
     def _set_non_rip_sepsets_dict(self, clusters, all_evidence_vars):
         """
@@ -363,13 +364,14 @@ class ClusterGraph(object):
         joint = cluster_product.cancel(message_product)
         return joint
 
-    def process_graph(self, tol=1e-3, max_iter=50, debug=False):
+    def process_graph(self, tol=1e-3, max_iter=50):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
+        :param tol: The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs
+            to be reached (for all messages) before stopping message passing (before max_iter is reached).
+        :param max_iter: The maximum number of iterations of message passing. The maximum number of messages that can be
+            passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.
         """
-
-        # for debugging and testing
-        self.messages_passed = []
 
         self.sync_message_passing_max_distances = []
         if len(self._clusters) == 1:
@@ -388,16 +390,9 @@ class ClusterGraph(object):
             sender_cluster_id = self.graph_message_paths[0].sender_cluster.cluster_id
             receiver_cluster_id = self.graph_message_paths[0].receiver_cluster.cluster_id
 
-            # for debugging and testing
-            if debug:
-                self.messages_passed.append(self.graph_message_paths[0].next_message.copy())
-                data = [(gmp.sender_cluster._cluster_id, gmp.receiver_cluster._cluster_id, gmp.next_information_gain) for
-                        gmp in self.graph_message_paths]
-                df = pd.DataFrame(data=data, columns=['sender', 'receiver', 'info'])
-
             self.graph_message_paths[0].pass_next_message()
             self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
-            # self.graph_message_paths = sort_almost_sorted(self.graph_message_paths, key=key_func)
+            # self.graph_message_paths = _sort_almost_sorted(self.graph_message_paths, key=key_func)
 
             max_next_information_gain = self.graph_message_paths[0].next_information_gain
             self.sync_message_passing_max_distances.append(max_next_information_gain)
