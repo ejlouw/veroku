@@ -9,6 +9,8 @@
 Welcome to veroku's documentation!
 ==================================
 
+.. include:: README.md
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
