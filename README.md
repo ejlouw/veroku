@@ -23,6 +23,10 @@ Veroku currently supports the following distributions:
 * Linear Gaussian<sup>1</sup>
 * Non-linear Gaussian<sup>2</sup>
 
+<sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.<br/>
+<sup>2</sup>This implementation is still experimental.
+
+
 <div style="text-align: justify">
 These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
 with the `cluster_graph` module to automatically create valid cluster graphs. Inference can be performed in these graphs
@@ -51,6 +55,6 @@ On the roadmap:
 
 <br/><br/>
 
-<sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.
+### License
+Veroku is released under 3-Clause BSD license. You can view the license at [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).
 
-<sup>2</sup>This implementation is still experimental.
