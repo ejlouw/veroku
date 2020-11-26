@@ -46,16 +46,11 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
-<li><p><strong>log_probs_table</strong> – A dictionary with assignments (tuples) as keys and probabilities as values.
+<li><p><strong>probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and probabilities as values.
 Missing assignments are assumed to have zero probability.</p></li>
 </ul>
 </dd>
 </dl>
-<p>:type
-:param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</p>
-<blockquote>
-<div><p>Missing assignments are assumed to have -inf log-probability (zero probability).</p>
-</div></blockquote>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rain&#39;</span><span class="p">,</span><span class="s1">&#39;slip&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
@@ -91,19 +86,32 @@ Missing assignments are assumed to have zero probability.</p></li>
 categorical message factors with zero probabilities are used in Belief Update algorithms, multiplication by the
 zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this
 results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the
-probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.
-:param factor: The factor to divide by.
-:type factor: Categorical
-:return: The factor quotient.
-:rtype: Categorical</p>
+probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor quotient.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a copy of this factor.
-:return: The copy of this factor.
-:rtype: Categorical</p>
+<dd><p>Make a copy of this factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The copy of this factor.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -123,19 +131,20 @@ probability value should be zero, it makes sense to set the result of 0/0 operat
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.divide">
 <code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">special_rules</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide this factor by another factor and return the result.
-:param factor: The factor to divide by.
-:type factor: Categorical
-:param special_rules: Any special rules to apply for specific values of the left and right variables.</p>
-<blockquote>
-<div><p>For example: {(left_var_val, right_var_val): result, …}</p>
-</div></blockquote>
+<dd><p>Divide this factor by another factor and return the result.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The factor quotient.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p></li>
+<li><p><strong>special_rules</strong> (<em>dict</em>) – Any special rules to apply for specific values of the left and right variables.
+For example: {(left_var_val, right_var_val): result, …}</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor quotient.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -160,9 +169,15 @@ probability value should be zero, it makes sense to set the result of 0/0 operat
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.is_vacuous">
 <em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.categorical.Categorical.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if this factor is vacuous (i.e uniform).
-:return: Whether the factor is vacuous or not.
-:rtype: bool</p>
+<dd><p>Check if this factor is vacuous (i.e uniform).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether the factor is vacuous or not.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -189,11 +204,21 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.marginalize">
 <code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sum out variables from this factor.
-:param vrs: (list) a subset of variables in the factor’s scope
-:param keep: Whether to keep or sum out vrs
-:return: The resulting factor.
-:rtype: Categorical</p>
+<dd><p>Sum out variables from this factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> – (list) a subset of variables in the factor’s scope</p></li>
+<li><p><strong>keep</strong> – Whether to keep or sum out vrs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -237,21 +262,36 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.reduce">
 <code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.reduce" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe variables to have certain values and return reduced table.
-:param vrs: (list) The variables.
-:param values: (tuple or list) Their values
-:return: The resulting factor.
-:rtype: Categorical</p>
+<dd><p>Observe variables to have certain values and return reduced table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> – (list) The variables.</p></li>
+<li><p><strong>values</strong> – (tuple or list) Their values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical">Categorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.reorder">
 <code class="sig-name descname">reorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_var_names_order</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.reorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.reorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reorder categorical table variables to a new order and reorder the associated probabilities
-accordingly.
-:param new_var_names_order: The new variable order.
-:type new_var_names_order: str list
-:return: The factor with new order.</p>
+accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_var_names_order</strong> (<em>str list</em>) – The new variable order.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor with new order.</p>
+</dd>
+</dl>
 <dl>
 <dt>Example:</dt><dd><p>old_variable_order = [a, b]
 new_variable_order = [b, a]</p>
@@ -280,16 +320,24 @@ new_variable_order = [b, a]</p>
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.tensor_operation">
 <em class="property">static </em><code class="sig-name descname">tensor_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor_a</span></em>, <em class="sig-param"><span class="n">tensor_b</span></em>, <em class="sig-param"><span class="n">tensor_a_var_names</span></em>, <em class="sig-param"><span class="n">tensor_b_var_names</span></em>, <em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.tensor_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.tensor_operation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply a element wise function to two tensors with named indices.
-:param numpy.ndarray tensor_a: The first tensor.
-:param numpy.ndarray tensor_b: The second tensor.
-:param tensor_a_var_names: The first tensor’s variable names corresponding to the indices.
-:type tensor_a_var_names: string list
-:param tensor_b_var_names: The second tensor’s variable names corresponding to the indices.
-:type tensor_b_var_names: string list
-:param func: The function to apply elementwise to the two tensors (func(a,b))
-:return: The resulting tensor and corresponding variable names
-:rtype: string list</p>
+<dd><p>Apply a element wise function to two tensors with named indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor_a</strong> (<em>numpy.ndarray</em>) – The first tensor.</p></li>
+<li><p><strong>tensor_b</strong> (<em>numpy.ndarray</em>) – The second tensor.</p></li>
+<li><p><strong>tensor_a_var_names</strong> (<em>string list</em>) – The first tensor’s variable names corresponding to the indices.</p></li>
+<li><p><strong>tensor_b_var_names</strong> (<em>string list</em>) – The second tensor’s variable names corresponding to the indices.</p></li>
+<li><p><strong>func</strong> – The function to apply elementwise to the two tensors (func(a,b))</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting tensor and corresponding variable names</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>string list</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

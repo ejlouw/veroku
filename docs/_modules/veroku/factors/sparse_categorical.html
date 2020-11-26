@@ -54,7 +54,8 @@
 
 <span class="k">def</span> <span class="nf">_make_dense</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert a factor to a dense factor by instanciating all of the implicit default value assignments.</span>
+<span class="sd">    Convert a factor to a dense factor by instantiating all of the implicit default value assignments.</span>
+
 <span class="sd">    :param factor: The factor to convert.</span>
 <span class="sd">    :type factor: SparseCategorical</span>
 <span class="sd">    :return: The dense factor version.</span>
@@ -72,6 +73,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a dictionary representing a categorical probability table that contains all assignments, as specified by the</span>
 <span class="sd">    given cardinalities (starting from 0).</span>
+
 <span class="sd">    :param cardinalities: The given cardinalities.</span>
 <span class="sd">    :type cardinalities: list</span>
 <span class="sd">    :param default_value: The default value to assign the missing values.</span>
@@ -96,6 +98,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert n sparse nested table dictionary&#39;s implicit default values in the innetables to real entries so that</span>
 <span class="sd">    all possible assignments are present in the inner sub tables.</span>
+
 <span class="sd">    :param sparse_nested_table: The nested dictionary representing a sparse table.</span>
 <span class="sd">    :type sparse_nested_table: dictionary of dictionaries</span>
 <span class="sd">    :param outer_inner_cards: The lists of the cardinalities for the outer and inner part of the nested table respectively</span>
@@ -117,7 +120,8 @@
                              <span class="n">new_variables_order_inner</span><span class="p">,</span>
                              <span class="n">old_variable_order</span><span class="p">,</span> <span class="n">old_assign_probs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reorder probs to a new order and sort assignments.</span>
+<span class="sd">    Reorder variables to a new order and sort assignments.</span>
+
 <span class="sd">    :params new_variables_order_outer:</span>
 <span class="sd">    :params new_variables_order_inner:</span>
 <span class="sd">    :params old_variable_order:</span>
@@ -148,9 +152,10 @@
     <span class="k">return</span> <span class="n">new_assign_probs</span><span class="p">,</span> <span class="n">new_variable_order</span>
 
 
-<div class="viewcode-block" id="same_scope_binary_operation"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.same_scope_binary_operation">[docs]</a><span class="k">def</span> <span class="nf">same_scope_binary_operation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_same_scope_binary_operation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same order.</span>
+
 <span class="sd">    :param a: The dictionary for factor (typically sub factor) A.</span>
 <span class="sd">    :param b: The dictionary for factor (typically sub factor) B.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -163,10 +168,10 @@
         <span class="n">r_val</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">a_val</span><span class="p">,</span> <span class="n">b_val</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">r_val</span> <span class="o">!=</span> <span class="n">new_default</span><span class="p">:</span>
             <span class="n">result_common_sub_dict</span><span class="p">[</span><span class="n">assignment</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_val</span>
-    <span class="k">return</span> <span class="n">result_common_sub_dict</span></div>
+    <span class="k">return</span> <span class="n">result_common_sub_dict</span>
 
 
-<div class="viewcode-block" id="flatten_ntd"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.flatten_ntd">[docs]</a><span class="k">def</span> <span class="nf">flatten_ntd</span><span class="p">(</span><span class="n">ntd</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_flatten_ntd</span><span class="p">(</span><span class="n">ntd</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Flatten a two level nested table dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -174,12 +179,12 @@
     <span class="k">for</span> <span class="n">assign_outer</span> <span class="ow">in</span> <span class="n">ntd</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">assign_inner</span> <span class="ow">in</span> <span class="n">ntd</span><span class="p">[</span><span class="n">assign_outer</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">flattened_ntd</span><span class="p">[</span><span class="n">assign_outer</span> <span class="o">+</span> <span class="n">assign_inner</span><span class="p">]</span> <span class="o">=</span> <span class="n">ntd</span><span class="p">[</span><span class="n">assign_outer</span><span class="p">][</span><span class="n">assign_inner</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">flattened_ntd</span></div>
+    <span class="k">return</span> <span class="n">flattened_ntd</span>
 
 
-<div class="viewcode-block" id="any_scope_binary_operation"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.any_scope_binary_operation">[docs]</a><span class="k">def</span> <span class="nf">any_scope_binary_operation</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span>
-                               <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span>
-                               <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_any_scope_binary_operation</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span>
+                                <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span>
+                                <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</span>
 
@@ -274,12 +279,12 @@
         <span class="n">common_vars_subtable_a</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">full_sd_a_default_sub_table</span><span class="p">)</span>
         <span class="n">common_vars_subtable_b</span> <span class="o">=</span> <span class="n">ntd_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_b</span><span class="p">,</span> <span class="n">full_sd_b_default_sub_table</span><span class="p">)</span>
 
-        <span class="c1"># TODO: extend same_scope_binary_operation functionality to allow table completion given flag.</span>
-        <span class="n">subtable_result</span> <span class="o">=</span> <span class="n">same_scope_binary_operation</span><span class="p">(</span><span class="n">common_vars_subtable_a</span><span class="p">,</span>
-                                                      <span class="n">common_vars_subtable_b</span><span class="p">,</span>
-                                                      <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="c1"># TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.</span>
+        <span class="n">subtable_result</span> <span class="o">=</span> <span class="n">_same_scope_binary_operation</span><span class="p">(</span><span class="n">common_vars_subtable_a</span><span class="p">,</span>
+                                                       <span class="n">common_vars_subtable_b</span><span class="p">,</span>
+                                                       <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
         <span class="n">resulting_factor_table</span><span class="p">[</span><span class="n">joined_sd_assignment</span><span class="p">]</span> <span class="o">=</span> <span class="n">subtable_result</span>
-    <span class="k">return</span> <span class="n">resulting_factor_table</span></div>
+    <span class="k">return</span> <span class="n">resulting_factor_table</span>
 
 
 <span class="k">def</span> <span class="nf">_fast_copy_probs_table</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
@@ -427,6 +432,7 @@
 <div class="viewcode-block" id="SparseCategorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum out variables from this factor.</span>
+
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs</span>
 <span class="sd">        :return: The resulting factor.</span>
@@ -454,6 +460,7 @@
 <div class="viewcode-block" id="SparseCategorical.reduce"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe variables to have certain values and return reduced table.</span>
+
 <span class="sd">        :param vrs: (list) The variables.</span>
 <span class="sd">        :param values: (tuple or list) Their values</span>
 <span class="sd">        :return: The resulting factor.</span>
@@ -499,6 +506,7 @@
 <div class="viewcode-block" id="SparseCategorical.cancel"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.</span>
+
 <span class="sd">        :param factor: The factor to divide by.</span>
 <span class="sd">        :type factor: SparseCategorical</span>
 <span class="sd">        :return: The factor quotient.</span>
@@ -590,11 +598,11 @@
         <span class="n">outer_inner_cards_b</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_cards</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">remaining_b_vars</span><span class="p">),</span>
                                <span class="n">vars_to_cards</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">intersection_vars</span><span class="p">)]</span>
 
-        <span class="n">result_ntd</span> <span class="o">=</span> <span class="n">any_scope_binary_operation</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span>
-                                                <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span>
-                                                <span class="n">operator_function</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="p">,</span>
-                                                <span class="n">default_rules</span><span class="o">=</span><span class="n">default_rules</span><span class="p">)</span>
-        <span class="n">flattened_result_table</span> <span class="o">=</span> <span class="n">flatten_ntd</span><span class="p">(</span><span class="n">result_ntd</span><span class="p">)</span>
+        <span class="n">result_ntd</span> <span class="o">=</span> <span class="n">_any_scope_binary_operation</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span>
+                                                 <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span>
+                                                 <span class="n">operator_function</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="p">,</span>
+                                                 <span class="n">default_rules</span><span class="o">=</span><span class="n">default_rules</span><span class="p">)</span>
+        <span class="n">flattened_result_table</span> <span class="o">=</span> <span class="n">_flatten_ntd</span><span class="p">(</span><span class="n">result_ntd</span><span class="p">)</span>
         <span class="n">result_var_names</span> <span class="o">=</span> <span class="n">remaining_a_vars</span> <span class="o">+</span> <span class="n">remaining_b_vars</span> <span class="o">+</span> <span class="n">intersection_vars</span>
         <span class="n">result_var_cards</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">,</span> <span class="o">**</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">}</span>
         <span class="n">result_cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result_var_names</span><span class="p">]</span>
@@ -605,6 +613,7 @@
 <div class="viewcode-block" id="SparseCategorical.normalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a normalized copy of the factor.</span>
+
 <span class="sd">        :return: The normalized factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -617,6 +626,7 @@
     <span class="k">def</span> <span class="nf">_is_dense</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if all factor assignments have non-default values.</span>
+
 <span class="sd">        :return: The result of the check.</span>
 <span class="sd">        :rtype: Bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -630,6 +640,7 @@
     <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
+
 <span class="sd">        :return: Whether the factor is vacuous or not.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -747,6 +758,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder categorical table variables to a new order and reorder the associated probabilities</span>
 <span class="sd">        accordingly.</span>
+<span class="sd">        </span>
 <span class="sd">        :param new_var_names_order: The new variable order.</span>
 <span class="sd">        :type new_var_names_order: str list</span>
 <span class="sd">        :return: The factor with new order.</span>

@@ -141,22 +141,23 @@
     <span class="k">return</span> <span class="n">gm</span></div>
 
 
-<div class="viewcode-block" id="make_linear_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_linear_gaussian">[docs]</a><span class="k">def</span> <span class="nf">make_linear_gaussian</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">):</span>
+<div class="viewcode-block" id="make_linear_gaussian"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_linear_gaussian">[docs]</a><span class="k">def</span> <span class="nf">make_linear_gaussian</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_vars</span><span class="p">,</span> <span class="n">conditional_vars</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Make a linear Gaussian factor template.</span>
+<span class="sd">    Make a linear Gaussian factor.</span>
+
 <span class="sd">    :param A: The linear transform matrix.</span>
 <span class="sd">    :type A: Numpy array</span>
-<span class="sd">    :param N: The additive noise covarannce matrix.</span>
+<span class="sd">    :param N: The additive noise covariance matrix.</span>
 <span class="sd">    :type A: Numpy array</span>
-<span class="sd">    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
-<span class="sd">    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
+<span class="sd">    :param conditioning_vars: The list of conditioning variables.</span>
+<span class="sd">    :param conditional_vars: The list of conditional variables.</span>
 <span class="sd">    :return: The linear Gaussian Template</span>
-<span class="sd">    :rtype: GaussianTemplate</span>
+<span class="sd">    :rtype: Gaussian</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># TODO: improve this by adding the correct equations for calculating the linear Gaussian parameters that do not rely</span>
     <span class="c1">#  on the dummy factor multiplication.</span>
-    <span class="n">X_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="p">)</span>
+    <span class="n">X_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_vars</span><span class="p">)</span>
     <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">X_dim</span><span class="p">)</span>
     <span class="n">Kxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Sxx</span><span class="p">)</span>
 
@@ -186,12 +187,24 @@
     <span class="n">uTKux</span> <span class="o">=</span> <span class="n">mean_joint</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">K_joint</span> <span class="o">@</span> <span class="n">mean_joint</span>
     <span class="n">g_joint</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">uTKux</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">S</span><span class="p">))</span>
     <span class="n">g_cpd</span> <span class="o">=</span> <span class="n">g_joint</span> <span class="o">-</span> <span class="n">gx</span>
-    <span class="n">var_names</span> <span class="o">=</span> <span class="n">conditioning_var_templates</span> <span class="o">+</span> <span class="n">conditional_var_templates</span>
+    <span class="n">var_names</span> <span class="o">=</span> <span class="n">conditioning_vars</span> <span class="o">+</span> <span class="n">conditional_vars</span>
 
     <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="n">K_cpd</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">h_cpd</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g_cpd</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="make_linear_gaussian_cpd_template"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.make_linear_gaussian_cpd_template">[docs]</a><span class="k">def</span> <span class="nf">make_linear_gaussian_cpd_template</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a linear Gaussian factor template.</span>
+
+<span class="sd">    :param A: The linear transform matrix.</span>
+<span class="sd">    :type A: Numpy array</span>
+<span class="sd">    :param N: The additive noise covariance matrix.</span>
+<span class="sd">    :type A: Numpy array</span>
+<span class="sd">    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
+<span class="sd">    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
+<span class="sd">    :return: The linear Gaussian Template</span>
+<span class="sd">    :rtype: Gaussian</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="p">)</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">N</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">nlg</span> <span class="o">=</span> <span class="n">make_linear_gaussian</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">)</span>
@@ -681,7 +694,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this Gaussian with another factor.</span>
 
-<span class="sd">        :param factor: the factor to multiply with</span>
+<span class="sd">        :param Gaussian factor: the factor to multiply with</span>
 <span class="sd">        :return: the resulting factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if isinstance(factor, NonLinearGaussian):</span>
@@ -692,7 +705,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this Gaussian by another factor.</span>
 
-<span class="sd">        :param factor: the factor to divide by</span>
+<span class="sd">        :param Gaussian factor: the factor to divide by</span>
 <span class="sd">        :return: the resulting factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_absorb_or_cancel</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">)</span></div>

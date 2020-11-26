@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="veroku.cluster_graph module" href="veroku.cluster_graph.html" />
-    <link rel="prev" title="veroku.factors.sigma_points module" href="veroku.factors.sigma_points.html" />
+    <link rel="prev" title="veroku.factors.gaussian module" href="veroku.factors.gaussian.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -87,11 +87,18 @@ Missing assignments are assumed to have zero probability.</p></li>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.cancel">
 <code class="sig-name descname">cancel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.cancel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
-:param factor: The factor to divide by.
-:type factor: SparseCategorical
-:return: The factor quotient.
-:rtype: SparseCategorical</p>
+<dd><p>Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical"><em>SparseCategorical</em></a>) – The factor to divide by.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor quotient.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical">SparseCategorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -153,9 +160,15 @@ Missing assignments are assumed to have zero probability.</p></li>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.is_vacuous">
 <em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if this factor is vacuous (i.e uniform).
-:return: Whether the factor is vacuous or not.
-:rtype: bool</p>
+<dd><p>Check if this factor is vacuous (i.e uniform).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether the factor is vacuous or not.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -182,11 +195,21 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.marginalize">
 <code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.marginalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sum out variables from this factor.
-:param vrs: (list) a subset of variables in the factor’s scope
-:param keep: Whether to keep or sum out vrs
-:return: The resulting factor.
-:rtype: SparseCategorical</p>
+<dd><p>Sum out variables from this factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> – (list) a subset of variables in the factor’s scope</p></li>
+<li><p><strong>keep</strong> – Whether to keep or sum out vrs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical">SparseCategorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -209,8 +232,12 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.normalize">
 <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a normalized copy of the factor.
-:return: The normalized factor.</p>
+<dd><p>Return a normalized copy of the factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The normalized factor.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -230,21 +257,36 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.reduce">
 <code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.reduce" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe variables to have certain values and return reduced table.
-:param vrs: (list) The variables.
-:param values: (tuple or list) Their values
-:return: The resulting factor.
-:rtype: SparseCategorical</p>
+<dd><p>Observe variables to have certain values and return reduced table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> – (list) The variables.</p></li>
+<li><p><strong>values</strong> – (tuple or list) Their values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The resulting factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical">SparseCategorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.reorder">
 <code class="sig-name descname">reorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_var_names_order</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.reorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.reorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reorder categorical table variables to a new order and reorder the associated probabilities
-accordingly.
-:param new_var_names_order: The new variable order.
-:type new_var_names_order: str list
-:return: The factor with new order.</p>
+accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_var_names_order</strong> (<em>str list</em>) – The new variable order.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The factor with new order.</p>
+</dd>
+</dl>
 <dl>
 <dt>Example:</dt><dd><p>old_variable_order = [a, b]
 new_variable_order = [b, a]</p>
@@ -311,47 +353,6 @@ new_variable_order = [b, a]</p>
 
 </dd></dl>
 
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.any_scope_binary_operation">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">any_scope_binary_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ntd_a</span></em>, <em class="sig-param"><span class="n">outer_inner_cards_a</span></em>, <em class="sig-param"><span class="n">ntd_b</span></em>, <em class="sig-param"><span class="n">outer_inner_cards_b</span></em>, <em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">default</span></em>, <em class="sig-param"><span class="n">default_rules</span><span class="o">=</span><span class="default_value">'none'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#any_scope_binary_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.any_scope_binary_operation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ntd_a</strong> – The nested table dictionary for factor A.</p></li>
-<li><p><strong>ntd_b</strong> – The nested table dictionary for factor B.</p></li>
-<li><p><strong>default</strong> – The default value for ntd_a and ntd_b (the values for the missing values).</p></li>
-<li><p><strong>default_rules</strong> – <p>The rules for when a calculation results will result in a default value (optional).
-This can help speed up this function. The possible values are as follows:</p>
-<blockquote>
-<div><p>’any’ : If either ntd_a or ntd_b has a default value, the result will always be default.
-‘both’: Only if both ntd_a and ntd_b has a default value, the result will always be default.
-‘none’: No combination of default or non-default values is guarenteed to result in a default value</p>
-</div></blockquote>
-<p>If this parameter is not specified, ‘none’ will be used to ensure correct, albeit slower computation.</p>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The nested table dictionary for the resulting factor.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.flatten_ntd">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">flatten_ntd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ntd</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#flatten_ntd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.flatten_ntd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Flatten a two level nested table dictionary.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.factors.sparse_categorical.same_scope_binary_operation">
-<code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">same_scope_binary_operation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em>, <em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">default</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#same_scope_binary_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.same_scope_binary_operation" title="Permalink to this definition">¶</a></dt>
-<dd><p>NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same order.
-:param a: The dictionary for factor (typically sub factor) A.
-:param b: The dictionary for factor (typically sub factor) B.</p>
-</dd></dl>
-
 </div>
 
 
@@ -386,7 +387,7 @@ This can help speed up this function. The possible values are as follows:</p>
   <li><a href="modules.html">veroku</a><ul>
   <li><a href="veroku.html">veroku package</a><ul>
   <li><a href="veroku.factors.html">veroku.factors package</a><ul>
-      <li>Previous: <a href="veroku.factors.sigma_points.html" title="previous chapter">veroku.factors.sigma_points module</a></li>
+      <li>Previous: <a href="veroku.factors.gaussian.html" title="previous chapter">veroku.factors.gaussian module</a></li>
       <li>Next: <a href="veroku.cluster_graph.html" title="next chapter">veroku.cluster_graph module</a></li>
   </ul></li>
   </ul></li>

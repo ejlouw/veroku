@@ -73,11 +73,10 @@
 
 <span class="sd">        :param var_names: The variable names.</span>
 <span class="sd">        :type var_names: str list</span>
-<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.</span>
+<span class="sd">        :param probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.</span>
 <span class="sd">            Missing assignments are assumed to have zero probability.</span>
-<span class="sd">        :type</span>
-<span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</span>
-<span class="sd">            Missing assignments are assumed to have -inf log-probability (zero probability).</span>
+<span class="sd">        :type probs_table: dict</span>
+
 <span class="sd">        Example:</span>
 <span class="sd">            &gt;&gt;&gt; var_names = [&#39;rain&#39;,&#39;slip&#39;]</span>
 <span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
@@ -125,6 +124,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reorder categorical table variables to a new order and reorder the associated probabilities</span>
 <span class="sd">        accordingly.</span>
+
 <span class="sd">        :param new_var_names_order: The new variable order.</span>
 <span class="sd">        :type new_var_names_order: str list</span>
 <span class="sd">        :return: The factor with new order.</span>
@@ -168,6 +168,7 @@
 <div class="viewcode-block" id="Categorical.copy"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make a copy of this factor.</span>
+
 <span class="sd">        :return: The copy of this factor.</span>
 <span class="sd">        :rtype: Categorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -177,9 +178,16 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_shared_order_smaller_vars</span><span class="p">(</span><span class="n">smaller_vars</span><span class="p">,</span> <span class="n">larger_vars</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        larger_vars = [&#39;a&#39;, &#39;c&#39;, &#39;d&#39;, &#39;b&#39;]</span>
-<span class="sd">        smaller_vars = [&#39;c&#39;, &#39;e&#39;, &#39;b&#39;]</span>
-<span class="sd">        return [&#39;c&#39;, &#39;b&#39;]</span>
+
+<span class="sd">        :param smaller_vars:</span>
+<span class="sd">        :param larger_vars:</span>
+<span class="sd">        :return:</span>
+
+<span class="sd">            Example:</span>
+<span class="sd">            &gt;&gt;&gt; larger_vars = [&#39;a&#39;, &#39;c&#39;, &#39;d&#39;, &#39;b&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; smaller_vars = [&#39;c&#39;, &#39;e&#39;, &#39;b&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; _get_shared_order_smaller_vars(smaller_vars, larger_vars)</span>
+<span class="sd">            &gt;&gt;&gt; [&#39;c&#39;, &#39;b&#39;]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">shared_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">smaller_vars</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">larger_vars</span><span class="p">]</span>
         <span class="n">remaining_smaller_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">larger_vars</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">shared_vars</span><span class="p">))</span>
@@ -201,6 +209,7 @@
     <span class="k">def</span> <span class="nf">tensor_operation</span><span class="p">(</span><span class="n">tensor_a</span><span class="p">,</span> <span class="n">tensor_b</span><span class="p">,</span> <span class="n">tensor_a_var_names</span><span class="p">,</span> <span class="n">tensor_b_var_names</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply a element wise function to two tensors with named indices.</span>
+
 <span class="sd">        :param numpy.ndarray tensor_a: The first tensor.</span>
 <span class="sd">        :param numpy.ndarray tensor_b: The second tensor.</span>
 <span class="sd">        :param tensor_a_var_names: The first tensor&#39;s variable names corresponding to the indices.</span>
@@ -245,6 +254,7 @@
 <div class="viewcode-block" id="Categorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum out variables from this factor.</span>
+
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs</span>
 <span class="sd">        :return: The resulting factor.</span>
@@ -260,6 +270,7 @@
 <div class="viewcode-block" id="Categorical.reduce"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe variables to have certain values and return reduced table.</span>
+
 <span class="sd">        :param vrs: (list) The variables.</span>
 <span class="sd">        :param values: (tuple or list) Their values</span>
 <span class="sd">        :return: The resulting factor.</span>
@@ -307,6 +318,7 @@
 <span class="sd">        zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this</span>
 <span class="sd">        results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the</span>
 <span class="sd">        probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.</span>
+
 <span class="sd">        :param factor: The factor to divide by.</span>
 <span class="sd">        :type factor: Categorical</span>
 <span class="sd">        :return: The factor quotient.</span>
@@ -332,6 +344,7 @@
 <div class="viewcode-block" id="Categorical.divide"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">special_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this factor by another factor and return the result.</span>
+
 <span class="sd">        :param factor: The factor to divide by.</span>
 <span class="sd">        :type factor: Categorical</span>
 <span class="sd">        :param special_rules: Any special rules to apply for specific values of the left and right variables.</span>
@@ -373,6 +386,7 @@
     <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
+
 <span class="sd">        :return: Whether the factor is vacuous or not.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>

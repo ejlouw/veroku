@@ -15,7 +15,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="veroku.factors.sigma_points module" href="veroku.factors.sigma_points.html" />
+    <link rel="next" title="veroku.factors.sparse_categorical module" href="veroku.factors.sparse_categorical.html" />
     <link rel="prev" title="veroku.factors.categorical module" href="veroku.factors.categorical.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -93,7 +93,7 @@ or inf (if one is not).</p>
 <dd><p>Divide this Gaussian by another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> – the factor to divide by</p>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – the factor to divide by</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the resulting factor</p>
@@ -326,7 +326,7 @@ exp(g).</p>
 <dd><p>Multiply this Gaussian with another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> – the factor to multiply with</p>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – the factor to multiply with</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the resulting factor</p>
@@ -337,8 +337,12 @@ exp(g).</p>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.normalize">
 <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>An abstract function for performing factor normalization that should be implemented in the base class.
-:return: The normalized factor.</p>
+<dd><p>An abstract function for performing factor normalization that should be implemented in the base class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The normalized factor.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -759,22 +763,47 @@ approximation of the Gaussian Mixture.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a linear Gaussian factor template.
-:param A: The linear transform matrix.
-:type A: Numpy array
-:param N: The additive noise covarannce matrix.
-:type A: Numpy array
-:param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [‘var_a{i}_{t}’, ‘var_b{i}_{t}’])
-:param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [‘var_c{i}_{t}’, ‘var_d{i}_{t}’])
-:return: The linear Gaussian Template
-:rtype: GaussianTemplate</p>
+<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a linear Gaussian factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>Numpy array</em>) – The linear transform matrix.</p></li>
+<li><p><strong>N</strong> – The additive noise covariance matrix.</p></li>
+<li><p><strong>conditioning_vars</strong> – The list of conditioning variables.</p></li>
+<li><p><strong>conditional_vars</strong> – The list of conditional variables.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The linear Gaussian Template</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian">Gaussian</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian_cpd_template">
 <code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Make a linear Gaussian factor template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>Numpy array</em>) – The linear transform matrix.</p></li>
+<li><p><strong>N</strong> – The additive noise covariance matrix.</p></li>
+<li><p><strong>conditioning_var_templates</strong> – The list of formattable strings for the conditioning variables (i.e: [‘var_a{i}_{t}’, ‘var_b{i}_{t}’])</p></li>
+<li><p><strong>conditional_var_templates</strong> – The list of formattable strings for the conditional variables (i.e: [‘var_c{i}_{t}’, ‘var_d{i}_{t}’])</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The linear Gaussian Template</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian">Gaussian</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_random_gaussian">
@@ -864,7 +893,7 @@ distributions.</p>
   <li><a href="veroku.html">veroku package</a><ul>
   <li><a href="veroku.factors.html">veroku.factors package</a><ul>
       <li>Previous: <a href="veroku.factors.categorical.html" title="previous chapter">veroku.factors.categorical module</a></li>
-      <li>Next: <a href="veroku.factors.sigma_points.html" title="next chapter">veroku.factors.sigma_points module</a></li>
+      <li>Next: <a href="veroku.factors.sparse_categorical.html" title="next chapter">veroku.factors.sparse_categorical module</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -1,7 +1,0 @@
-veroku.factors.sigma\_points module
-===================================
-
-.. automodule:: veroku.factors.sigma_points
-   :members:
-   :undoc-members:
-   :show-inheritance:
