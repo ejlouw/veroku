@@ -41,6 +41,35 @@
 <em class="property">class </em><code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">SparseCategorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_log_prob</span><span class="o">=</span><span class="default_value">- inf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating sparse tables with log probabilities.</p>
+<p>Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
+<li><p><strong>log_probs_table</strong> – A dictionary with assignments (tuples) as keys and probabilities as values.
+Missing assignments are assumed to have zero probability.</p></li>
+</ul>
+</dd>
+</dl>
+<p>:type
+:param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</p>
+<blockquote>
+<div><p>Missing assignments are assumed to have -inf log-probability (zero probability).</p>
+</div></blockquote>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rain&#39;</span><span class="p">,</span><span class="s1">&#39;slip&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.6</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">=</span><span class="n">log_probs_table</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.argmax" title="Permalink to this definition">¶</a></dt>
@@ -132,7 +161,7 @@
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.kl_divergence">
 <code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalize_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(P||Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
+<dd><p>Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
 Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -247,6 +276,22 @@ new_variable_order = [b, a]</p>
 <dt id="veroku.factors.sparse_categorical.SparseCategoricalTemplate">
 <em class="property">class </em><code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">SparseCategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<p>Create a Categorical factor template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_probs_table</strong> (<em>tuple:float dict</em>) – The log_probs_table that specifies the assignments and values for the template.</p></li>
+<li><p><strong>var_templates</strong> (<em>str list</em>) – A list of formattable strings.</p></li>
+</ul>
+</dd>
+</dl>
+<p>log_probs_table example:
+{(0, 0): 0.1,</p>
+<blockquote>
+<div><p>(0, 1): 0.3,
+(1, 0): 0.1,
+(1, 1): 0.5}</p>
+</div></blockquote>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor">
 <code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor" title="Permalink to this definition">¶</a></dt>

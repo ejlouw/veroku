@@ -53,16 +53,21 @@
 
 
 <span class="c1"># TODO: consider removing this</span>
-<div class="viewcode-block" id="sort_almost_sorted"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.sort_almost_sorted">[docs]</a><span class="k">def</span> <span class="nf">sort_almost_sorted</span><span class="p">(</span><span class="n">a_deque</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_sort_almost_sorted</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sort a deque like that where only the first element is potentially unsorted</span>
-<span class="sd">    and should probably be last and the rest of the deque is sorted in descending order.</span>
+<span class="sd">    Sort a deque like that where only the first element is potentially unsorted and should probably be last and the rest</span>
+<span class="sd">     of the deque is sorted in descending order.</span>
+<span class="sd">    :param collections.deque almost_sorted_deque: The deque of size n, where the first n-1 elements are definitely</span>
+<span class="sd">        sorted (in descending order) and where the last element is also probably in the correct place, but needs to be</span>
+<span class="sd">        checked</span>
+<span class="sd">    :param key: The key (function) to use for sorting.</span>
+<span class="sd">    :return: The sorted (given that the conditions are met) deque.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">a_deque</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a_deque</span><span class="o">.</span><span class="n">popleft</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">key</span><span class="p">(</span><span class="n">a_deque</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">key</span><span class="p">(</span><span class="n">a_deque</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]):</span>
-        <span class="k">return</span> <span class="n">a_deque</span>
-    <span class="n">a_deque</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">a_deque</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">a_deque</span></div>
+    <span class="n">almost_sorted_deque</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="o">.</span><span class="n">popleft</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">key</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">key</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">almost_sorted_deque</span>
+    <span class="n">almost_sorted_deque</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">almost_sorted_deque</span>
 
 
 <span class="k">def</span> <span class="nf">_evidence_reduce_factors</span><span class="p">(</span><span class="n">factors</span><span class="p">,</span> <span class="n">evidence</span><span class="p">):</span>
@@ -81,11 +86,6 @@
                 <span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
         <span class="n">reduced_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">reduced_factors</span>
-
-
-<div class="viewcode-block" id="make_factor_name"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.make_factor_name">[docs]</a><span class="k">def</span> <span class="nf">make_factor_name</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
-
 
 <span class="k">def</span> <span class="nf">_absorb_subset_factors</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -191,6 +191,7 @@
         <span class="c1"># TODO: consolidate these two, if possible</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message_passing_log_df</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message_passing_animation_frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages_passed</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_set_non_rip_sepsets_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clusters</span><span class="p">,</span> <span class="n">all_evidence_vars</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -397,13 +398,14 @@
         <span class="n">joint</span> <span class="o">=</span> <span class="n">cluster_product</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">message_product</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">joint</span></div>
 
-<div class="viewcode-block" id="ClusterGraph.process_graph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ClusterGraph.process_graph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.process_graph">[docs]</a>    <span class="k">def</span> <span class="nf">process_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform synchronous message passing until convergence (or maximum iterations).</span>
+<span class="sd">        :param tol: The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs</span>
+<span class="sd">            to be reached (for all messages) before stopping message passing (before max_iter is reached).</span>
+<span class="sd">        :param max_iter: The maximum number of iterations of message passing. The maximum number of messages that can be</span>
+<span class="sd">            passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># for debugging and testing</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">messages_passed</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sync_message_passing_max_distances</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clusters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -422,16 +424,9 @@
             <span class="n">sender_cluster_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sender_cluster</span><span class="o">.</span><span class="n">cluster_id</span>
             <span class="n">receiver_cluster_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">receiver_cluster</span><span class="o">.</span><span class="n">cluster_id</span>
 
-            <span class="c1"># for debugging and testing</span>
-            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">messages_passed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">next_message</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="p">[(</span><span class="n">gmp</span><span class="o">.</span><span class="n">sender_cluster</span><span class="o">.</span><span class="n">_cluster_id</span><span class="p">,</span> <span class="n">gmp</span><span class="o">.</span><span class="n">receiver_cluster</span><span class="o">.</span><span class="n">_cluster_id</span><span class="p">,</span> <span class="n">gmp</span><span class="o">.</span><span class="n">next_information_gain</span><span class="p">)</span> <span class="k">for</span>
-                        <span class="n">gmp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">]</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sender&#39;</span><span class="p">,</span> <span class="s1">&#39;receiver&#39;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">])</span>
-
             <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pass_next_message</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key_func</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-            <span class="c1"># self.graph_message_paths = sort_almost_sorted(self.graph_message_paths, key=key_func)</span>
+            <span class="c1"># self.graph_message_paths = _sort_almost_sorted(self.graph_message_paths, key=key_func)</span>
 
             <span class="n">max_next_information_gain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">next_information_gain</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sync_message_passing_max_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_next_information_gain</span><span class="p">)</span>

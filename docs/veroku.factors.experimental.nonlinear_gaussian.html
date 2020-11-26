@@ -41,6 +41,25 @@
 <em class="property">class </em><code class="sig-prename descclassname">veroku.factors.experimental.nonlinear_gaussian.</code><code class="sig-name descname">NonLinearGaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">noise_cov</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">joint_distribution</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conditional_update_factor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conditioning_factor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">observed_evidence</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</p>
+<p>The constructor.
+:param conditioning_vars: (list) The conditioning vars.
+:param conditional_vars: (list) The conditioning vars.
+:param transform: The transformation that links the conditioning to the conditional distribution
+:param noise_cov: The noise covariance matrix of the zero mean Gaussian noise.
+:param conditional_update_factor: (factor) A factor, with same scope, subset of, the conditional vars, to be</p>
+<blockquote>
+<div><p>multiplied with the transformed (joint) distribution to form the final joint distribution.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conditioning_factor</strong> – The factor with scope less than or equals to the conditional variables to be
+transformed by the transform. If the scope is less than the conditional variables set, observed evidence
+(if available) can be used to still enable the successful transformation and calculation of the joint.</p></li>
+<li><p><strong>observed_evidence</strong> – (dict) A dictionary mapping variable names ot observed values.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.add_log_weight">
 <code class="sig-name descname">add_log_weight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_weight_to_add</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussian.add_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.add_log_weight" title="Permalink to this definition">¶</a></dt>
@@ -159,10 +178,13 @@
 <em class="property">class </em><code class="sig-prename descclassname">veroku.factors.experimental.nonlinear_gaussian.</code><code class="sig-name descname">NonLinearGaussianMixture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussianMixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</p>
+<p>The constructor.
+:param factors: (NonLinearGaussian factor list) The list of factors.</p>
 <dl class="py class">
 <dt id="veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate">
 <em class="property">class </em><code class="sig-name descname">NonLinearGaussianMixtureTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em>, <em class="sig-param"><span class="n">transition_function</span></em>, <em class="sig-param"><span class="n">noise_cov</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<p>transition_function()</p>
 <dl class="py method">
 <dt id="veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor">
 <code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor" title="Permalink to this definition">¶</a></dt>
@@ -238,6 +260,17 @@
 <dt id="veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate">
 <em class="property">class </em><code class="sig-prename descclassname">veroku.factors.experimental.nonlinear_gaussian.</code><code class="sig-name descname">NonLinearGaussianTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em>, <em class="sig-param"><span class="n">transition_function</span></em>, <em class="sig-param"><span class="n">noise_cov</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussianTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<p>The initialiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conditioning_var_templates</strong> – </p></li>
+<li><p><strong>conditional_var_templates</strong> – </p></li>
+<li><p><strong>transition_function</strong> – </p></li>
+<li><p><strong>noise_cov</strong> – </p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate.make_factor">
 <code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/nonlinear_gaussian.html#NonLinearGaussianTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate.make_factor" title="Permalink to this definition">¶</a></dt>

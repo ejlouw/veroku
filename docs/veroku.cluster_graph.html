@@ -38,6 +38,19 @@
 <dt id="veroku.cluster_graph.ClusterGraph">
 <em class="property">class </em><code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Construct a Cluster graph from a list of factors
+:param factors: (list of factors) The factors to construct the graph from
+:param evidence: (dict) evidence dictionary (mapping variable names to values) that should be used to reduce</p>
+<blockquote>
+<div><p>factors before building the cluster graph.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>special_evidence</strong> – (dict) evidence dictionary (mapping variable names to values) that should be used in
+the calculation of messages, and not to reduce factors. This allows factor approximations - such as the
+non-linear Gaussian to be iteratively refined.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_marginal">
 <code class="sig-name descname">get_marginal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_marginal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_marginal" title="Permalink to this definition">¶</a></dt>
@@ -79,8 +92,18 @@ plot legend.</p></li>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.process_graph">
-<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform synchronous message passing until convergence (or maximum iterations).</p>
+<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform synchronous message passing until convergence (or maximum iterations).
+:param tol: The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs</p>
+<blockquote>
+<div><p>to be reached (for all messages) before stopping message passing (before max_iter is reached).</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>max_iter</strong> – The maximum number of iterations of message passing. The maximum number of messages that can be
+passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -96,18 +119,6 @@ plot legend.</p></li>
 <dd><p>Show the cluster graph.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt id="veroku.cluster_graph.make_factor_name">
-<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">make_factor_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#make_factor_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.make_factor_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="veroku.cluster_graph.sort_almost_sorted">
-<code class="sig-prename descclassname">veroku.cluster_graph.</code><code class="sig-name descname">sort_almost_sorted</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a_deque</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#sort_almost_sorted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.sort_almost_sorted" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sort a deque like that where only the first element is potentially unsorted
-and should probably be last and the rest of the deque is sorted in descending order.</p>
 </dd></dl>
 
 </div>

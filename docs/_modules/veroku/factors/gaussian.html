@@ -435,7 +435,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span></div>
     <span class="c1"># pylint: enable=invalid-name</span>
 
-<div class="viewcode-block" id="Gaussian.cov_exists"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.cov_exists">[docs]</a>    <span class="k">def</span> <span class="nf">cov_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_cov_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
@@ -443,7 +443,7 @@
                 <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
     <span class="c1"># pylint: disable=invalid-name</span>
 <div class="viewcode-block" id="Gaussian.get_cov"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_cov">[docs]</a>    <span class="k">def</span> <span class="nf">get_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -680,6 +680,7 @@
 <div class="viewcode-block" id="Gaussian.multiply"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this Gaussian with another factor.</span>
+
 <span class="sd">        :param factor: the factor to multiply with</span>
 <span class="sd">        :return: the resulting factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -689,7 +690,8 @@
 
 <div class="viewcode-block" id="Gaussian.divide"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Divide this Gaussian by another facotr.</span>
+<span class="sd">        Divide this Gaussian by another factor.</span>
+
 <span class="sd">        :param factor: the factor to divide by</span>
 <span class="sd">        :return: the resulting factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -698,6 +700,7 @@
     <span class="k">def</span> <span class="nf">_absorb_or_cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">operator_function</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A general function which can either perform Gaussian multiplication or division (which are very similar).</span>
+
 <span class="sd">        :param factor: the gaussian to multiply or divide by</span>
 <span class="sd">        :param operator_function: the operator to use one the Gaussian canonical parameters</span>
 <span class="sd">                        (&#39;+&#39; for multiplication and &#39;-&#39; for division)</span>
@@ -725,6 +728,7 @@
 <div class="viewcode-block" id="Gaussian.sample"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draw samples from the Gaussian distribution.</span>
+
 <span class="sd">        :param num_samples: The number of samples to draw.</span>
 <span class="sd">        :type num_samples:</span>
 <span class="sd">        :return: The samples.</span>
@@ -741,6 +745,7 @@
     <span class="k">def</span> <span class="nf">_get_observation_reduced_canonical_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_indices</span><span class="p">,</span> <span class="n">unobserved_indices</span><span class="p">,</span> <span class="n">observed_vec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A helper function for reduce.</span>
+
 <span class="sd">        :param observed_indices: The observed variable indices</span>
 <span class="sd">        :type observed_indices: int list</span>
 <span class="sd">        :param unobserved_indices: The unobserved variable indices</span>
@@ -803,6 +808,7 @@
 <span class="sd">        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</span>
 <span class="sd">        Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)</span>
 <span class="sd">        or inf (if one is not).</span>
+
 <span class="sd">        :return: The KL divergence.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -813,7 +819,7 @@
 
 <div class="viewcode-block" id="Gaussian.kl_divergence"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the KL-divergence D_KL(self||factor) between a normalized version of this factor and another factor.</span>
+<span class="sd">        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.</span>
 <span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
 
 <span class="sd">        :param factor: The other factor</span>
@@ -864,6 +870,7 @@
     <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.</span>
+
 <span class="sd">        :return: The result of the check.</span>
 <span class="sd">        :rtype: Bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -953,16 +960,16 @@
 
     <span class="c1"># pylint: enable=invalid-name</span>
 
-<div class="viewcode-block" id="Gaussian.get_cov_repr_str"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_cov_repr_str">[docs]</a>    <span class="k">def</span> <span class="nf">get_cov_repr_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_cov_repr_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
         <span class="n">repr_str</span> <span class="o">=</span> <span class="s1">&#39;Cov        = </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
                    <span class="s1">&#39;mean       = </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
                    <span class="s1">&#39;log_weight = </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">log_weight</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="k">return</span> <span class="n">repr_str</span></div>
+        <span class="k">return</span> <span class="n">repr_str</span>
 
-<div class="viewcode-block" id="Gaussian.get_can_repr_str"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_can_repr_str">[docs]</a>    <span class="k">def</span> <span class="nf">get_can_repr_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_can_repr_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_update_canform</span><span class="p">()</span>
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
@@ -970,7 +977,7 @@
                    <span class="s1">&#39;h = </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
                    <span class="s1">&#39;g = </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">g</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
                    <span class="s1">&#39;is_vacuous: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="k">return</span> <span class="n">repr_str</span></div>
+        <span class="k">return</span> <span class="n">repr_str</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -981,8 +988,8 @@
         <span class="n">np</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">arrayprint</span><span class="o">.</span><span class="n">_line_width</span> <span class="o">=</span> <span class="mi">200</span>
         <span class="n">repr_str</span> <span class="o">=</span> <span class="s1">&#39;vars = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
-            <span class="n">repr_str</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_can_repr_str</span><span class="p">()</span>
-        <span class="n">repr_str</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cov_repr_str</span><span class="p">()</span>
+            <span class="n">repr_str</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_can_repr_str</span><span class="p">()</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cov_repr_str</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">repr_str</span>
 
 <div class="viewcode-block" id="Gaussian.show"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_covform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_canform</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
@@ -1002,9 +1009,9 @@
             <span class="n">self_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vars = &#39;</span><span class="p">,</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">COVFORM</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">get_cov_repr_str</span><span class="p">())</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">_get_cov_repr_str</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">CANFORM</span> <span class="ow">and</span> <span class="n">show_canform</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">get_can_repr_str</span><span class="p">())</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">_get_can_repr_str</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="Gaussian.show_vis"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.show_vis">[docs]</a>    <span class="k">def</span> <span class="nf">show_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1398,6 +1405,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a Gaussian mixture distribution contains no information. This is the case when the K matrices of all</span>
+<span class="sd">        components are zero matrices.</span>
+
+<span class="sd">        :return: The result of the check.</span>
+<span class="sd">        :rtype: Bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components</span>
         <span class="c1">#  are vacuous? Maybe make a contains vacuous function as well.</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
