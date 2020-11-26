@@ -68,7 +68,7 @@ class TestClusterGraph(unittest.TestCase):
                                                   receiver_id=receiver_cluster_id, factor=almost_vacuous)
             gmp.update_next_information_gain()
 
-        cg.process_graph(tol=0, max_iter=1, debug=True)
+        cg.process_graph(tol=0, max_iter=1)
 
         # Note
         # Now we want to ensure and check a certain message order. The problem is that if more than one KLD is inf,
@@ -94,7 +94,7 @@ class TestClusterGraph(unittest.TestCase):
         factors = [fa, fab, fac, fbd]
         cg = ClusterGraph(factors)
         # TODO: see why this fails with max_iter=1
-        cg.process_graph(tol=0, max_iter=2, debug=True)
+        cg.process_graph(tol=0, max_iter=2)
         # check posterior weight
         joint = factors[0]
         for f in factors[1:]:

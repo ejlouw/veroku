@@ -57,7 +57,8 @@ jobs:
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           echo "On branch $BRANCH"
-          if [ ${{ github.ref }} == 'refs/heads/master' ]; then python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*; fi
+          echo skipping pypi upload
+       #   if [ ${{ github.ref }} == 'refs/heads/master' ]; then python -m twine upload --verbose -u $PYPI_USERNAME -p $PYPI_PASSWORD --repository-url https://upload.pypi.org/legacy/ dist/*; fi
 
       # Create and Publish Documentation
       - run: |
