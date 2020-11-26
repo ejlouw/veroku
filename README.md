@@ -6,6 +6,8 @@
 This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
 but will be made public soon.
 
+<br/>
+
 ### Overview
 <div style="text-align: justify">
 Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs). PGMs
@@ -27,7 +29,14 @@ with the `cluster_graph` module to automatically create valid cluster graphs. In
 using message passing algorithms. Currently only the LBU (Loopy Belief Update) message-passing algorithm is supported.
 </div>
 
-<br/><br/>
+<br/>
+Example notebooks:
+
+* [Toy example](https://github.com/ejlouw/veroku/blob/master/examples/slip_on_grass.ipynb)
+* [Kalman filter](https://github.com/ejlouw/veroku/blob/master/examples/Kalman_filter.ipynb)
+* [Sudoku](https://github.com/ejlouw/veroku/blob/master/examples/sudoku.ipynb)
+
+<br/>
 
 ### Future Features
 To be added soon:

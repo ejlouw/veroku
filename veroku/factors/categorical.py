@@ -39,11 +39,10 @@ class Categorical(Factor):
 
         :param var_names: The variable names.
         :type var_names: str list
-        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
+        :param probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
             Missing assignments are assumed to have zero probability.
-        :type
-        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.
-            Missing assignments are assumed to have -inf log-probability (zero probability).
+        :type probs_table: dict
+
         Example:
             >>> var_names = ['rain','slip']
             >>> probs_table = {(0,0):0.8,
@@ -91,6 +90,7 @@ class Categorical(Factor):
         """
         Reorder categorical table variables to a new order and reorder the associated probabilities
         accordingly.
+
         :param new_var_names_order: The new variable order.
         :type new_var_names_order: str list
         :return: The factor with new order.
@@ -134,6 +134,7 @@ class Categorical(Factor):
     def copy(self):
         """
         Make a copy of this factor.
+
         :return: The copy of this factor.
         :rtype: Categorical
         """
@@ -143,9 +144,16 @@ class Categorical(Factor):
     @staticmethod
     def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
         """
-        larger_vars = ['a', 'c', 'd', 'b']
-        smaller_vars = ['c', 'e', 'b']
-        return ['c', 'b']
+
+        :param smaller_vars:
+        :param larger_vars:
+        :return:
+
+            Example:
+            >>> larger_vars = ['a', 'c', 'd', 'b']
+            >>> smaller_vars = ['c', 'e', 'b']
+            >>> _get_shared_order_smaller_vars(smaller_vars, larger_vars)
+            >>> ['c', 'b']
         """
         shared_vars = [v for v in smaller_vars if v in larger_vars]
         remaining_smaller_vars = list(set(larger_vars) - set(shared_vars))
@@ -167,6 +175,7 @@ class Categorical(Factor):
     def tensor_operation(tensor_a, tensor_b, tensor_a_var_names, tensor_b_var_names, func):
         """
         Apply a element wise function to two tensors with named indices.
+
         :param numpy.ndarray tensor_a: The first tensor.
         :param numpy.ndarray tensor_b: The second tensor.
         :param tensor_a_var_names: The first tensor's variable names corresponding to the indices.
@@ -211,6 +220,7 @@ class Categorical(Factor):
     def marginalize(self, vrs, keep=False):
         """
         Sum out variables from this factor.
+
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
         :return: The resulting factor.
@@ -226,6 +236,7 @@ class Categorical(Factor):
     def reduce(self, vrs, values):
         """
         Observe variables to have certain values and return reduced table.
+
         :param vrs: (list) The variables.
         :param values: (tuple or list) Their values
         :return: The resulting factor.
@@ -273,6 +284,7 @@ class Categorical(Factor):
         zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this
         results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the
         probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.
+
         :param factor: The factor to divide by.
         :type factor: Categorical
         :return: The factor quotient.
@@ -298,6 +310,7 @@ class Categorical(Factor):
     def divide(self, factor, special_rules=None):
         """
         Divide this factor by another factor and return the result.
+
         :param factor: The factor to divide by.
         :type factor: Categorical
         :param special_rules: Any special rules to apply for specific values of the left and right variables.
@@ -339,6 +352,7 @@ class Categorical(Factor):
     def is_vacuous(self):
         """
         Check if this factor is vacuous (i.e uniform).
+
         :return: Whether the factor is vacuous or not.
         :rtype: bool
         """

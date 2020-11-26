@@ -107,22 +107,23 @@ def split_gaussian(gaussian):
     return gm
 
 
-def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templates):
+def make_linear_gaussian(A, N, conditioning_vars, conditional_vars):
     """
-    Make a linear Gaussian factor template.
+    Make a linear Gaussian factor.
+
     :param A: The linear transform matrix.
     :type A: Numpy array
-    :param N: The additive noise covarannce matrix.
+    :param N: The additive noise covariance matrix.
     :type A: Numpy array
-    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
-    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
+    :param conditioning_vars: The list of conditioning variables.
+    :param conditional_vars: The list of conditional variables.
     :return: The linear Gaussian Template
-    :rtype: GaussianTemplate
+    :rtype: Gaussian
     """
 
     # TODO: improve this by adding the correct equations for calculating the linear Gaussian parameters that do not rely
     #  on the dummy factor multiplication.
-    X_dim = len(conditioning_var_templates)
+    X_dim = len(conditioning_vars)
     Sxx = np.eye(X_dim)
     Kxx = np.linalg.inv(Sxx)
 
@@ -152,12 +153,24 @@ def make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templ
     uTKux = mean_joint.T @ K_joint @ mean_joint
     g_joint = 0.5 * uTKux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * S))
     g_cpd = g_joint - gx
-    var_names = conditioning_var_templates + conditional_var_templates
+    var_names = conditioning_vars + conditional_vars
 
     return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=g_cpd)
 
 
 def make_linear_gaussian_cpd_template(A, N, conditioning_var_templates, conditional_var_templates):
+    """
+    Make a linear Gaussian factor template.
+
+    :param A: The linear transform matrix.
+    :type A: Numpy array
+    :param N: The additive noise covariance matrix.
+    :type A: Numpy array
+    :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
+    :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
+    :return: The linear Gaussian Template
+    :rtype: Gaussian
+    """
     assert len(conditioning_var_templates) == A.shape[0]
     assert N.shape[0] == A.shape[0]
     nlg = make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templates)
@@ -647,7 +660,7 @@ class Gaussian(Factor):
         """
         Multiply this Gaussian with another factor.
 
-        :param factor: the factor to multiply with
+        :param Gaussian factor: the factor to multiply with
         :return: the resulting factor
         """
         # if isinstance(factor, NonLinearGaussian):
@@ -658,7 +671,7 @@ class Gaussian(Factor):
         """
         Divide this Gaussian by another factor.
 
-        :param factor: the factor to divide by
+        :param Gaussian factor: the factor to divide by
         :return: the resulting factor
         """
         return self._absorb_or_cancel(factor, operator.sub)

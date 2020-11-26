@@ -10,6 +10,7 @@ from veroku.factors.gaussian import Gaussian
 def get_sigma_points_array(gaussian_factor):
     """
     Get 2*dim + 1 equals weight sigma points for a Gaussian distribution with the given parameters.
+
     :param gaussian_factor: The factor
     :return: (numpy array) An array with sigma points as column vectors.
     """
@@ -23,7 +24,7 @@ def get_sigma_points_array(gaussian_factor):
         print(str(e))
         raise e
     dim = cov.shape[0]
-    k = (dim + 0.5) ** (0.5)
+    k = (dim + 0.5) ** 0.5
     sigma_point_array_n = mean - k * L
     sigma_point_array_p = mean + k * L
     sigma_points_array = np.concatenate([sigma_point_array_n, mean, sigma_point_array_p], axis=1)
@@ -33,6 +34,7 @@ def get_sigma_points_array(gaussian_factor):
 def sigma_point_array_to_gaussian_params(sigma_point_array):
     """
     Convert a sigma point array to Gaussian covariance parameters.
+
     :param sigma_point_array: (numpy array) An array where the columns correspond to sigma points.
     :return: The mean (numpy array) and covariance (numpy array) of the sigma points.
     """
@@ -44,6 +46,7 @@ def sigma_point_array_to_gaussian_params(sigma_point_array):
 def sigma_points_to_gaussian_params(sigma_points):
     """
     Convert a sigma points to Gaussian covariance parameters.
+
     :param sigma_points: (list of numpy arrays) An array where the columns correspond to sigma points.
     :return: The mean (numpy array) and covariance (numpy array) of the sigma points.
     """
@@ -55,6 +58,7 @@ def sigma_points_array_to_joint_params(sigma_points_array, transform, var_names=
     """
     Construct joint sigma points using the original sigma points and the transform function, then Calculate the joint
     covariance parameters of the joint sigma points.
+
     :param sigma_points_array: (numpy array) An array where the columns correspond to sigma points.
     :param transform: (function) The transformation function.
     :param var_names: The variable names of the variables to be transformed.

@@ -11,7 +11,7 @@ import numpy as np
 
 # Local imports
 from veroku.factors import _factor_utils
-from veroku.factors.sigma_points import get_sigma_points_array, sigma_points_array_to_joint_params
+from veroku.factors._sigma_points import get_sigma_points_array, sigma_points_array_to_joint_params
 from veroku.factors._factor import Factor
 from veroku.factors.gaussian import Gaussian, GaussianMixture
 from veroku.factors._factor_utils import make_square_matrix, indexed_square_matrix_operation, \

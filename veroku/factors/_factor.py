@@ -29,6 +29,7 @@ class Factor:
     def var_names(self):
         """
         Get the factor's variable names.
+
         :return: the var_names parameter.
         """
         return copy.deepcopy(self._var_names)
@@ -37,6 +38,7 @@ class Factor:
     def dim(self):
         """
         Get the factor's dimensionality.
+
         :return: the dim parameter.
         """
         return self._dim
@@ -45,6 +47,7 @@ class Factor:
         """
         A helper function (for marginalize) that returns the variables that should be marginalised out (keep=False)
         or kept (keep=True).
+
         :param vrs: (list) the variables
         :param keep: Whether these variables are to be kept or summed out.
         :return: The variables to be kept or summed out.
@@ -57,6 +60,7 @@ class Factor:
     def copy(self):
         """
         An abstract function for copying a factor that should be implemented in the base class.
+
         :return: a copy of the factor
         """
 
@@ -64,6 +68,7 @@ class Factor:
     def marginalize(self, vrs, keep=False):
         """
         An abstract function for performing factor marginalisation that should be implemented in the base class.
+
         :return: the resulting marginal factor.
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
@@ -74,6 +79,7 @@ class Factor:
     def multiply(self, factor):
         """
         An abstract function for performing factor multiplication that should be implemented in the base class.
+
         :param factor: The factor to be multiplied with.
         :return: The resulting product
         """
@@ -85,6 +91,7 @@ class Factor:
     def divide(self, factor):
         """
         An abstract function for performing factor division that should be implemented in the base class.
+
         :param factor: The factor to be divided by.
         :return: The resulting quotient
         """
@@ -96,6 +103,7 @@ class Factor:
         """
         An abstract function for performing the observation (a.k.a conditioning) operation that should be implemented
         in the base class.
+
         :return: the resulting reduced factor.
         :param vrs: (list) a subset of variables in the factor's scope
         :param values: The values of vars.
@@ -108,6 +116,7 @@ class Factor:
     def normalize(self):
         """
         An abstract function for performing factor normalization that should be implemented in the base class.
+
         :return: The normalized factor.
         """
     #@property

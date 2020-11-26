@@ -20,7 +20,8 @@ from veroku.factors._factor_template import FactorTemplate
 
 def _make_dense(factor):
     """
-    Convert a factor to a dense factor by instanciating all of the implicit default value assignments.
+    Convert a factor to a dense factor by instantiating all of the implicit default value assignments.
+
     :param factor: The factor to convert.
     :type factor: SparseCategorical
     :return: The dense factor version.
@@ -38,6 +39,7 @@ def _make_dense_default_probs_dict(cardinalities, default_value):
     """
     Make a dictionary representing a categorical probability table that contains all assignments, as specified by the
     given cardinalities (starting from 0).
+
     :param cardinalities: The given cardinalities.
     :type cardinalities: list
     :param default_value: The default value to assign the missing values.
@@ -62,6 +64,7 @@ def _make_inner_dense(sparse_nested_table, outer_inner_cards, default_value):
     """
     Convert n sparse nested table dictionary's implicit default values in the innetables to real entries so that
     all possible assignments are present in the inner sub tables.
+
     :param sparse_nested_table: The nested dictionary representing a sparse table.
     :type sparse_nested_table: dictionary of dictionaries
     :param outer_inner_cards: The lists of the cardinalities for the outer and inner part of the nested table respectively
@@ -83,7 +86,8 @@ def _get_nested_sorted_probs(new_variables_order_outer,
                              new_variables_order_inner,
                              old_variable_order, old_assign_probs):
     """
-    Reorder probs to a new order and sort assignments.
+    Reorder variables to a new order and sort assignments.
+
     :params new_variables_order_outer:
     :params new_variables_order_inner:
     :params old_variable_order:
@@ -114,9 +118,10 @@ def _get_nested_sorted_probs(new_variables_order_outer,
     return new_assign_probs, new_variable_order
 
 
-def same_scope_binary_operation(a, b, func, default):
+def _same_scope_binary_operation(a, b, func, default):
     """
     NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same order.
+
     :param a: The dictionary for factor (typically sub factor) A.
     :param b: The dictionary for factor (typically sub factor) B.
     """
@@ -132,7 +137,7 @@ def same_scope_binary_operation(a, b, func, default):
     return result_common_sub_dict
 
 
-def flatten_ntd(ntd):
+def _flatten_ntd(ntd):
     """
     Flatten a two level nested table dictionary.
     """
@@ -143,9 +148,9 @@ def flatten_ntd(ntd):
     return flattened_ntd
 
 
-def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
-                               ntd_b, outer_inner_cards_b,
-                               func, default, default_rules='none'):
+def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
+                                ntd_b, outer_inner_cards_b,
+                                func, default, default_rules='none'):
     """
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
 
@@ -240,10 +245,10 @@ def any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         common_vars_subtable_a = ntd_a.get(sd_assign_a, full_sd_a_default_sub_table)
         common_vars_subtable_b = ntd_b.get(sd_assign_b, full_sd_b_default_sub_table)
 
-        # TODO: extend same_scope_binary_operation functionality to allow table completion given flag.
-        subtable_result = same_scope_binary_operation(common_vars_subtable_a,
-                                                      common_vars_subtable_b,
-                                                      func, default)
+        # TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.
+        subtable_result = _same_scope_binary_operation(common_vars_subtable_a,
+                                                       common_vars_subtable_b,
+                                                       func, default)
         resulting_factor_table[joined_sd_assignment] = subtable_result
     return resulting_factor_table
 
@@ -393,6 +398,7 @@ class SparseCategorical(Factor):
     def marginalize(self, vrs, keep=False):
         """
         Sum out variables from this factor.
+
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
         :return: The resulting factor.
@@ -420,6 +426,7 @@ class SparseCategorical(Factor):
     def reduce(self, vrs, values):
         """
         Observe variables to have certain values and return reduced table.
+
         :param vrs: (list) The variables.
         :param values: (tuple or list) Their values
         :return: The resulting factor.
@@ -465,6 +472,7 @@ class SparseCategorical(Factor):
     def cancel(self, factor):
         """
         Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
+
         :param factor: The factor to divide by.
         :type factor: SparseCategorical
         :return: The factor quotient.
@@ -556,11 +564,11 @@ class SparseCategorical(Factor):
         outer_inner_cards_b = [vars_to_cards(factor, remaining_b_vars),
                                vars_to_cards(factor, intersection_vars)]
 
-        result_ntd = any_scope_binary_operation(ntd_a, outer_inner_cards_a,
-                                                ntd_b, outer_inner_cards_b,
-                                                operator_function, default_log_prob,
-                                                default_rules=default_rules)
-        flattened_result_table = flatten_ntd(result_ntd)
+        result_ntd = _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
+                                                 ntd_b, outer_inner_cards_b,
+                                                 operator_function, default_log_prob,
+                                                 default_rules=default_rules)
+        flattened_result_table = _flatten_ntd(result_ntd)
         result_var_names = remaining_a_vars + remaining_b_vars + intersection_vars
         result_var_cards = {**self.var_cards, **factor.var_cards}
         result_cardinalities = [result_var_cards[v] for v in result_var_names]
@@ -571,6 +579,7 @@ class SparseCategorical(Factor):
     def normalize(self):
         """
         Return a normalized copy of the factor.
+
         :return: The normalized factor.
         """
 
@@ -583,6 +592,7 @@ class SparseCategorical(Factor):
     def _is_dense(self):
         """
         Check if all factor assignments have non-default values.
+
         :return: The result of the check.
         :rtype: Bool
         """
@@ -596,6 +606,7 @@ class SparseCategorical(Factor):
     def is_vacuous(self):
         """
         Check if this factor is vacuous (i.e uniform).
+
         :return: Whether the factor is vacuous or not.
         :rtype: bool
         """
@@ -713,6 +724,7 @@ class SparseCategorical(Factor):
         """
         Reorder categorical table variables to a new order and reorder the associated probabilities
         accordingly.
+        
         :param new_var_names_order: The new variable order.
         :type new_var_names_order: str list
         :return: The factor with new order.
