@@ -63,13 +63,13 @@ jobs:
       # Create and Publish Documentation
       - run: |
           cd ./docs
-          sed -n -e '/doc-start/,$p' README.md > README_NO_LOGO.md
-          cat README_NO_LOGO.md > README.md
+          sed -n -e '/doc-start/,$p' ../README.md > ../README_NO_LOGO.md
+          cat ../README_NO_LOGO.md > ../README.md
           sphinx-apidoc -f -e -o source/ ../veroku/ ../veroku/tests/
           make html
           cd ../
           cp -R docs ../docs_copy
-          
+
       - name: Checkout Github Pages Branch
         uses: actions/checkout@v2
         with:
