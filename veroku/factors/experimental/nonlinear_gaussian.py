@@ -30,7 +30,8 @@ class NonLinearGaussian(Factor):
                  joint_distribution=None, conditional_update_factor=None, conditioning_factor=None,
                  observed_evidence=None):
         """
-        The constructor.
+        The initializer.
+
         :param conditioning_vars: (list) The conditioning vars.
         :param conditional_vars: (list) The conditioning vars.
         :param transform: The transformation that links the conditioning to the conditional distribution
@@ -241,11 +242,23 @@ class NonLinearGaussian(Factor):
             self._joint_distribution = self._joint_distribution.reduce(conditional_observed_vars,
                                                                        conditional_observed_values)
 
+    def normalize(self):
+        """
+        Normalize the factor.
+
+        :return: The normalized factor.
+        :rtype: Gaussian
+        """
+        # TODO: make this more efficient
+        return self.joint_distribution.normalize()
+
     def multiply(self, factor):
         """
         Multiply this factor with another factor.
+
         :param factor: the factor to multiply with
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussian
         """
 
         if isinstance(factor, GaussianMixture):
@@ -283,8 +296,10 @@ class NonLinearGaussian(Factor):
     def divide(self, factor):
         """
         Divide this factor by another factor.
+
         :param factor: the factor divide by
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussian
         """
         self_copy = self.copy()
         if factor._is_vacuous:
@@ -312,7 +327,8 @@ class NonLinearGaussian(Factor):
         Observe a subset of the variables in the scope of this factor and return the resulting factor.
         :param vrs: the names of the observed variable (list)
         :param values: the values of the observed variables (list or vector-like object)
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussian
         """
 
         self_copy = self.copy()
@@ -324,7 +340,8 @@ class NonLinearGaussian(Factor):
         Integrate out variables from this factor.
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
-        :return: the resulting Gaussian mixture marginal
+        :return: the resulting marginal
+        :rtype: Gaussian
         """
 
         vrs_to_keep = super().get_marginal_vars(vrs, keep=keep)
@@ -348,12 +365,21 @@ class NonLinearGaussian(Factor):
         return self_copy._joint_distribution.marginalize(vrs_to_keep, keep=True)
 
     def sample(self, num_samples):
+        """
+        Draw samples from the Gaussian joint distribution defined by the non-linear Gaussian and the factors that have
+        (potentially) been multiplied with it.
+
+        :param num_samples: The number of samples to draw.
+        :type num_samples:
+        :return: The samples.
+        :rtype: int
+        """
         self._recompute_joint()
         return self._joint_distribution.sample(num_samples=num_samples)
 
     def show(self):
         """
-        Print the parameters of the nonlinear Gaussian distribution
+        Print the parameters of the nonlinear Gaussian distribution.
         """
         print('Non-linear Gaussian')
         print('conditioning variables:', self.conditioning_vars)
@@ -390,8 +416,10 @@ class NonLinearGaussianMixture(Factor):
 
     def __init__(self, factors):
         """
-        The constructor.
-        :param factors: (NonLinearGaussian factor list) The list of factors.
+        The initializer.
+
+        :param factors: The list of factors.
+        :type factors: NonLinearGaussian factor list
         """
         self.nlgs = []
         if len(factors) == 0:
@@ -405,10 +433,15 @@ class NonLinearGaussianMixture(Factor):
                                  f' another has var_names = {factor.var_names}')
             self.nlgs.append(factor.copy())
 
+    def normalize(self):
+        raise NotImplementedError()
+
     def copy(self):
         """
-        Make a copy of this NonLinearGaussianMixture
-        :return: the copied NonLinearGaussianMixture
+        Make a copy of this factor.
+
+        :return: the factor
+        :rtype: NonLinearGaussianMixture
         """
         return NonLinearGaussianMixture(self.nlgs)
 
@@ -422,8 +455,10 @@ class NonLinearGaussianMixture(Factor):
     def multiply(self, factor):
         """
         Multiply this factor with another factor.
+
         :param factor: the factor to multiply with
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussianMixture
         """
         if isinstance(factor, GaussianMixture):
             gm_factor = factor
@@ -440,8 +475,10 @@ class NonLinearGaussianMixture(Factor):
     def divide(self, factor):
         """
         Divide this factor by another factor.
+
         :param factor: the factor divide by
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussianMixture
         """
         if isinstance(factor, Gaussian):
             gaussian_factor = factor
@@ -458,9 +495,11 @@ class NonLinearGaussianMixture(Factor):
     def reduce(self, vrs, values):
         """
         Observe a subset of the variables in the scope of this factor and return the resulting factor.
+
         :param vrs: the names of the observed variable (list)
         :param values: the values of the observed variables (list or vector-like object)
-        :return: the resulting GaussianMixture
+        :return: the resulting factor
+        :rtype: NonLinearGaussianMixture
         """
         new_nlgs = []
         for nlg in self.nlgs:
@@ -470,9 +509,11 @@ class NonLinearGaussianMixture(Factor):
     def marginalize(self, vrs, keep=False):
         """
         Integrate out variables from this factor.
+
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
-        :return: the resulting Gaussian mixture marginal
+        :return: the resulting marginal
+        :rtype: NonLinearGaussianMixture
         """
         new_nlgs = []
         for nlg in self.nlgs:
@@ -480,6 +521,16 @@ class NonLinearGaussianMixture(Factor):
         return NonLinearGaussianMixture(new_nlgs)
 
     def sample(self, num_samples):
+        """
+        Draw samples from the Gaussian mixture joint distribution defined by the non-linear Gaussians and the factors
+        that have (potentially) been multiplied with them.
+
+        :param num_samples: The number of samples to draw.
+        :type num_samples:
+        :return: The samples.
+        :rtype: int
+        """
+
         #TODO: fix incorrect num samples issue
         sample_sets = []
         for nlg in self.nlgs:
@@ -498,7 +549,7 @@ class NonLinearGaussianMixture(Factor):
 
     def show(self):
         """
-        Print the parameters of the nonlinear Gaussian distribution
+        Print the parameters of the nonlinear Gaussian distribution.
         """
         for i, nlg in enumerate(self.nlgs):
             print(f'######### NLG {i} #############################')
@@ -508,7 +559,18 @@ class NonLinearGaussianMixture(Factor):
 
         def __init__(self, conditioning_var_templates, conditional_var_templates, transition_function, noise_cov):
             """
-            transition_function()
+            The initializer.
+
+            :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
+            :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
+            :param conditioning_var_templates:
+            :param conditional_var_templates:
+            :param callable transition_function: The function that specifies the non-linear transform. This function takes
+                2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the
+                variable elements of the value vector (i.e ltransition_function = lamda x, var_names: np.square(x)).
+                The variable names do not need to be used, but can be useful in certain cases where functions need to be
+                applied to specific variables.
+            :param noise_cov: The noise covariance matrix of the additive noise random variable.
             """
             super().__init__(conditioning_var_templates=conditioning_var_templates,
                              conditional_var_templates=conditional_var_templates)
@@ -518,8 +580,11 @@ class NonLinearGaussianMixture(Factor):
         def make_factor(self, format_dict=None, var_names=None):
             """
             Make a factor with var_templates formatted by format_dict to create specific var names.
-            :param format_dict:
-            :return:
+
+            :param format_dict: The dictionary to be used to format the var_templates strings.
+            :type format_dict: str dict
+            :return: The instantiated factor.
+            :rtype: NonLinearGaussianMixture
             """
             if format_dict is not None:
                 assert var_names is None
@@ -537,13 +602,20 @@ class NonLinearGaussianTemplate(FactorTemplate):
 
     def __init__(self, conditioning_var_templates, conditional_var_templates, transition_function, noise_cov):
         """
-        The initialiser.
+        The initializer.
 
+        :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
+        :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
         :param conditioning_var_templates:
         :param conditional_var_templates:
-        :param transition_function:
-        :param noise_cov:
+        :param callable transition_function: The function that specifies the non-linear transform. This function takes
+            2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the
+            variable elements of the value vector (i.e transition_function = lamda x, var_names: np.square(x)).
+            The variable names do not need to be used, but can be useful in certain cases where functions need to be
+            applied to specific variables.
+        :param noise_cov: The noise covariance matrix of the additive noise random variable.
         """
+
         super().__init__(conditioning_var_templates=conditioning_var_templates,
                          conditional_var_templates=conditional_var_templates)
         self.transition_function = transition_function
@@ -552,8 +624,11 @@ class NonLinearGaussianTemplate(FactorTemplate):
     def make_factor(self, format_dict=None, var_names=None):
         """
         Make a factor with var_templates formatted by format_dict to create specific var names.
-        :param format_dict:
-        :return:
+
+        :param format_dict: The dictionary to be used to format the var_templates strings.
+        :type format_dict: str dict
+        :return: The instantiated factor.
+        :rtype: NonLinearGaussianMixture
         """
         if format_dict is not None:
             assert var_names is None

@@ -419,7 +419,7 @@ class _GraphMessagePath:
     """
     def __init__(self, sender_cluster, receiver_cluster):
         """
-        The initialiser.
+        The initializer.
         :param sender_cluster: The cluster that defines the starting point of the path.
         :param receiver_cluster: The cluster that defines the end point of the path.
         """

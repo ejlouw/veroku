@@ -10,7 +10,7 @@ import numpy as np
 # Third-party imports
 
 # Local imports
-from veroku.factors.experimental.factorised_factor import FactorisedFactor
+from veroku.factors.experimental.factorised_factor import FactorizedFactor
 from veroku.factors.gaussian import Gaussian
 
 
@@ -44,7 +44,7 @@ class TestFactorisedFactor(unittest.TestCase):
         expected_mean = [[1.], [2.], [3.], [4.], [5.], [6.]]
         expected_joint = Gaussian(cov=expected_cov, mean=expected_mean, log_weight=0.0,
                                   var_names=['a', 'b', 'c', 'd', 'e', 'f'])
-        actual_joint_ff = FactorisedFactor([self.gab])
+        actual_joint_ff = FactorizedFactor([self.gab])
         actual_joint_ff = actual_joint_ff.multiply(self.gcd)
         actual_joint_ff = actual_joint_ff.multiply(self.gef)
         actual_joint_distribution = actual_joint_ff.joint_distribution
@@ -62,7 +62,7 @@ class TestFactorisedFactor(unittest.TestCase):
         expected_log_weight = -3.32023108
         expected_joint = Gaussian(cov=expected_cov, mean=expected_mean, log_weight=expected_log_weight,
                                   var_names=['a', 'b', 'c'])
-        actual_joint_ff = FactorisedFactor([self.gab2])
+        actual_joint_ff = FactorizedFactor([self.gab2])
         actual_joint_ff = actual_joint_ff.multiply(self.gbc2)
         self.assertEqual(len(actual_joint_ff.factors), 2)
         actual_joint_distribution = actual_joint_ff.joint_distribution
@@ -80,7 +80,7 @@ class TestFactorisedFactor(unittest.TestCase):
 
         expected_joint = Gaussian(K=expected_K, h=expected_h, g=expected_g,
                                   var_names=['a', 'b'])
-        actual_joint_ff = FactorisedFactor([self.gab])
+        actual_joint_ff = FactorizedFactor([self.gab])
         actual_joint_ff = actual_joint_ff.multiply(self.gab2)
         self.assertEqual(len(actual_joint_ff.factors), 1)
         actual_joint_distribution = actual_joint_ff.joint_distribution
@@ -96,7 +96,7 @@ class TestFactorisedFactor(unittest.TestCase):
         expected_g = 0.0
 
         expected_joint = Gaussian(K=expected_K, h=expected_h, g=expected_g, var_names=['a', 'b'])
-        actual_joint_ff = FactorisedFactor([self.gab3])
+        actual_joint_ff = FactorizedFactor([self.gab3])
         actual_joint_ff = actual_joint_ff.multiply(self.ga3)
         self.assertEqual(len(actual_joint_ff.factors), 1)
         actual_joint_distribution = actual_joint_ff.joint_distribution
@@ -106,7 +106,7 @@ class TestFactorisedFactor(unittest.TestCase):
         """
         Test that the joint distribution has been correctly calculated.
         """
-        actual_joint_ff = FactorisedFactor([self.gab])
+        actual_joint_ff = FactorizedFactor([self.gab])
         actual_joint_ff = actual_joint_ff.multiply(self.gcd)
         actual_joint_ff = actual_joint_ff.divide(self.gcd)
         self.assertEqual(len(actual_joint_ff.factors), 1)
@@ -124,10 +124,10 @@ class TestFactorisedFactor(unittest.TestCase):
         g2_log_weight = 0.1
         g1 = Gaussian(mean=g1_mean, cov=g1_cov, log_weight=0.0, var_names=g1_vars)
         g2 = Gaussian(mean=np.zeros([2, 1]), cov=np.eye(2), log_weight=g2_log_weight, var_names=g2_vars)
-        ff_joint = FactorisedFactor([g1, g2])
+        ff_joint = FactorizedFactor([g1, g2])
         actual_marginal = ff_joint.marginalize(g1_vars, keep=True)
         expected_marginal_comp = Gaussian(mean=g1_mean, cov=g1_cov, log_weight=g2_log_weight, var_names=g1_vars)
-        expected_marginal = FactorisedFactor([expected_marginal_comp])
+        expected_marginal = FactorizedFactor([expected_marginal_comp])
         self.assertTrue(expected_marginal.equals(actual_marginal))
 
     def test_observe(self):
@@ -157,9 +157,9 @@ class TestFactorisedFactor(unittest.TestCase):
         expected_g1 = g1.copy()
         expected_g1.log_weight = -3.3719970579700123
         expected_g2 = g2.copy()
-        expected_reduced_ff_1 = FactorisedFactor([expected_g1, expected_g2])
+        expected_reduced_ff_1 = FactorizedFactor([expected_g1, expected_g2])
 
-        ff = FactorisedFactor([g1, g2, g3])
+        ff = FactorizedFactor([g1, g2, g3])
         actual_reduced_ff_1 = ff.reduce(vrs=observed_vars_1, values=observed_values_1)
         self.assertTrue(expected_reduced_ff_1.equals(actual_reduced_ff_1))
 
@@ -177,6 +177,6 @@ class TestFactorisedFactor(unittest.TestCase):
                                             mean=g2_reduced_mean,
                                             log_weight=g2_reduced_log_weight,
                                             var_names=g2_reduced_vars)
-        expected_reduced_ff_2 = FactorisedFactor([expected_g2_reduced_comp])
+        expected_reduced_ff_2 = FactorizedFactor([expected_g2_reduced_comp])
         actual_reduced_ff_2 = ff.reduce(vrs=observed_vars_1, values=observed_values_1)
         self.assertTrue(expected_reduced_ff_2.equals(actual_reduced_ff_2))

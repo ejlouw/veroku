@@ -578,9 +578,10 @@ class SparseCategorical(Factor):
 
     def normalize(self):
         """
-        Return a normalized copy of the factor.
+        Normalize the factor.
 
         :return: The normalized factor.
+        :rtype: SparseCategorical
         """
 
         factor_copy = self.copy()

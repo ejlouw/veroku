@@ -339,10 +339,11 @@ class Categorical(Factor):
 
     def normalize(self):
         """
-        Return a normalized copy of the factor.
-        :return: The normalized factor.
-        """
+        Normalize the factor.
 
+        :return: The normalized factor.
+        :rtype: Categorical
+        """
         factor_copy = self.copy()
         logz = special.logsumexp(self.log_probs_tensor)
         factor_copy.log_probs_tensor -= logz

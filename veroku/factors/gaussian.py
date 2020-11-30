@@ -460,6 +460,12 @@ class Gaussian(Factor):
         return self.log_weight
 
     def normalize(self):
+        """
+        Normalize the factor.
+
+        :return: The normalized factor.
+        :rtype: Gaussian
+        """
         gaussian_copy = self.copy()
         gaussian_copy._update_covform()
         gaussian_copy.log_weight = 0.0
@@ -1369,7 +1375,7 @@ class GaussianMixture(Factor):
 
     def normalize(self):
         """
-        normalize the Gaussian mixture.
+        Normalize the factor.
 
         :return: The normalized factor.
         :rtype: GaussianMixture
