@@ -6,9 +6,14 @@
 .. image:: logo.svg
    :width: 600
 
-Welcome to veroku's documentation!
+Welcome to Veroku's Documentation!
 ==================================
 
+.. mdinclude:: ../../README.md
+
+
+Documentation
+==================================
 .. toctree::
    :maxdepth: 5
    :caption: Contents:
