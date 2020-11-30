@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to veroku’s documentation! &#8212; veroku 0.0.14 documentation</title>
+    <title>Welcome to Veroku’s Documentation! &#8212; veroku 0.0.14 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -34,12 +34,161 @@
             
   <a class="reference internal image-reference" href="_images/logo.svg"><img alt="_images/logo.svg" src="_images/logo.svg" width="600" /></a>
 <div class="section" id="welcome-to-veroku-s-documentation">
-<h1>Welcome to veroku’s documentation!<a class="headerlink" href="#welcome-to-veroku-s-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Welcome to Veroku’s Documentation!<a class="headerlink" href="#welcome-to-veroku-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="disclaimer">
+<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
+<p>This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
+but will be made public soon.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>For installing through pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install veroku
+</pre></div>
+</div>
+<p>To clone this git repo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ejlouw</span><span class="o">/</span><span class="n">veroku</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">veroku</span><span class="o">/</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div style="text-align: justify">
+Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs). PGMs
+provide a framework for performing efficient probabilistic inference with very high dimensional distributions. A typical
+example of a well-known type of PGM is the Kalman filter that can be used to obtain probabilistic estimates of a hidden
+state of a process or system, given noisy measurements. PGMs can in principle be used for any problem that involves
+uncertainty and is therefore applicable to many problems.</div><p>Veroku currently supports the following distributions:</p>
+<ul class="simple">
+<li><p>Categorical</p></li>
+<li><p>Gaussian</p></li>
+<li><p>Gaussian mixture</p></li>
+<li><p>Linear Gaussian<span class="raw-html-m2r"><sup>1</sup></span></p></li>
+<li><p>Non-linear Gaussian<span class="raw-html-m2r"><sup>2</sup></span></p></li>
+</ul>
+<p><span class="raw-html-m2r"><sup>1</sup></span> Using the Gaussian class - see the Kalman filter example notebook.<span class="raw-html-m2r"><br/></span>
+<span class="raw-html-m2r"><sup>2</sup></span>This implementation is still experimental.</p>
+<div style="text-align: justify">
+These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
+with the `cluster_graph` module to automatically create valid cluster graphs. Inference can be performed in these graphs
+using message passing algorithms. Currently only the LBU (Loopy Belief Update) message-passing algorithm is supported.
+</div><p><span class="raw-html-m2r"><br/></span>
+Example notebooks:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/slip_on_grass.ipynb">Toy example</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/Kalman_filter.ipynb">Kalman filter</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/sudoku.ipynb">Sudoku</a></p></li>
+</ul>
+</div>
+<div class="section" id="future-features">
+<h2>Future Features<a class="headerlink" href="#future-features" title="Permalink to this headline">¶</a></h2>
+<p>To be added soon:</p>
+<ul class="simple">
+<li><p>More example notebooks</p></li>
+<li><p>Plate models (for efficiently specifying PGMs as modular/hierarchical templates)</p></li>
+</ul>
+<p>On the roadmap:</p>
+<ul class="simple">
+<li><p>Dirichlet distribution</p></li>
+<li><p>Wishart distribution</p></li>
+<li><p>Normal-Wishart distribution</p></li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>Veroku is released under 3-Clause BSD license. You can view the license at <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
+</div>
+<div class="section" id="id1">
+<h2>Disclaimer<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
+but will be made public soon.</p>
+</div>
+<div class="section" id="id2">
+<h2>Installation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>For installing through pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install veroku
+</pre></div>
+</div>
+<p>To clone this git repo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ejlouw</span><span class="o">/</span><span class="n">veroku</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">veroku</span><span class="o">/</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>Overview<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div style="text-align: justify">
+Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs). PGMs
+provide a framework for performing efficient probabilistic inference with very high dimensional distributions. A typical
+example of a well-known type of PGM is the Kalman filter that can be used to obtain probabilistic estimates of a hidden
+state of a process or system, given noisy measurements. PGMs can in principle be used for any problem that involves
+uncertainty and is therefore applicable to many problems.</div><p>Veroku currently supports the following distributions:</p>
+<ul class="simple">
+<li><p>Categorical</p></li>
+<li><p>Gaussian</p></li>
+<li><p>Gaussian mixture</p></li>
+<li><p>Linear Gaussian<span class="raw-html-m2r"><sup>1</sup></span></p></li>
+<li><p>Non-linear Gaussian<span class="raw-html-m2r"><sup>2</sup></span></p></li>
+</ul>
+<p><span class="raw-html-m2r"><sup>1</sup></span> Using the Gaussian class - see the Kalman filter example notebook.<span class="raw-html-m2r"><br/></span>
+<span class="raw-html-m2r"><sup>2</sup></span>This implementation is still experimental.</p>
+<div style="text-align: justify">
+These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
+with the `cluster_graph` module to automatically create valid cluster graphs. Inference can be performed in these graphs
+using message passing algorithms. Currently only the LBU (Loopy Belief Update) message-passing algorithm is supported.
+</div><p><span class="raw-html-m2r"><br/></span>
+Example notebooks:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/slip_on_grass.ipynb">Toy example</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/Kalman_filter.ipynb">Kalman filter</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/sudoku.ipynb">Sudoku</a></p></li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2>Future Features<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>To be added soon:</p>
+<ul class="simple">
+<li><p>More example notebooks</p></li>
+<li><p>Plate models (for efficiently specifying PGMs as modular/hierarchical templates)</p></li>
+</ul>
+<p>On the roadmap:</p>
+<ul class="simple">
+<li><p>Dirichlet distribution</p></li>
+<li><p>Wishart distribution</p></li>
+<li><p>Normal-Wishart distribution</p></li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2>License<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<p>Veroku is released under 3-Clause BSD license. You can view the license at <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
+</div>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">veroku</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="veroku.html">veroku package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="veroku.html">veroku package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="veroku.factors.html">veroku.factors package</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#subpackages">Subpackages</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#module-veroku.factors">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="veroku.cluster_graph.html">veroku.cluster_graph module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#module-veroku">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

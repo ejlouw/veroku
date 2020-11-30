@@ -38,7 +38,7 @@
 <p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">SparseCategorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_log_prob</span><span class="o">=</span><span class="default_value">- inf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">SparseCategorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_log_prob</span><span class="o">=</span><span class="default_value">- inf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating sparse tables with log probabilities.</p>
 <p>Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</p>
@@ -232,10 +232,13 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.normalize">
 <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a normalized copy of the factor.</p>
+<dd><p>Normalize the factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The normalized factor.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical">SparseCategorical</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -316,7 +319,7 @@ new_variable_order = [b, a]</p>
 
 <dl class="py class">
 <dt id="veroku.factors.sparse_categorical.SparseCategoricalTemplate">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.sparse_categorical.</code><code class="sig-name descname">SparseCategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">SparseCategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
 <p>Create a Categorical factor template.</p>
 <dl class="field-list simple">
@@ -375,7 +378,20 @@ new_variable_order = [b, a]</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="veroku.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="veroku.factors.html">veroku.factors package</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#subpackages">Subpackages</a></li>
+<li class="toctree-l5 current"><a class="reference internal" href="veroku.factors.html#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#module-veroku.factors">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#module-veroku">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

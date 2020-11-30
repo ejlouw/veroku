@@ -38,7 +38,7 @@
 <p>A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.</p>
 <dl class="py class">
 <dt id="veroku.factors.gaussian.Gaussian">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating and performing operations om multivariate Gaussian distributions.</p>
 <p>General constructor that can use either covariance form or canonical form parameters to construct a
@@ -337,10 +337,13 @@ exp(g).</p>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.normalize">
 <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>An abstract function for performing factor normalization that should be implemented in the base class.</p>
+<dd><p>Normalize the factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The normalized factor.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian">Gaussian</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -440,7 +443,7 @@ exp(g).</p>
 
 <dl class="py class">
 <dt id="veroku.factors.gaussian.GaussianMixture">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">GaussianMixture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">cancel_method</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">GaussianMixture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">cancel_method</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</p>
 <p>A GaussianMixture constructor.</p>
@@ -633,7 +636,7 @@ approximation of the Gaussian Mixture.</p>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.GaussianMixture.normalize">
 <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianMixture.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianMixture.normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>normalize the Gaussian mixture.</p>
+<dd><p>Normalize the factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The normalized factor.</p>
@@ -723,7 +726,7 @@ approximation of the Gaussian Mixture.</p>
 
 <dl class="py class">
 <dt id="veroku.factors.gaussian.GaussianTemplate">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">GaussianTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian_parameters</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianTemplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">GaussianTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian_parameters</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#GaussianTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.GaussianTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
 <p>Create a Categorical factor template.</p>
 <dl class="field-list simple">
@@ -758,12 +761,12 @@ approximation of the Gaussian Mixture.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.assert_consistent_forms">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">assert_consistent_forms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#assert_consistent_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.assert_consistent_forms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">assert_consistent_forms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#assert_consistent_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.assert_consistent_forms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a linear Gaussian factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -785,7 +788,7 @@ approximation of the Gaussian Mixture.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian_cpd_template">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a linear Gaussian factor template.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -807,7 +810,7 @@ approximation of the Gaussian Mixture.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_random_gaussian">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">[- 10, 10]</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">[1, 10]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">[- 10, 10]</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">[1, 10]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
 distributions.</p>
 <dl class="field-list simple">
@@ -826,7 +829,7 @@ distributions.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_std_gaussian">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">make_std_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_std_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_std_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_std_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_std_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_std_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a d dimensional standard Gaussian.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -843,7 +846,7 @@ distributions.</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.split_gaussian">
-<code class="sig-prename descclassname">veroku.factors.gaussian.</code><code class="sig-name descname">split_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#split_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.split_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">split_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gaussian</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#split_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.split_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split a Gaussian into a three component Gaussian Mixture, with different means.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -880,7 +883,20 @@ distributions.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="veroku.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="veroku.factors.html">veroku.factors package</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#subpackages">Subpackages</a></li>
+<li class="toctree-l5 current"><a class="reference internal" href="veroku.factors.html#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#module-veroku.factors">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#module-veroku">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

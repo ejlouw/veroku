@@ -64,7 +64,8 @@
                  <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conditional_update_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conditioning_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">observed_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The constructor.</span>
+<span class="sd">        The initializer.</span>
+
 <span class="sd">        :param conditioning_vars: (list) The conditioning vars.</span>
 <span class="sd">        :param conditional_vars: (list) The conditioning vars.</span>
 <span class="sd">        :param transform: The transformation that links the conditioning to the conditional distribution</span>
@@ -275,11 +276,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">conditional_observed_vars</span><span class="p">,</span>
                                                                        <span class="n">conditional_observed_values</span><span class="p">)</span>
 
+<div class="viewcode-block" id="NonLinearGaussian.normalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalize the factor.</span>
+
+<span class="sd">        :return: The normalized factor.</span>
+<span class="sd">        :rtype: Gaussian</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: make this more efficient</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_distribution</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="NonLinearGaussian.multiply"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this factor with another factor.</span>
+
 <span class="sd">        :param factor: the factor to multiply with</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
@@ -317,8 +330,10 @@
 <div class="viewcode-block" id="NonLinearGaussian.divide"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this factor by another factor.</span>
+
 <span class="sd">        :param factor: the factor divide by</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
@@ -346,7 +361,8 @@
 <span class="sd">        Observe a subset of the variables in the scope of this factor and return the resulting factor.</span>
 <span class="sd">        :param vrs: the names of the observed variable (list)</span>
 <span class="sd">        :param values: the values of the observed variables (list or vector-like object)</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -358,7 +374,8 @@
 <span class="sd">        Integrate out variables from this factor.</span>
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs</span>
-<span class="sd">        :return: the resulting Gaussian mixture marginal</span>
+<span class="sd">        :return: the resulting marginal</span>
+<span class="sd">        :rtype: Gaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">vrs_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span>
@@ -382,12 +399,21 @@
         <span class="k">return</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">vrs_to_keep</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.sample"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw samples from the Gaussian joint distribution defined by the non-linear Gaussian and the factors that have</span>
+<span class="sd">        (potentially) been multiplied with it.</span>
+
+<span class="sd">        :param num_samples: The number of samples to draw.</span>
+<span class="sd">        :type num_samples:</span>
+<span class="sd">        :return: The samples.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">num_samples</span><span class="o">=</span><span class="n">num_samples</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.show"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Print the parameters of the nonlinear Gaussian distribution</span>
+<span class="sd">        Print the parameters of the nonlinear Gaussian distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Non-linear Gaussian&#39;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conditioning variables:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">)</span>
@@ -424,8 +450,10 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The constructor.</span>
-<span class="sd">        :param factors: (NonLinearGaussian factor list) The list of factors.</span>
+<span class="sd">        The initializer.</span>
+
+<span class="sd">        :param factors: The list of factors.</span>
+<span class="sd">        :type factors: NonLinearGaussian factor list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">factors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -439,10 +467,15 @@
                                  <span class="sa">f</span><span class="s1">&#39; another has var_names = </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
 
+<div class="viewcode-block" id="NonLinearGaussianMixture.normalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="NonLinearGaussianMixture.copy"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Make a copy of this NonLinearGaussianMixture</span>
-<span class="sd">        :return: the copied NonLinearGaussianMixture</span>
+<span class="sd">        Make a copy of this factor.</span>
+
+<span class="sd">        :return: the factor</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">NonLinearGaussianMixture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">)</span></div>
 
@@ -456,8 +489,10 @@
 <div class="viewcode-block" id="NonLinearGaussianMixture.multiply"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multiply this factor with another factor.</span>
+
 <span class="sd">        :param factor: the factor to multiply with</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
             <span class="n">gm_factor</span> <span class="o">=</span> <span class="n">factor</span>
@@ -474,8 +509,10 @@
 <div class="viewcode-block" id="NonLinearGaussianMixture.divide"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this factor by another factor.</span>
+
 <span class="sd">        :param factor: the factor divide by</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
             <span class="n">gaussian_factor</span> <span class="o">=</span> <span class="n">factor</span>
@@ -492,9 +529,11 @@
 <div class="viewcode-block" id="NonLinearGaussianMixture.reduce"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this factor and return the resulting factor.</span>
+
 <span class="sd">        :param vrs: the names of the observed variable (list)</span>
 <span class="sd">        :param values: the values of the observed variables (list or vector-like object)</span>
-<span class="sd">        :return: the resulting GaussianMixture</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
@@ -504,9 +543,11 @@
 <div class="viewcode-block" id="NonLinearGaussianMixture.marginalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this factor.</span>
+
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs</span>
-<span class="sd">        :return: the resulting Gaussian mixture marginal</span>
+<span class="sd">        :return: the resulting marginal</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
@@ -514,6 +555,16 @@
         <span class="k">return</span> <span class="n">NonLinearGaussianMixture</span><span class="p">(</span><span class="n">new_nlgs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.sample"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw samples from the Gaussian mixture joint distribution defined by the non-linear Gaussians and the factors</span>
+<span class="sd">        that have (potentially) been multiplied with them.</span>
+
+<span class="sd">        :param num_samples: The number of samples to draw.</span>
+<span class="sd">        :type num_samples:</span>
+<span class="sd">        :return: The samples.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1">#TODO: fix incorrect num samples issue</span>
         <span class="n">sample_sets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
@@ -532,7 +583,7 @@
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.show"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Print the parameters of the nonlinear Gaussian distribution</span>
+<span class="sd">        Print the parameters of the nonlinear Gaussian distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;######### NLG </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> #############################&#39;</span><span class="p">)</span>
@@ -542,7 +593,18 @@
 
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">,</span> <span class="n">transition_function</span><span class="p">,</span> <span class="n">noise_cov</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            transition_function()</span>
+<span class="sd">            The initializer.</span>
+
+<span class="sd">            :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
+<span class="sd">            :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
+<span class="sd">            :param conditioning_var_templates:</span>
+<span class="sd">            :param conditional_var_templates:</span>
+<span class="sd">            :param callable transition_function: The function that specifies the non-linear transform. This function takes</span>
+<span class="sd">                2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the</span>
+<span class="sd">                variable elements of the value vector (i.e ltransition_function = lamda x, var_names: np.square(x)).</span>
+<span class="sd">                The variable names do not need to be used, but can be useful in certain cases where functions need to be</span>
+<span class="sd">                applied to specific variables.</span>
+<span class="sd">            :param noise_cov: The noise covariance matrix of the additive noise random variable.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="o">=</span><span class="n">conditioning_var_templates</span><span class="p">,</span>
                              <span class="n">conditional_var_templates</span><span class="o">=</span><span class="n">conditional_var_templates</span><span class="p">)</span>
@@ -552,8 +614,11 @@
 <div class="viewcode-block" id="NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor">[docs]</a>        <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Make a factor with var_templates formatted by format_dict to create specific var names.</span>
-<span class="sd">            :param format_dict:</span>
-<span class="sd">            :return:</span>
+
+<span class="sd">            :param format_dict: The dictionary to be used to format the var_templates strings.</span>
+<span class="sd">            :type format_dict: str dict</span>
+<span class="sd">            :return: The instantiated factor.</span>
+<span class="sd">            :rtype: NonLinearGaussianMixture</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -571,13 +636,20 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">,</span> <span class="n">transition_function</span><span class="p">,</span> <span class="n">noise_cov</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The initialiser.</span>
+<span class="sd">        The initializer.</span>
 
+<span class="sd">        :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
+<span class="sd">        :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
 <span class="sd">        :param conditioning_var_templates:</span>
 <span class="sd">        :param conditional_var_templates:</span>
-<span class="sd">        :param transition_function:</span>
-<span class="sd">        :param noise_cov:</span>
+<span class="sd">        :param callable transition_function: The function that specifies the non-linear transform. This function takes</span>
+<span class="sd">            2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the</span>
+<span class="sd">            variable elements of the value vector (i.e transition_function = lamda x, var_names: np.square(x)).</span>
+<span class="sd">            The variable names do not need to be used, but can be useful in certain cases where functions need to be</span>
+<span class="sd">            applied to specific variables.</span>
+<span class="sd">        :param noise_cov: The noise covariance matrix of the additive noise random variable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="o">=</span><span class="n">conditioning_var_templates</span><span class="p">,</span>
                          <span class="n">conditional_var_templates</span><span class="o">=</span><span class="n">conditional_var_templates</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span> <span class="o">=</span> <span class="n">transition_function</span>
@@ -586,8 +658,11 @@
 <div class="viewcode-block" id="NonLinearGaussianTemplate.make_factor"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate.make_factor">[docs]</a>    <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make a factor with var_templates formatted by format_dict to create specific var names.</span>
-<span class="sd">        :param format_dict:</span>
-<span class="sd">        :return:</span>
+
+<span class="sd">        :param format_dict: The dictionary to be used to format the var_templates strings.</span>
+<span class="sd">        :type format_dict: str dict</span>
+<span class="sd">        :return: The instantiated factor.</span>
+<span class="sd">        :rtype: NonLinearGaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>

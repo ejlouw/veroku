@@ -494,6 +494,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span></div>
 
 <div class="viewcode-block" id="Gaussian.normalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalize the factor.</span>
+
+<span class="sd">        :return: The normalized factor.</span>
+<span class="sd">        :rtype: Gaussian</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gaussian_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">_update_covform</span><span class="p">()</span>
         <span class="n">gaussian_copy</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -1403,7 +1409,7 @@
 
 <div class="viewcode-block" id="GaussianMixture.normalize"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.GaussianMixture.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        normalize the Gaussian mixture.</span>
+<span class="sd">        Normalize the factor.</span>
 
 <span class="sd">        :return: The normalized factor.</span>
 <span class="sd">        :rtype: GaussianMixture</span>

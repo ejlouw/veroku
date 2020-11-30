@@ -37,47 +37,55 @@
 <span id="veroku-factors-experimental-factorised-factor-module"></span><h1>veroku.factors.experimental.factorised_factor module<a class="headerlink" href="#module-veroku.factors.experimental.factorised_factor" title="Permalink to this headline">¶</a></h1>
 <p>A module for factorised factor functionality</p>
 <dl class="py class">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor">
-<em class="property">class </em><code class="sig-prename descclassname">veroku.factors.experimental.factorised_factor.</code><code class="sig-name descname">FactorisedFactor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor">
+<em class="property">class </em><code class="sig-name descname">FactorizedFactor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A factorised factor class that allows factors to be used in factorised form - a product of other factors.
 This is useful for improving efficiency between factor multiplication and marginalisation. It also allows the
 for a efficient and intuitive representation of independent factors (especially factors with disjoint scopes).</p>
-<p>The initialiser.
-:param factors: The list of factors that will be implicitly multiplied.</p>
+<p>The initializer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factors</strong> – The list of factors that will be implicitly multiplied.</p>
+</dd>
+</dl>
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.all_intersecting_factors_indices">
-<code class="sig-name descname">all_intersecting_factors_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.all_intersecting_factors_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.all_intersecting_factors_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>return indices of factors in self_factors which has overlap with var_names.</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy this factorised factor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the copied factor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Copy this factorised factor
-:return: the copied factor</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.distance_from_vacuous">
-<code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.distance_from_vacuous">
+<code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.divide">
-<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.divide" title="Permalink to this definition">¶</a></dt>
-<dd><p>Divide out a general factor
-:param factor: any type of factor.
-:return: the resulting Factorised Factor</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.divide">
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.divide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide out a general factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – any type of factor.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the resulting Factorised Factor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.equals">
-<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.equals" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.equals">
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.equals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if this factor is the same as another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor" title="veroku.factors.experimental.factorised_factor.FactorisedFactor"><em>FactorisedFactor</em></a>) – The other factor to compare to.</p>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor"><em>FactorizedFactor</em></a>) – The other factor to compare to.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The result of the comparison.</p>
@@ -89,97 +97,146 @@ for a efficient and intuitive representation of independent factors (especially 
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.first_factor_with_vars_index">
-<code class="sig-name descname">first_factor_with_vars_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.first_factor_with_vars_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.first_factor_with_vars_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns index of the first factor in self_factors with var_names in its scope.</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.get_cov">
+<code class="sig-name descname">get_cov</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.get_cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.get_cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the covariance matrix of the joint distribution (if Gaussian).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The cov parameter.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.get_cov">
-<code class="sig-name descname">get_cov</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.get_cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.get_cov" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.get_mean">
-<code class="sig-name descname">get_mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.get_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.get_mean" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.is_vacuous">
-<em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the factor is vacuous (i.e uniform).
-:return: The result of the check.
-:rtype: Bool</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.get_mean">
+<code class="sig-name descname">get_mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.get_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.get_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mean vector of the joint distribution (if Gaussian).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The mean parameter.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.joint_distribution">
-<em class="property">property </em><code class="sig-name descname">joint_distribution</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.joint_distribution" title="Permalink to this definition">¶</a></dt>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.is_vacuous">
+<em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.is_vacuous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the factor is vacuous (i.e uniform).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The result of the check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.joint_distribution">
+<em class="property">property </em><code class="sig-name descname">joint_distribution</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.joint_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>compute the joint distribution.
 :return:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.kl_divergence">
-<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.marginalise_OLD">
-<code class="sig-name descname">marginalise_OLD</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.marginalise_OLD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.marginalise_OLD" title="Permalink to this definition">¶</a></dt>
-<dd><p>Marginalise out a subset of the variables in this factor’s scope.
-:param vrs: (list) the variable names
-:param keep: (bool) whether to keep or sum (or integrate) out these variables.
-:return: (FactorisedFactor) the resulting marginal</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.kl_divergence">
+<code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.kl_divergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
+Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<a class="reference internal" href="veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p></li>
+<li><p><strong>normalize_factor</strong> (<em>bool</em>) – Whether or not to normalize the other factor before computing the KL-divergence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Kullback-Leibler divergence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.marginalize">
-<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.marginalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Marginalise out a subset of the variables in this factor’s scope.
-:param vrs: (list) the variable names
-:param keep: (bool) whether to keep or sum (or integrate) out these variables.
-:return: (FactorisedFactor) the resulting marginal</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize">
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marginalise out a subset of the variables in this factor’s scope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> – (list) the variable names</p></li>
+<li><p><strong>keep</strong> – (bool) whether to keep or sum (or integrate) out these variables.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(FactorisedFactor) the resulting marginal</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.merge_factors_with_shared_scope">
-<code class="sig-name descname">merge_factors_with_shared_scope</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs_set</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.merge_factors_with_shared_scope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.merge_factors_with_shared_scope" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge all factors in groups that all contain variables in vrs and have overlap within these subsets.
-This function will typically be used to ensure that all factors containing variables that need to be marginalised
-out are merged together into disjoint (in terms of the integrand variables) factors, so that these larger factors
-can be marginalised independently.
-:param vrs_set: (string list) The common scope variables to be considered to determine ‘dependent’ factors.</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.multiply">
+<code class="sig-name descname">multiply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.multiply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply by another factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – any type of factor.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the resulting Factorised Factor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.multiply">
-<code class="sig-name descname">multiply</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.multiply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.multiply" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multiply in a general factor
-:param factor: any type of factor.
-:return: the resulting Factorised Factor</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.normalize">
+<code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The normalized factor.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.num_factors">
-<em class="property">property </em><code class="sig-name descname">num_factors</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.num_factors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the number of factors in the factorised factor.
-:return: (int) The number of factors.</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.num_factors">
+<em class="property">property </em><code class="sig-name descname">num_factors</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.num_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of factors in the factorised factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(int) The number of factors.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.reduce">
-<code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.reduce" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observe certain values of the variables in vrs.
-:param vrs: (list) The observed variables.
-:param values: (list) Their values.
-:return: (FactorisedFactor) the reduced factor</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.reduce">
+<code class="sig-name descname">reduce</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vrs</strong> (<em>str list</em>) – the names of the observed variable (list)</p></li>
+<li><p><strong>values</strong> (<em>vector-like</em>) – the values of the observed variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the resulting Gaussian</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor">FactorizedFactor</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.experimental.factorised_factor.FactorisedFactor.show">
-<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorisedFactor.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorisedFactor.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Display this factorised factor</p>
+<dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.show">
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display this factorised factor.</p>
 </dd></dl>
 
 </dd></dl>
@@ -206,7 +263,20 @@ can be marginalised independently.
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="veroku.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="veroku.factors.html">veroku.factors package</a><ul class="current">
+<li class="toctree-l5 current"><a class="reference internal" href="veroku.factors.html#subpackages">Subpackages</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="veroku.factors.html#module-veroku.factors">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="veroku.html#module-veroku">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
