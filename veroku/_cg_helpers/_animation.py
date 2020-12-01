@@ -8,9 +8,10 @@ def make_sepset_node_name(node_a_name, node_b_name):
 
 def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     """
-    Change the color of an edge in a cluster graph graphviz object. Note that the cluster graph has cluster and sepset nodes.
-    The 'edge' of which the color is changed in this function is actually two edges in the graphviz object
-    (the edge between node_a and the sepset node and the edge between the sepset node and node_b).
+    Change the color of an edge in a cluster graph graphviz object. Note that the cluster graph has cluster and sepset
+    nodes. The 'edge' of which the color is changed in this function is actually two edges in the graphviz object (the
+    edge between node_a and the sepset node and the edge between the sepset node and node_b).
+
     :param graph: The graphviz graph
     :param node_a_name:
     :param node_b_name:
@@ -26,8 +27,14 @@ def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
 
 def check_non_overlapping_substring_presence(substring_a, substring_b, string):
     """
-    Check that both sub-strings can be found in seperate locations in strings
-    Examples:
+    Check that both sub-strings can be found in separate locations in strings
+
+    :param substring_a: The one substring to check for.
+    :param substring_b: The other substring to check for.
+    :param string: The string to check in.
+    :return: Result of check for independent string presence.
+
+     Examples:
         substring_a = abc
         substring_b = 123
         string = abc123 -- def
@@ -37,11 +44,6 @@ def check_non_overlapping_substring_presence(substring_a, substring_b, string):
         substring_b = 123
         string = abc -- 123
         returns True
-
-    :param substring_a: The one substring to check for.
-    :param substring_b: The other substring to check for.
-    :param string: The string to check in.
-    :return: Result of check for independent string presence.
     """
 
     if substring_a in substring_b:
@@ -62,6 +64,7 @@ def check_non_overlapping_substring_presence(substring_a, substring_b, string):
 def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     """
     Change the edge color of the edge between two nodes in a graphviz object.
+
     :param graph: The graphviz graph
     :param node_a_name: The one node
     :param node_b_name: The other node
@@ -75,7 +78,7 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
             if check_non_overlapping_substring_presence(node_a_name, node_b_name, s):
                 pattern = f'(\\t?"?{node_a_name}"?\s--\s"?{node_b_name}"?\s\[.*color=)([\S]*\s)(.*)'
                 new_s = re.sub(pattern, f'\g<1>{new_color} \g<3>', s)
-                # TODO: improve this (bit hacky)
+                # TODO: improve this (it's a bit hacky)
                 if new_s == s:
                     pattern = f'(\\t?"?{node_b_name}"?\s--\s"?{node_a_name}"?\s\[.*color=)([\S]*\s)(.*)'
                     new_s = re.sub(pattern, f'\g<1>{new_color} \g<3>', s)
@@ -90,6 +93,7 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
 def change_graph_node_color(graph, node_name, new_color):
     """
     Change the fill color of a node in a cluster graph graphviz object.
+
     :param graph:  The graphviz graph
     :param node_name: The name of the node which colour should be changed.
     :param new_color: The new fill color of the node (i.e 'green', 'blue', 'red')

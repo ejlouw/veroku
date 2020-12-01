@@ -1,5 +1,8 @@
 
-class FactorTemplate:
+from abc import ABC
+
+
+class FactorTemplate(ABC):
     """
     A base class for factor templates.
     """

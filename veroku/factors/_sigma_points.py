@@ -17,12 +17,7 @@ def get_sigma_points_array(gaussian_factor):
     assert isinstance(gaussian_factor, Gaussian), 'Error: gaussian_factor is not a Gaussian factor.'
     cov = gaussian_factor.get_cov()
     mean = gaussian_factor.get_mean()
-    try:
-        L = np.linalg.cholesky(cov)
-    except np.linalg.LinAlgError as e:
-        gaussian_factor.show_vis(figsize=(20, 16))
-        print(str(e))
-        raise e
+    L = np.linalg.cholesky(cov)
     dim = cov.shape[0]
     k = (dim + 0.5) ** 0.5
     sigma_point_array_n = mean - k * L

@@ -327,3 +327,30 @@ def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+
+
+def inv_matrix(m):
+    """
+    Invert matrix using the numpy.linalg.inv function and describe matrix if inversion fails.
+    :param nupmy.ndarry m: The matrix to invert.
+    :return: The inverted matrix
+    :rtype: np.ndarray
+    """
+    try:
+        m_inv = np.linalg.inv(m)
+    except np.linalg.LinAlgError as e:
+        raise type(e)(e.args[0] + f':\n{m}')
+    return m_inv
+
+
+def log(x):
+    """"
+    Get the log of a value using the numpy.log function and output the input value if invalid.
+    :param numerical x: The value to compute the log of.
+    :return: The log value.
+    :rtype: numerical
+    """
+    if x < 0.0:
+        raise Warning(f"Invalid value ({x}) in log")
+    logx = np.log(x)
+    return logx

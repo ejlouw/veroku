@@ -109,6 +109,7 @@ class Factor:
         :param values: The values of vars.
         :return: The resulting reduced factor.
         """
+    
     def observe(self, vrs, values):
         return self.reduce(vrs, values)
 

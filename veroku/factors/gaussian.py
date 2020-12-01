@@ -21,25 +21,6 @@ from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 
 
-def assert_consistent_forms(gaussian):
-    if gaussian.COVFORM:
-        if gaussian.CANFORM:
-            g_copy_covform = gaussian.copy()
-            g_copy_covform.CANFORM = False
-            g_copy_canform = gaussian.copy()
-            g_copy_canform.COVFORM = False
-            if not g_copy_covform.equals(g_copy_canform):
-                g_copy_covform.CANFORM = True
-                g_copy_canform.COVFORM = True
-                print('\n\n\nFROM INCONSISTENCY:')
-
-                print('\nCOVFORM FACTOR:')
-                g_copy_covform._update_canform()
-                g_copy_covform.show(update_covform=False, show_canform=True)
-                print('\nCANFORM FACTOR:')
-                g_copy_canform.show(update_covform=False, show_canform=True)
-
-
 def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     """
     Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
@@ -56,6 +37,7 @@ def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     """
     assert var_names, 'Error: var_names list cannot be empty.'
     dim = len(var_names)
+    # TODO: Add non diagonal covariance matrix sampling and add test for PSD covariance matrices.
     cov = np.random.uniform(cov_range[0], cov_range[1], [dim, dim]) * np.eye(dim, dim)
     mean = np.random.uniform(mean_range[0], mean_range[1], [dim, 1])
     random_gaussian = Gaussian(cov=cov, mean=mean, log_weight=0.0, var_names=var_names)
@@ -126,12 +108,6 @@ def make_linear_gaussian(A, N, conditioning_vars, conditional_vars):
     X_dim = len(conditioning_vars)
     Sxx = np.eye(X_dim)
     Kxx = np.linalg.inv(Sxx)
-
-    # LinGauss Investigation
-    # A_1 = np.linalg.inv(A)
-    # I = np.eye(2)
-    # result = np.linalg.inv(Kxx@(I - np.linalg.inv(I + A_1@N@A.T@Kxx)))
-    # print('result = ', result)
 
     ux = np.zeros([X_dim, 1])
     hx = Kxx @ ux
@@ -351,8 +327,12 @@ class Gaussian(Factor):
         :return: Result of equals comparison between self and gaussian
         rtype: bool
         """
-        # if not isinstance(factor, Gaussian):
-        #    return False
+
+        # TODO: extend this to cover other factors that could be equal (i.e Gaussian mixtures with one component or
+        #  Gaussian factorised factors)
+        if not isinstance(factor, Gaussian):
+            raise ValueError(f'unexpected factor type {type(factor)} in Gaussian equals function.')
+
         if set(self._var_names) != set(factor.var_names):
             return False
 
@@ -568,15 +548,7 @@ class Gaussian(Factor):
             Kxy = self.K[np.ix_(xx_indcs, yy_indcs)]
             Kyx = Kxy.transpose()
             Kyy = self.K[yy_indcs][:, yy_indcs]
-            try:
-                inv_Kyy = np.linalg.inv(Kyy)
-            except np.linalg.LinAlgError as e:
-                print('vars_to_integrate_out = ', vars_to_integrate_out)
-                self.show_vis(figsize=(20, 16))
-                # return Gaussian.make_vacuous(var_names=vars_to_keep)
-                raise e
-            #    # TODO: check this (not sure if it is correct)
-            #    return self.make_vacuous(vars_to_keep, g=self.g)
+            inv_Kyy = np.linalg.inv(Kyy)
             hx = self.h[xx_indcs]
             hy = self.h[yy_indcs]
             Kxy_inv_Kyy = Kxy.dot(np.linalg.inv(Kyy))
@@ -585,12 +557,9 @@ class Gaussian(Factor):
             g = self.g + 0.5 * ((hy.T.dot(np.linalg.inv(Kyy)).dot(hy)) + np.log(np.linalg.det(2.0 * np.pi * inv_Kyy)))
             return Gaussian(K=K, h=h, g=g, var_names=vars_to_keep)
 
-        self._update_covform()
+        assert self.COVFORM
         indices_to_keep = [self._var_names.index(variable) for variable in vars_to_keep]
         marginal_var_names = vars_to_keep.copy()
-
-        if self._is_vacuous:
-            raise ValueError('cannot marginalize vacuous Gaussian.')
 
         marginal_cov = self.cov[np.ix_(indices_to_keep, indices_to_keep)]
         marginal_mean = self.mean[np.ix_(indices_to_keep, [0])]
@@ -613,22 +582,15 @@ class Gaussian(Factor):
         if self.CANFORM:
             return
         assert self.COVFORM
-        try:
-            self.K = np.linalg.inv(self.cov)
-        except np.linalg.LinAlgError as e:
-            print('self.cov = ', self.cov)
-            raise e
+        self.K = _factor_utils.inv_matrix(self.cov)
         self.h = self.K.dot(self.mean)
         uTKu = ((self.mean.transpose()).dot(self.K)).dot(self.mean)
 
         try:
             det2picov = np.linalg.det(2.0 * np.pi * self.cov)
-            if det2picov < 0.0:
-                raise ValueError(f'invalid value in log: det2picov={det2picov} ')
-            g_ = self.log_weight - 0.5 * uTKu - 0.5 * np.log(det2picov)
+            g_ = self.log_weight - 0.5 * uTKu - 0.5 * _factor_utils.log(det2picov)
         except Exception as e:
-            print(self.cov)
-            raise e
+            raise type(e)(e.message + f': negative determinant for covariance = \n{self.cov}')
         self.g = _factor_utils.make_scalar(g_)
         self.CANFORM = True
         # pylint: enable=invalid-name
@@ -643,20 +605,11 @@ class Gaussian(Factor):
         if self.COVFORM:
             return
         assert self.CANFORM
-        try:
-            self.cov = np.linalg.inv(self.K)
-        except np.linalg.LinAlgError as e:
-            np.set_printoptions(edgeitems=20, precision=2, linewidth=500)
-            print('cannot update cov form: self.K \n= ', self.var_names, '\n', self.K)
-            # self.show_vis()
-            print(e)
-            raise e
+        self.cov = _factor_utils.inv_matrix(self.K)
         assert not np.isnan(np.sum(self.cov)), 'Error: nan values in cov matrix after inversion.'
         self.mean = self.cov.dot(self.h)
         uTKu = ((self.mean.transpose()).dot(self.K)).dot(self.mean)
         det_2_pi_cov = np.linalg.det(2.0 * np.pi * self.cov)
-        # if det_2_pi_cov < 0:
-        #    print('Error: 0 > det_2_pi_cov = ', det_2_pi_cov)
         log_weight_ = self.g + 0.5 * uTKu + 0.5 * np.log(det_2_pi_cov)
         self.log_weight = _factor_utils.make_scalar(log_weight_)
         self.COVFORM = True
@@ -934,7 +887,7 @@ class Gaussian(Factor):
         x_vec = _factor_utils.make_column_vector(x_val)
         if self.COVFORM:
             log_norm = self.log_weight - 0.5 * np.log(np.linalg.det(2.0 * np.pi * self.cov))
-            K = np.linalg.inv(self.cov)
+            K = _factor_utils.inv_matrix(self.cov)
             exponent = ((-0.5 * (self.mean - x_vec).transpose()).dot(K)).dot(self.mean - x_vec)
             log_potx = log_norm + exponent
 
@@ -1091,8 +1044,8 @@ class GaussianTemplate(FactorTemplate):
         """
         Create a Categorical factor template.
 
-        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.
-        :type log_probs_table: tuple:float dict
+        :param gaussian_parameters: The cononical Gaussian parameters (see example below)
+        :type gaussian_parameters: str to np.array/float dict
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
@@ -1100,7 +1053,7 @@ class GaussianTemplate(FactorTemplate):
         >>>                       'h': np.array([0][1]]),
         >>>                       'g': 0}
         """
-        # TODO: Complete and improve docstring.
+
         super().__init__(var_templates=var_templates)
         self.K = gaussian_parameters['K']
         self.h = gaussian_parameters['h']
@@ -1113,7 +1066,7 @@ class GaussianTemplate(FactorTemplate):
         :param format_dict: The dictionary to be used to format the var_templates strings.
         :type format_dict: str dict
         :return: The instantiated factor.
-        :rtype: Categorical
+        :rtype: Gaussian
         """
         if format_dict is not None:
             assert var_names is None

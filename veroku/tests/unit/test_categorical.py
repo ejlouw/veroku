@@ -11,7 +11,7 @@ import numpy as np
 
 # Local imports
 from veroku.factors.categorical import Categorical
-from veroku.factors.sparse_categorical import SparseCategorical
+from veroku.factors.sparse_categorical import SparseCategorical, _make_dense
 
 
 #  TODO: add tests for strange KLD (i.e with divide by zeros)
@@ -500,6 +500,37 @@ class TestCategorical(unittest.TestCase):
                              0 * (np.log(1))]                # (0, 8) (both 0.0)   =0.0
         expected_kld = sum(expected_kld_list)
         self.assertEqual(expected_kld, actual_kld)
+
+    # SparseCategorical only
+    def test__make_dense(self):
+        if self.CatClass == SparseCategorical:
+            default_log_prob = 0.0
+            vars_abc = ['a', 'b', 'c']
+            sparse_probs_abc = {(0, 1, 0): 2.0,
+                                (0, 1, 2): 4.0}
+            sparse_factor = SparseCategorical(var_names=vars_abc,
+                                              log_probs_table=sparse_probs_abc,
+                                              cardinalities=[2, 2, 3],
+                                              default_log_prob=default_log_prob)
+            dense_probs_abc = {(0, 0, 0): 0.0,
+                               (0, 0, 1): 0.0,
+                               (0, 0, 2): 0.0,
+                               (0, 1, 0): 2.0,
+                               (0, 1, 1): 0.0,
+                               (0, 1, 2): 4.0,
+                               (1, 0, 0): 0.0,
+                               (1, 0, 1): 0.0,
+                               (1, 0, 2): 0.0,
+                               (1, 1, 0): 0.0,
+                               (1, 1, 1): 0.0,
+                               (1, 1, 2): 0.0}
+
+            dense_factor = SparseCategorical(var_names=vars_abc,
+                                             log_probs_table=dense_probs_abc,
+                                             cardinalities=[2, 2, 3],
+                                             default_log_prob=default_log_prob)
+
+            self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
 
     # SparseCategorical only
     def test_apply_binary_operator(self):

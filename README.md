@@ -65,4 +65,4 @@ On the roadmap:
 * Normal-Wishart distribution
 
 ### License
-Veroku is released under 3-Clause BSD license. You can view the license at [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).
+Veroku is released under 3-Clause BSD license. You can view the license [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).

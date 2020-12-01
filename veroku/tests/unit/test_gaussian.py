@@ -12,7 +12,8 @@ import numpy as np
 from scipy import integrate
 
 # Local imports
-from veroku.factors.gaussian import Gaussian
+from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gaussian
+from veroku.factors.categorical import Categorical
 from veroku.factors import _factor_utils
 
 
@@ -21,6 +22,37 @@ class TestGaussian(unittest.TestCase):
     """
     Tests for Gaussian class.
     """
+    def test_random_gaussians_differ(self):
+        """
+        Test that random Gaussians generated sequentially are different.
+        """
+        var_names = ['a', 'b']
+        random_gaussian_0 = make_random_gaussian(var_names)
+        random_gaussian_1 = make_random_gaussian(var_names)
+        self.assertEqual(random_gaussian_0.var_names, var_names)
+        self.assertFalse(random_gaussian_0.equals(random_gaussian_1))
+
+    def test_random_gaussians_same(self):
+        """
+        Test that random Gaussians generated sequentially with the same random seed are the same.
+        :return:
+        """
+        var_names = ['a', 'b']
+        np.random.seed(0)
+        random_gaussian_0 = make_random_gaussian(var_names)
+        np.random.seed(0)
+        random_gaussian_1 = make_random_gaussian(var_names)
+        self.assertTrue(random_gaussian_0.equals(random_gaussian_1))
+
+    def test_make_std_gaussian(self):
+        """
+        Test that the make_std_gaussian function returns a standard Gaussian.
+        """
+        var_names = ['a', 'b']
+        std_gaussian = make_std_gaussian(var_names=var_names)
+        self.assertTrue(np.array_equal(std_gaussian.get_cov(), np.eye(len(var_names))))
+        self.assertTrue(np.array_equal(std_gaussian.get_mean(), np.zeros([len(var_names), 1])))
+        self.assertEqual(std_gaussian.get_weight(), 1.0)
 
     def test_constructor_insufficient_parameters(self):
         """
@@ -381,6 +413,15 @@ class TestGaussian(unittest.TestCase):
         gaussian_2 = Gaussian(cov=0, mean=1, log_weight=1.0, var_names=['b'])
         self.assertFalse(gaussian_1.equals(gaussian_2))
 
+    def test_equals_different_factor(self):
+        """
+        Test that the equals function raises a value error when compared to a different type of factor.
+        """
+        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=['a'])
+        categorical_factor = Categorical(var_names=['a', 'b'], probs_table={(0, 0): 0.1}, cardinalities=[2, 2])
+        with self.assertRaises(ValueError):
+            gaussian_1.equals(categorical_factor)
+
     def test_equals_different_order(self):
         """
         Test that the equals function can identify identical Gaussians with different order variables.
@@ -669,5 +710,34 @@ class TestGaussian(unittest.TestCase):
         gauss = Gaussian(var_names=var_names, K=K, h=h, g=g)
         gauss._is_vacuous = True
         self.assertTrue(gauss.is_vacuous)
+
+    def test_cov_not_exists(self):
+        """
+        Check that the _cov_exists function returns False for a Gaussian that has an undefined covariance.
+        """
+        gaussian = Gaussian(K=0.0, h=0.0, g=0.0, var_names=['a'])
+        self.assertFalse(gaussian._cov_exists())
+
+    def test_cov_exists(self):
+        """
+        Check that the _cov_exists function returns True for a Gaussian that has a well defined covariance.
+        """
+        gaussian = Gaussian(cov=1.0, mean=0.0, log_weight=0.0, var_names=['a'])
+        self.assertTrue(gaussian._cov_exists())
+
+    def test_cov_exists_precision(self):
+        """
+        Check that the _cov_exists function returns True for a Gaussian that has a covariance that is well defined
+        through the precision.
+        """
+        gaussian = Gaussian(K=1.0, h=0.0, g=0.0, var_names=['a'])
+        self.assertTrue(gaussian._cov_exists())
+
+    def _update_canform_neg_det(self):
+        gaussian = Gaussian(cov=-1.0, mean=0.0, log_weight=0.0, var_names=['a'])
+        with self.assertRaises(np.linalg.LinAlgError):
+            gaussian(_update_canform())
+
+
 
 # pylint: enable=too-many-public-methods
