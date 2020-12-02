@@ -477,17 +477,6 @@ class Gaussian(Factor):
         """
         return np.exp(self.get_log_weight())
 
-    def _fix_non_psd_matrices(self):
-
-        # TODO: how to ensure these are consistent?
-        if self.COVFORM:
-            if not _factor_utils.is_pos_def(self.cov):
-                self.cov = _factor_utils.get_closest_psd_from_symmetric_matrix(self.cov)
-
-        if self.CANFORM:
-            if not _factor_utils.is_pos_def(self.K):
-                self.K = _factor_utils.get_closest_psd_from_symmetric_matrix(self.K)
-
     def marginalize(self, vrs, keep=False):
         """
         Integrate out variables from this Gaussian.
@@ -551,10 +540,8 @@ class Gaussian(Factor):
         self.h = self.K.dot(self.mean)
         uTKu = ((self.mean.transpose()).dot(self.K)).dot(self.mean)
 
-
         det2picov = np.linalg.det(2.0 * np.pi * self.cov)
         g_ = self.log_weight - 0.5 * uTKu - 0.5 * _factor_utils.log(det2picov)
-
 
         self.g = _factor_utils.make_scalar(g_)
         self.CANFORM = True
@@ -924,7 +911,7 @@ class Gaussian(Factor):
         :type figsize: 2 element int tuple
         """
         # TODO: find a way of making cov matrix square.
-        f, [ax_cov, ax_mean] = plt.subplots(nrows=2, figsize=figsize)  # ,sharex=True)
+        f, [ax_cov, ax_mean] = plt.subplots(nrows=2, figsize=figsize)
         cov_df = pd.DataFrame(data=self.get_cov(), index=self.var_names, columns=self.var_names)
         mean_df = pd.DataFrame(data=self.get_mean(), index=self.var_names, columns=['var_names'])
         sns.heatmap(cov_df, ax=ax_cov, cbar=True, cbar_kws=dict(use_gridspec=False, location="top"), annot=True)
@@ -984,8 +971,8 @@ class Gaussian(Factor):
         if self.dim == 1:
             if xlim is None:
                 stddev = np.sqrt(self.get_cov()[0, 0])
-                lb = self.get_mean()[0, 0] - 3 * stddev
-                ub = self.get_mean()[0, 0] + 3 * stddev
+                lb = self.get_mean()[0, 0] - 3.0 * stddev
+                ub = self.get_mean()[0, 0] + 3.0 * stddev
                 xlim = [lb, ub]
             if xlim is not None:
                 x_lower = xlim[0]
@@ -1014,7 +1001,7 @@ class Gaussian(Factor):
         from veroku.factors.gaussian_mixture import GaussianMixture
         if self.dim != 1:
             raise NotImplementedError('Gaussian must be one dimensional.')
-        weights = [1/3, 1/3, 1/3]
+        weights = [1.0/3.0, 1.0/3.0, 1.0/3.0]
         full_cov = self.get_cov()
         full_mean = self.get_mean()
 
@@ -1027,8 +1014,7 @@ class Gaussian(Factor):
                                       mean=mean,
                                       log_weight=np.log(weight),
                                       var_names=self.var_names))
-        gm = GaussianMixture(gaussians)
-        return gm
+        return GaussianMixture(gaussians)
 
 
 class GaussianTemplate(FactorTemplate):
@@ -1042,8 +1028,8 @@ class GaussianTemplate(FactorTemplate):
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
-        >>>gaussian_parameters = {'K': np.array([1,0][0,1]]),
-        >>>                       'h': np.array([0][1]]),
+        >>>gaussian_parameters = {'K': np.array([[1,0],[0,1]]),
+        >>>                       'h': np.array([[0],[1]]),
         >>>                       'g': 0}
         """
 

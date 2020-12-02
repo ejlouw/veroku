@@ -34,14 +34,6 @@ def get_subset_evidence(all_evidence_dict, subset_vars):
     return evidence_vrs, evidence_values
 
 
-def get_closest_psd_from_symmetric_matrix(mat):
-    V, Q = np.linalg.eig(mat)
-    Vp = np.maximum(V, 0.0)
-    Dp = np.diag(Vp)
-    closest_psd_mat = Q.dot(Dp).dot(Q.T)
-    return closest_psd_mat
-
-
 def is_pos_def(matrix):
     """
     Check if matrix is positive definite
@@ -96,6 +88,7 @@ def make_scalar(scalar_like_object):
     if isinstance(scalar_like_object, (int, float)):
         return scalar_like_object
     raise ValueError(f'{type(scalar_like_object)} is not supported')
+
 
 def make_column_vector(vector_like_object):
     """

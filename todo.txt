@@ -1,3 +1,14 @@
+* add developer section
+	- Add tests to your contributions to avoid failing on coverage
+	- Check codestyle to aboid failing on code style.
+	- What to work on: implementation priorities (suggestion)
+	- etc
+
+* add code blurb to readme.
+* add license reference to all files?
+* check that it works on windows
+* check that it works with multiple python versions. Or just specify version in readme.
+
 * Investigate why message passing does not instantly converge after all messages has been passed once in Kalman filter
 example.
 * Investigate why the KL(P||Q) = KL(previously_sent_message||next_message) causes more oscilation in message passing

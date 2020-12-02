@@ -11,7 +11,7 @@ import numpy as np
 
 # Local imports
 from veroku.factors.categorical import Categorical
-from veroku.factors.sparse_categorical import SparseCategorical, _make_dense
+from veroku.factors.sparse_categorical import SparseCategorical, _make_dense, _any_scope_binary_operation
 
 
 #  TODO: add tests for strange KLD (i.e with divide by zeros)
@@ -531,6 +531,39 @@ class TestCategorical(unittest.TestCase):
                                              default_log_prob=default_log_prob)
 
             self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
+
+    # SparseCategorical only
+    #def test__any_scope_binary_operation_both(self):
+    #    """
+    #    Test that the _any_scope_binary_operation returns the correct result when performing binary operations on nested
+    #    table dictionaries when the result is only default when both values in the calculation are default.
+    #    """
+    #    if self.CatClass == SparseCategorical:
+    #        default_value = 0.0
+    #        nested_table_dict_a = {(0,): {(0,): 1.0}}
+#
+    #        nested_table_dict_b = {(0,): {(0,): 1.0,
+    #                                      (1,): 1.0},
+    #                               (1,): {(0,): 1.0}}
+    #        expected_probs_table = {(0,):{ (0,): 2.0,
+    #                                       (1,): 1.0}
+    #                                (1,):{(0): 1.0}
+    #                                     #(1): 0.0,
+    #        expected_factor = SparseCategorical(var_names=['a', 'b'], probs_table=probs_table,
+    #                                            cardinalities=[2, 2],
+    #                                            default_log_prob=np.exp(default_value))  # hack to get 0 default
+#
+#
+    #        outer_inner_cards_a = [[2],[2]]
+    #        outer_inner_cards_b = [[2], [2]]
+    #        actual_factor = _any_scope_binary_operation(ntd_a=nested_table_dict_a,
+    #                                                    outer_inner_cards_a=outer_inner_cards_a,
+    #                                                    ntd_b=nested_table_dict_b,
+    #                                                    outer_inner_cards_b=outer_inner_cards_b,
+    #                                                    func=lambda a, b: a+b,
+    #                                                    default=default_value,
+    #                                                    default_rules='both')
+    #        self.assertTrue(actual_factor.equals(expected_factor))
 
     # SparseCategorical only
     def test_apply_binary_operator(self):

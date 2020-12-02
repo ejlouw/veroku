@@ -7,21 +7,27 @@ import unittest
 import cmath
 
 # Third-party imports
-from mockito import when, expect, unstub, verifyNoUnwantedInteractions
+from mockito import when, expect, unstub, spy, verify, verifyNoUnwantedInteractions
 import numpy as np
 from scipy import integrate
+import seaborn
 
 # Local imports
-from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gaussian
+from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gaussian, GaussianTemplate
 from veroku.factors.categorical import Categorical
 from veroku.factors import _factor_utils
 
 
 # pylint: disable=too-many-public-methods
+def _update_canform():
+    pass
+
+
 class TestGaussian(unittest.TestCase):
     """
     Tests for Gaussian class.
     """
+
     def setUp(self):
         np.random.seed(0)
 
@@ -630,9 +636,50 @@ class TestGaussian(unittest.TestCase):
         with self.assertRaises(Exception):
             gaussian.log_potential(x_val=0)
 
+    def test_potential(self):
+        """
+        Check that the potential method returns the correct value.
+        """
+        cov = np.array([[2.0, 1.0], [1.0, 2.0]])
+        mean = np.array([[4.0], [5.0]])
+        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=['a', 'b'])
+        actual_max_potential = gaussian.potential(x_val=mean)
+        expected_max_potential = 1.0/np.sqrt(np.linalg.det(2*np.pi*cov))
+        self.assertEqual(actual_max_potential, expected_max_potential)
+
+    def test_log_potential_different_forms(self):
+        """
+        Test that the log_potential function returns the same value, regardless of the parameter form.
+        """
+        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=0.0, var_names=['a', 'b'])
+
+        x_val = [7, 3]
+        vrs = ['a', 'b']
+        log_pot_canform = gaussian.log_potential(x_val=x_val, vrs=vrs)
+        gaussian._update_covform()
+        gaussian.CANFORM = False
+        log_pot_covform = gaussian.log_potential(x_val=x_val, vrs=vrs)
+        # TODO: investigate the
+        self.assertAlmostEqual(log_pot_canform, log_pot_covform, places=1)
+
+    def test_log_potential_reordered_vars(self):
+        """
+        Check that the log_potential method returns the correct value, even with reordered variables.
+        """
+        cov = np.array([[2.0, 1.0], [1.0, 2.0]])
+        mean = np.array([[4.0], [5.0]])
+        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=['a', 'b'])
+        # test switched variable order
+        actual_max_log_potential = gaussian.log_potential(x_val=[5.0, 4.0], vrs=['b', 'a'])
+        expected_max_log_potential = np.log(1.0 / np.sqrt(np.linalg.det(2 * np.pi * cov)))
+        self.assertEqual(actual_max_log_potential, expected_max_log_potential)
+
+        actual_max_log_potential = gaussian.log_potential(x_val=np.array([[5.0], [4.0]]), vrs=['b', 'a'])
+        self.assertEqual(actual_max_log_potential, expected_max_log_potential)
+
     def test_weight_and_integration_2d(self):
         """
-        Test that the Gaussian distribution intagrates to the weight.
+        Test that the Gaussian distribution integrates to the weight.
         """
         weight = 1.0
         gaussian = Gaussian(cov=[[2.0, 1.0], [1.0, 2.0]], mean=[4.0, 5.0], log_weight=np.log(weight),
@@ -691,18 +738,6 @@ class TestGaussian(unittest.TestCase):
         g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
         self.assertTrue(g1.equals(g2))
 
-    def test_log_potential(self):
-        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=0.0, var_names=['a', 'b'])
-
-        x_val = [7, 3]
-        vrs = ['a', 'b']
-        log_pot_canform = gaussian.log_potential(x_val=x_val, vrs=vrs)
-        gaussian._update_covform()
-        gaussian.CANFORM = False
-        log_pot_covform = gaussian.log_potential(x_val=x_val, vrs=vrs)
-        # TODO: investigate the
-        self.assertAlmostEqual(log_pot_canform, log_pot_covform, places=1)
-
     def test_is_vacuous_flat_gaussian(self):
         """
         Test that the is_vacuous property function identifies a Gaussian as non-vacuous if all the precision
@@ -711,7 +746,7 @@ class TestGaussian(unittest.TestCase):
         dims = 3
         var_names = [str(i) for i in range(dims)]
         K = np.eye(dims) * 1e-9
-        h = np.zeros([dims,1])
+        h = np.zeros([dims, 1])
         g = 0.0
         gauss = Gaussian(var_names=var_names, K=K, h=h, g=g)
         self.assertFalse(gauss.is_vacuous)
@@ -767,11 +802,64 @@ class TestGaussian(unittest.TestCase):
         gaussian = Gaussian(K=1.0, h=0.0, g=0.0, var_names=['a'])
         self.assertTrue(gaussian._cov_exists())
 
-    def _update_canform_neg_det(self):
-        gaussian = Gaussian(cov=-1.0, mean=0.0, log_weight=0.0, var_names=['a'])
-        with self.assertRaises(np.linalg.LinAlgError):
-            gaussian(_update_canform())
+    def test__repr__(self):
+        """
+        Test that the __repr__ method returns the correct result.
+        """
+        gaussian = Gaussian(K=[[1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
+        expected_repr_string = "vars = ['a', 'b']\nK = \n[[1. 0.]\n [0. 1.]]\nh = \n[[0.]\n [0.]]\ng = \n0.0\n" + \
+                               "is_vacuous: False\nCov        = \n[[1. 0.]\n [0. 1.]]" + \
+                               "\nmean       = \n[[0.]\n [0.]]\nlog_weight = \n1.8378770664093453\n"
+        actual_repr_string = gaussian.__repr__()
+        self.assertEqual(actual_repr_string, expected_repr_string)
 
+    def test_show_vis(self):
+        """
+        Test that the show_vis method does not break.
+        """
+        # TODO: improve this test.
+        g1 = make_random_gaussian(var_names=['a', 'b'])
+        g1.show_vis()
 
+    def test_plot(self):
+        """
+        Test that the plot method does not break.
+        """
+        # TODO: improve this test.
+        g1 = make_random_gaussian(var_names=['a'])
+        g1.plot()
+        g1.plot(log=True)
+        g2 = make_random_gaussian(var_names=['a', 'b'])
+        g2.plot()
+
+    def test_gaussian_template(self):
+        """
+        Check that the Gaussian template makes the correct factors.
+        """
+        K = np.array([[1.2, 0.0], [0.1, 1.2]])
+        h = np.array([[0.6], [1.0]])
+        parameters = {'K': K,
+                      'h': h,
+                      'g': 0.0}
+        gaussian_template = GaussianTemplate(parameters, var_templates=['a_{i}', 'b_{i}'])
+
+        actual_factor = gaussian_template.make_factor(var_names=['a', 'b'])
+        expected_factor = Gaussian(var_names=['a', 'b'], K=K, h=h, g=0.0)
+        self.assertTrue(actual_factor.equals(expected_factor))
+
+        actual_factor = gaussian_template.make_factor(format_dict={'i': 2})
+        expected_factor = Gaussian(var_names=['a_2', 'b_2'], K=K, h=h, g=0.0)
+        self.assertTrue(actual_factor.equals(expected_factor))
+
+    def test_split_gaussian(self):
+        """
+        Test that the _split_gaussian function splits a gaussian into a mixture with three different components that has
+        the same mean an variance.
+        """
+        g1 = make_random_gaussian(var_names=['a'])
+        gm1 = g1._split_gaussian()
+        self.assertTrue(len(gm1.components) == 3)
+        g1_m_projection = gm1.moment_match_to_single_gaussian()
+        self.assertTrue(g1.equals(g1_m_projection))
 
 # pylint: enable=too-many-public-methods

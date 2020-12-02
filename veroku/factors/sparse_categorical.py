@@ -155,7 +155,9 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
 
     :param ntd_a: The nested table dictionary for factor A.
+    :param list outer_inner_cards_a: The cardinalities for the outer and inner variables for factor A (i.e [[2,2], [3]])
     :param ntd_b: The nested table dictionary for factor B.
+    :param list outer_inner_cards_b: The cardinalities for the outer and inner variables for factor B (i.e [[2,2], [3]])
     :param default: The default value for ntd_a and ntd_b (the values for the missing values).
     :param default_rules: The rules for when a calculation results will result in a default value (optional).
         This can help speed up this function. The possible values are as follows:

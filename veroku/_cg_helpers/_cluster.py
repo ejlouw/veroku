@@ -88,8 +88,6 @@ class Cluster(object):
             message_factor = message_factor.cancel(prev_received_message_factor)
             # TODO: remove this after TableFactor has been converted to LogTableFactor
             # message_factor = message_factor.normalize()
-            if isinstance(message_factor, Gaussian) and FIX_NON_PSD_MATRICES:
-                message_factor._fix_non_psd_matrices()
         message = Message(factor=message_factor, sender_id=self.cluster_id, receiver_id=neighbour_id)
         return message
 
