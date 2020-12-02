@@ -22,6 +22,9 @@ class TestGaussian(unittest.TestCase):
     """
     Tests for Gaussian class.
     """
+    def setUp(self):
+        np.random.seed(0)
+
     def test_random_gaussians_differ(self):
         """
         Test that random Gaussians generated sequentially are different.
@@ -651,6 +654,37 @@ class TestGaussian(unittest.TestCase):
         g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
         g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
         self.assertTrue(g1.kl_divergence(g2) == 0.0)
+
+    def test_kl_divergence_vac_novac(self):
+        """
+        Test that the distance between a vacuous and a non-vacuous factor is infinite.
+        """
+        g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
+        g2 = make_random_gaussian(var_names=['a', 'b'])
+        self.assertTrue(g1.kl_divergence(g2) == np.inf)
+        self.assertTrue(g2.kl_divergence(g1) == np.inf)
+
+    def test_kl_divergence_between_same_factors(self):
+        """
+        Test that the distance between two identical factors is zero.
+        """
+        np.random.seed(0)
+        g1 = make_random_gaussian(var_names=['a', 'b'])
+        g2 = g1.copy()
+        self.assertTrue(g1.kl_divergence(g2) == 0.0)
+
+    def test_kl_divergence_fails_with_different_dims(self):
+        """
+        Test that the kl_divergence function fails with a value error when trying to calculate the KL-divergence between
+        Gaussians with different dimensionality.
+        """
+        g1 = make_random_gaussian(var_names=['a', 'b', 'c'])
+        g2 = make_random_gaussian(var_names=['a', 'b'])
+
+        with self.assertRaises(ValueError) as raises_context:
+            g1.kl_divergence(g2)
+        error_msg = str(raises_context.exception)
+        self.assertTrue('dimensionalities' in error_msg)
 
     def test_vacuous_equals(self):
         g1 = Gaussian.make_vacuous(var_names=['a', 'b'])

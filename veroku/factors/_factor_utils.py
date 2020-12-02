@@ -11,6 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
+#from veroku.factors.gaussian import Gaussian
+#from veroku.factors.gaussian_mixture import GaussianMixture
+
 
 def format_list_elements(lst, format_dict):
     formatted_list = [e.format(**format_dict) for e in lst]

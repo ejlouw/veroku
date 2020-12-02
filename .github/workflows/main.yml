@@ -42,9 +42,12 @@ jobs:
       # Setup And Test
       - name: Setup And Test
         run: |
-          sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
-      #    python -m unittest discover -s ./veroku/tests -t ./ -p 'test_*.py'
+          echo Checking code style
+          pylint ./veroku
+          echo Running tests with code coverage
           coverage run --rcfile=.coveragerc -m unittest discover -v
+          coverage report -m
+
 
       # Package and Upload
       # TODO: Add error handling for upload command (for instance for the case that this is run more than once with same package number)
@@ -54,6 +57,8 @@ jobs:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
+          echo Updating version
+          sed -i "s/__version__\s*=\s*\"\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\"/__version__ = \"\1.\2.$GITHUB_RUN_NUMBER\"/" veroku/__init__.py
           pip install twine
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel

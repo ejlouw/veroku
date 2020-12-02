@@ -6,7 +6,7 @@ import uuid
 from veroku.factors.gaussian import Gaussian
 import copy
 #from veroku.factors.nonlinear_gaussian import NonLinearGaussianMixture
-#from veroku.factors.gaussian import split_gaussian
+#from veroku.factors.gaussian import _split_gaussian
 
 FIX_NON_PSD_MATRICES = False
 
@@ -100,13 +100,6 @@ class Cluster(object):
         """
         # Absorb message
         assert message.receiver_id == self.cluster_id, 'Error: Message not meant for this Cluster.'
-
-        # EXPERIMENTAL START
-        #if isinstance(self._factor, NonLinearGaussianMixture) and isinstance(message.factor, Gaussian) and len(message.factor.var_names) == 1:
-        #    message_factor = split_gaussian(message.factor)
-        #    self._factor = self._factor.multiply(message_factor)
-        # EXPERIMENTAL END
-        #else:
         self._factor = self._factor.multiply(message.factor)
 
         # Cancel out any message previously received from sender cluster
@@ -114,8 +107,7 @@ class Cluster(object):
         if sender_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[sender_id]
             self._factor = self._factor.cancel(prev_received_message_factor)
-        # TODO: remove this after TableFactor has been converted to LogTableFactor
-        #self._factor = self._factor.normalize()
+
         self._received_message_factors[message.sender_id] = message.factor.copy()
 
     def get_sepset(self, neighbour_id):

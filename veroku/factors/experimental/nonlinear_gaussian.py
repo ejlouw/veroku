@@ -13,7 +13,8 @@ import numpy as np
 from veroku.factors import _factor_utils
 from veroku.factors._sigma_points import get_sigma_points_array, sigma_points_array_to_joint_params
 from veroku.factors._factor import Factor
-from veroku.factors.gaussian import Gaussian, GaussianMixture
+from veroku.factors.gaussian import Gaussian
+from veroku.factors.gaussian_mixture import GaussianMixture
 from veroku.factors._factor_utils import make_square_matrix, indexed_square_matrix_operation, \
     format_list_elements
 from veroku.factors._factor_template import FactorTemplate
@@ -100,6 +101,7 @@ class NonLinearGaussian(Factor):
         self_copy._recompute_joint()
         return self_copy._joint_distribution
 
+    # pylint: disable=invalid-name
     def get_K(self):
         """
         Get the K matrix (after ensuring that the canonical form is updated.)
@@ -107,9 +109,7 @@ class NonLinearGaussian(Factor):
         """
         self._recompute_joint()
         return self._joint_distribution.get_K()
-        # pylint: enable=invalid-name
-
-        # pylint: disable=invalid-name
+    # pylint: enable=invalid-name
 
     def get_h(self):
         """
@@ -118,9 +118,6 @@ class NonLinearGaussian(Factor):
         """
         self._recompute_joint()
         return self._joint_distribution.get_h()
-        # pylint: enable=invalid-name
-
-        # pylint: disable=invalid-name
 
     def get_g(self):
         """
@@ -140,7 +137,6 @@ class NonLinearGaussian(Factor):
         """
         self._recompute_joint()
         return self._joint_distribution.get_cov()
-        # pylint: enable=invalid-name
 
     def get_mean(self):
         """
@@ -414,12 +410,15 @@ class NonLinearGaussianMixture(Factor):
     A Class for instantiating and performing operations on multivariate Gaussian mixture functions.
     """
 
-    def __init__(self, factors):
+    def __init__(self, factors, split_singles_before_absorb=True):
         """
         The initializer.
 
         :param factors: The list of factors.
         :type factors: NonLinearGaussian factor list
+        :param bool split_singles_before_absorb: Whether or not to split a Gaussian (or single component
+            GaussianMixture) before it is multiplied in. This can result in a better approximation of non-linear
+            Gaussian transformations.
         """
         self.nlgs = []
         if len(factors) == 0:
@@ -432,6 +431,7 @@ class NonLinearGaussianMixture(Factor):
                 raise ValueError(f'Inconsistent variable names. First factor has var_names = {self.var_names},'
                                  f' another has var_names = {factor.var_names}')
             self.nlgs.append(factor.copy())
+        self.split_singles_before_absorb = split_singles_before_absorb
 
     def normalize(self):
         raise NotImplementedError()
@@ -460,12 +460,21 @@ class NonLinearGaussianMixture(Factor):
         :return: the resulting factor
         :rtype: NonLinearGaussianMixture
         """
+
+
         if isinstance(factor, GaussianMixture):
             gm_factor = factor
         elif isinstance(factor, Gaussian):
             gm_factor = GaussianMixture([Gaussian])
         else:
             raise NotImplementedError()
+
+        # TODO: Generalise the Gaussian.split_gaussian function to more than one dimensional cases and remove the
+        #  limitation here
+        if self.split_singles_before_absorb and len(gm_factor.var_names) == 1:
+            if len(gm_factor.components) == 1:
+                gm_factor = gm_factor.components[0]._split_gaussian()
+
         new_nlgs = []
         for gauss in gm_factor.components:
             for nlg in self.nlgs:
@@ -540,8 +549,7 @@ class NonLinearGaussianMixture(Factor):
 
     def plot(self):
         """
-        Plot the joint Gaussian Mixture distributio
-        :return:
+        Plot the joint Gaussian Mixture distribution.
         """
         gaussian_components = [nlg.joint_distribution for nlg in self.nlgs]
         gaussian_mixture = GaussianMixture(gaussian_components)
