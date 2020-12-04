@@ -33,7 +33,7 @@ def sigma_point_array_to_gaussian_params(sigma_point_array):
     :param sigma_point_array: (numpy array) An array where the columns correspond to sigma points.
     :return: The mean (numpy array) and covariance (numpy array) of the sigma points.
     """
-    mean = np.expand_dims(np.mean(sigma_point_array, axis=1), 1)
+    mean = np.expand_dims(np.mean(sigma_point_array, axis=1), axis=1)
     cov = np.cov(sigma_point_array, bias=1)
     return cov, mean
 

@@ -10,6 +10,7 @@ import operator
 import numpy as np
 
 # Local imports
+from veroku.factors.gaussian import make_random_gaussian
 from veroku.factors.categorical import Categorical
 from veroku.factors.sparse_categorical import SparseCategorical, _make_dense, _any_scope_binary_operation
 
@@ -42,6 +43,72 @@ class TestCategorical(unittest.TestCase):
         """
         super().__init__(*args, **kwargs)
         self.CatClass = Categorical
+
+    # Categorical only
+    def test_init_fails_params(self):
+        """
+        Test that the Categorical constructor fails when neither probs_table or log_probs_tensor is given.
+        """
+        if self.CatClass == Categorical:
+            with self.assertRaises(ValueError):
+                Categorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table=None, log_probs_tensor=None)
+            log_probs_tensor = np.random.rand(2, 2)
+            # test that it completes successfully when log_probs_tensor is there
+            Categorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_tensor=log_probs_tensor)
+
+    # Categorical only
+    def test_init_fails_cards(self):
+        """
+        Test that the Categorical constructor fails when the number of cardinalities dont match the number of variables.
+        """
+        if self.CatClass == Categorical:
+            with self.assertRaises(ValueError):
+                Categorical(var_names=['a', 'b'], cardinalities=[2, 2, 2], log_probs_tensor=np.random.rand(2, 2))
+
+    # Categorical only
+    def test_init_fails_bad_index(self):
+        """
+        Test that the Categorical constructor fails when the probs_table contains invalid indices.
+        """
+        if self.CatClass == Categorical:
+            with self.assertRaises(IndexError):
+                Categorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table={(0, 6): 0.1})
+
+    # Categorical only
+    def test_init_fails_bad_shape(self):
+        """
+        Test that the Categorical constructor fails when the log_probs_tensor's shape does not correspond to the number
+        of variables.
+        """
+        if self.CatClass == Categorical:
+            with self.assertRaises(ValueError):
+                Categorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_tensor=np.random.rand(2, 2, 2))
+
+    # Categorical only
+    def test_reorder_fails_var_set(self):
+        """
+        Test that the reorder method fails when the set of new order variables do not match the factors variabels.
+        of variables.
+        """
+        if self.CatClass == Categorical:
+            cat1 = Categorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_tensor=np.random.rand(2, 2))
+            with self.assertRaises(ValueError):
+                cat1.reorder(['c', 'a'])
+
+    def test_equals_fails_wrong_factor(self):
+        """
+        Test that the equals method fails when the comparing to another type of factor.
+        of variables.
+        """
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        sp_table_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        g1 = make_random_gaussian(var_names=vars_a)
+        with self.assertRaises(ValueError):
+            sp_table_a.equals(g1)
 
     def test_absorb_same_scope(self):
         """
@@ -98,7 +165,7 @@ class TestCategorical(unittest.TestCase):
                      (1, 0, 1): 0.6,
                      (1, 1, 0): 0.7,
                      (1, 1, 1): 0.8}
-        factor_abc = self.CatClass(var_names=vars_abc, probs_table=probs_abc, cardinalities=[2,2,2])
+        factor_abc = self.CatClass(var_names=vars_abc, probs_table=probs_abc, cardinalities=[2, 2, 2])
         vars_dc = ['d', 'c']
         probs_dc = {(0, 0): 1.1,
                     (1, 0): 1.3,
@@ -107,13 +174,13 @@ class TestCategorical(unittest.TestCase):
 
         vars_dabc = ['d', 'a', 'b', 'c']
         probs_dabc = {(0, 0, 0, 0): 0.1 * 1.1,
-                      #(0, 0, 0, 1): 0.2 * 0.0,
+                      # (0, 0, 0, 1): 0.2 * 0.0,
                       (0, 0, 1, 0): 0.3 * 1.1,
-                      #(0, 0, 1, 1): 0.4 * 0.0,
+                      # (0, 0, 1, 1): 0.4 * 0.0,
                       (0, 1, 0, 0): 0.0 * 1.1,
-                      #(0, 1, 0, 1): 0.6 * 0.0,
+                      # (0, 1, 0, 1): 0.6 * 0.0,
                       (0, 1, 1, 0): 0.7 * 1.1,
-                      #(0, 1, 1, 1): 0.8 * 0.0,
+                      # (0, 1, 1, 1): 0.8 * 0.0,
                       (1, 0, 0, 0): 0.1 * 1.3,
                       (1, 0, 0, 1): 0.2 * 1.4,
                       (1, 0, 1, 0): 0.3 * 1.3,
@@ -440,16 +507,16 @@ class TestCategorical(unittest.TestCase):
 
     def test_KLD_with_zeros_sparse3(self):
         vars_a = ['a', 'b']
-        probs_a = {#(0,0): 0.0 #log: -inf
-                   (0, 1): 0.0,#log: -inf
-                   (1, 0): 0.0,#log: -inf
-                   (1, 1): 1.0}#log: 0
+        probs_a = {  # (0,0): 0.0 #log: -inf
+            (0, 1): 0.0,  # log: -inf
+            (1, 0): 0.0,  # log: -inf
+            (1, 1): 1.0}  # log: 0
         factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
 
         vars_b = ['a', 'b']
         probs_b = {(0, 0): 0.5,
-                   (0, 1): 0.0, #log: -inf
-                   (1, 0): 0.0, #log: -inf
+                   (0, 1): 0.0,  # log: -inf
+                   (1, 0): 0.0,  # log: -inf
                    (1, 1): 0.5}
         # test 1
         # expected KL(a||b):
@@ -487,17 +554,17 @@ class TestCategorical(unittest.TestCase):
 
         factor = self.CatClass(var_names=vrs, probs_table=probs, cardinalities=[9, 9])
         actual_kld = normalized_self.kl_divergence(factor)
-        expected_kld_list = [p * (np.log(p) - np.log(0)),    # (2, 5)              =inf
-                             p * (np.log(p) - np.log(0)),    # (5, 2)              =inf
-                             p * (np.log(p) - np.log(0)),    # (1, 5)              =inf
-                             p * (np.log(p) - np.log(0)),    # (5, 1)              =inf
+        expected_kld_list = [p * (np.log(p) - np.log(0)),  # (2, 5)              =inf
+                             p * (np.log(p) - np.log(0)),  # (5, 2)              =inf
+                             p * (np.log(p) - np.log(0)),  # (1, 5)              =inf
+                             p * (np.log(p) - np.log(0)),  # (5, 1)              =inf
                              p * (np.log(p) - np.log(0.5)),  # (1, 2)              =-0.1831020481113516
                              p * (np.log(p) - np.log(0.5)),  # (2, 1)              =-0.1831020481113516
-                             0 * (np.log(1)),                # (8, 1) (both 0.0)   =0.0
-                             0 * (np.log(1)),                # (6, 1) (both 0.0)   =0.0
-                             0 * (np.log(1)),                # (1, 3) (both 0.0)   =0.0
-                             0 * (np.log(1)),                # (3, 1) (both 0.0)   =0.0
-                             0 * (np.log(1))]                # (0, 8) (both 0.0)   =0.0
+                             0 * (np.log(1)),  # (8, 1) (both 0.0)   =0.0
+                             0 * (np.log(1)),  # (6, 1) (both 0.0)   =0.0
+                             0 * (np.log(1)),  # (1, 3) (both 0.0)   =0.0
+                             0 * (np.log(1)),  # (3, 1) (both 0.0)   =0.0
+                             0 * (np.log(1))]  # (0, 8) (both 0.0)   =0.0
         expected_kld = sum(expected_kld_list)
         self.assertEqual(expected_kld, actual_kld)
 
@@ -533,71 +600,63 @@ class TestCategorical(unittest.TestCase):
             self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
 
     # SparseCategorical only
-    #def test__any_scope_binary_operation_both(self):
-    #    """
-    #    Test that the _any_scope_binary_operation returns the correct result when performing binary operations on nested
-    #    table dictionaries when the result is only default when both values in the calculation are default.
-    #    """
-    #    if self.CatClass == SparseCategorical:
-    #        default_value = 0.0
-    #        nested_table_dict_a = {(0,): {(0,): 1.0}}
-#
-    #        nested_table_dict_b = {(0,): {(0,): 1.0,
-    #                                      (1,): 1.0},
-    #                               (1,): {(0,): 1.0}}
-    #        expected_probs_table = {(0,):{ (0,): 2.0,
-    #                                       (1,): 1.0}
-    #                                (1,):{(0): 1.0}
-    #                                     #(1): 0.0,
-    #        expected_factor = SparseCategorical(var_names=['a', 'b'], probs_table=probs_table,
-    #                                            cardinalities=[2, 2],
-    #                                            default_log_prob=np.exp(default_value))  # hack to get 0 default
-#
-#
-    #        outer_inner_cards_a = [[2],[2]]
-    #        outer_inner_cards_b = [[2], [2]]
-    #        actual_factor = _any_scope_binary_operation(ntd_a=nested_table_dict_a,
-    #                                                    outer_inner_cards_a=outer_inner_cards_a,
-    #                                                    ntd_b=nested_table_dict_b,
-    #                                                    outer_inner_cards_b=outer_inner_cards_b,
-    #                                                    func=lambda a, b: a+b,
-    #                                                    default=default_value,
-    #                                                    default_rules='both')
-    #        self.assertTrue(actual_factor.equals(expected_factor))
+    def test__any_scope_binary_operation_both(self):
+        """
+        Test that the _any_scope_binary_operation returns the correct result when performing binary operations on nested
+        table dictionaries when the result is only default when both values in the calculation are default.
+        """
+        if self.CatClass == SparseCategorical:
+            default_value = 0.0
+            nested_table_dict_a = {(1,): {(0,): 1.0}}
+            nested_table_dict_b = {(0,): {(0,): 1.0}}
+            expected_probs_table = {(0, 0): {(0,): 1.0},
+                                    (1, 0): {(0,): 2.0},
+                                    (1, 1): {(0,): 1.0}}
+            outer_inner_cards_a = [[2], [2]]
+            outer_inner_cards_b = [[2], [2]]
+            actual_probs_table = _any_scope_binary_operation(ntd_a=nested_table_dict_a,
+                                                             outer_inner_cards_a=outer_inner_cards_a,
+                                                             ntd_b=nested_table_dict_b,
+                                                             outer_inner_cards_b=outer_inner_cards_b,
+                                                             func=lambda a, b: a + b,
+                                                             default=default_value,
+                                                             default_rules='both')
+            print('actual_probs_table = ', actual_probs_table)
+            self.assertEqual(expected_probs_table, actual_probs_table)
 
     # SparseCategorical only
     def test_apply_binary_operator(self):
         if self.CatClass == SparseCategorical:
             default_log_prob = 0.5
             vars_abc = ['a', 'b', 'c']
-            probs_abc = {#(0, 0, 0): 0.5,
-                         #(0, 0, 1): 0.5,
-                         (0, 1, 0): 0.3,
-                         (0, 1, 1): 0.4}
+            probs_abc = {  # (0, 0, 0): 0.5,
+                # (0, 0, 1): 0.5,
+                (0, 1, 0): 0.3,
+                (0, 1, 1): 0.4}
             vars_dbc = ['d', 'b', 'c']
-            probs_dbc = {#(0, 0, 0): 0.5,
-                         (0, 0, 1): 0.2,
-                         #(0, 1, 0): 0.5,
-                         (0, 1, 1): 0.4}
+            probs_dbc = {  # (0, 0, 0): 0.5,
+                (0, 0, 1): 0.2,
+                # (0, 1, 0): 0.5,
+                (0, 1, 1): 0.4}
             ld = default_log_prob
 
             vars_dabc = ['d', 'a', 'b', 'c']
-            probs_dabc = {(0, 0, 0, 0): ld-ld,
-                          (0, 0, 0, 1): ld-0.2,
-                          (0, 0, 1, 0): 0.3-ld,
-                          (0, 0, 1, 1): 0.4-0.4,
-                          (0, 1, 0, 0): ld-ld,
-                          (0, 1, 0, 1): ld-0.2,
-                          (0, 1, 1, 0): ld-ld,
-                          (0, 1, 1, 1): ld-0.4,
-                          (1, 0, 0, 0): ld-ld,
-                          (1, 0, 0, 1): ld-ld,
-                          (1, 0, 1, 0): 0.3-ld,
-                          (1, 0, 1, 1): 0.4-ld,
-                          (1, 1, 0, 0): ld-ld,
-                          (1, 1, 0, 1): ld-ld,
-                          (1, 1, 1, 0): ld-ld,
-                          (1, 1, 1, 1): ld-ld}
+            probs_dabc = {(0, 0, 0, 0): ld - ld,
+                          (0, 0, 0, 1): ld - 0.2,
+                          (0, 0, 1, 0): 0.3 - ld,
+                          (0, 0, 1, 1): 0.4 - 0.4,
+                          (0, 1, 0, 0): ld - ld,
+                          (0, 1, 0, 1): ld - 0.2,
+                          (0, 1, 1, 0): ld - ld,
+                          (0, 1, 1, 1): ld - 0.4,
+                          (1, 0, 0, 0): ld - ld,
+                          (1, 0, 0, 1): ld - ld,
+                          (1, 0, 1, 0): 0.3 - ld,
+                          (1, 0, 1, 1): 0.4 - ld,
+                          (1, 1, 0, 0): ld - ld,
+                          (1, 1, 0, 1): ld - ld,
+                          (1, 1, 1, 0): ld - ld,
+                          (1, 1, 1, 1): ld - ld}
 
             expected_result = SparseCategorical(var_names=vars_dabc,
                                                 log_probs_table=probs_dabc,

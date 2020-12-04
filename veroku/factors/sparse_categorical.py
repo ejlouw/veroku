@@ -161,9 +161,9 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     :param default: The default value for ntd_a and ntd_b (the values for the missing values).
     :param default_rules: The rules for when a calculation results will result in a default value (optional).
         This can help speed up this function. The possible values are as follows:
-            'any' : If either ntd_a or ntd_b has a default value, the result will always be default.
-            'both': Only if both ntd_a and ntd_b has a default value, the result will always be default.
-            'none': No combination of default or non-default values is guarenteed to result in a default value
+            'any' : If either ntd_a or ntd_b has a default value, the result will be default.
+            'both': Only if both ntd_a and ntd_b has a default value, the result will be default.
+            'none': No combination of default or non-default values is guaranteed to result in a default value
         If this parameter is not specified, 'none' will be used to ensure correct, albeit slower computation.
     :returns: The nested table dictionary for the resulting factor.
     """
@@ -229,6 +229,7 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         outer_assignments_a = set(ntd_a.keys())
         outer_assignments_b = set(ntd_b.keys())
         ntd_a_sd_assignments = list(outer_assignments_a.union(outer_assignments_b))
+        # TODO: replace this deepcopy with something faster
         ntd_b_sd_assignments = copy.deepcopy(ntd_a_sd_assignments)
 
         full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
@@ -251,7 +252,8 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         subtable_result = _same_scope_binary_operation(common_vars_subtable_a,
                                                        common_vars_subtable_b,
                                                        func, default)
-        resulting_factor_table[joined_sd_assignment] = subtable_result
+        if subtable_result:
+            resulting_factor_table[joined_sd_assignment] = subtable_result
     return resulting_factor_table
 
 

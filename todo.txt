@@ -1,6 +1,8 @@
+* Add and maintain (contributor list with name and email)
+*update make_random_gaussian to have non-diagonal covariances for better testing (confirm that all tests still pass)
 * add developer section
 	- Add tests to your contributions to avoid failing on coverage
-	- Check codestyle to aboid failing on code style.
+	- Check codestyle to avoid failing on code style.
 	- What to work on: implementation priorities (suggestion)
 	- etc
 

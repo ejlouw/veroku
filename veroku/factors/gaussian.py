@@ -742,13 +742,8 @@ class Gaussian(Factor):
 
         det_inv_cov_q = np.linalg.det(inv_cov_q)
         det_inv_cov_p = np.linalg.det(inv_cov_p)
-        if det_inv_cov_q == 0.0:
-            if det_inv_cov_p != 0.0:
-                return np.inf
-            else:
-                det_term = 0.0
-        else:
-            det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
+        assert det_inv_cov_q != 0.0, 'Unexpected factor covariance determinant of 0.'
+        det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
         trace_term = 0.5 * np.trace(inv_cov_q.dot(cov_p))
         mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
         dim_term = 0.5 * normalized_self.dim

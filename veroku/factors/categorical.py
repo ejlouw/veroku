@@ -33,7 +33,7 @@ class Categorical(Factor):
     A class for instantiating sparse tables with log probabilities.
     """
 
-    def __init__(self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
+    def __init__ (self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -60,7 +60,8 @@ class Categorical(Factor):
 
         if cardinalities is None:
             if log_probs_tensor is None:
-                raise ValueError('numpy array type log_probs_tensor is expected cardinalities are not supplied. Alternatively, provide cardinalities with dict type probs_table.')
+                raise ValueError('numpy array type log_probs_tensor is expected cardinalities are not supplied.\n' +
+                                 'Alternatively, provide cardinalities with dict type probs_table.')
             cardinalities = log_probs_tensor.shape
         elif len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')

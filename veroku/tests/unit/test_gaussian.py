@@ -733,6 +733,18 @@ class TestGaussian(unittest.TestCase):
         error_msg = str(raises_context.exception)
         self.assertTrue('dimensionalities' in error_msg)
 
+    #def test_kl_divergence_0cov(self):
+    #    """
+    #    Test that the KL divergence is infinity when one of the Gaussians has zero covariance and that it is zero when
+    #    both have covariances of zero.
+    #    """
+    #    gaussian_0cov_1 = Gaussian(K=np.inf, h=1.0, g=0.0, var_names=['a'])
+    #    gaussian_0cov_2 = Gaussian(K=np.inf, h=1.0, g=0.0, var_names=['a'])
+    #    gaussian_1cov = Gaussian(K=1, h=1.0, g=0.0, var_names=['a'])
+    #    self.assertTrue(gaussian_0cov_1.kl_divergence(gaussian_0cov_2) == 0.0)
+    #    self.assertTrue(gaussian_1cov.kl_divergence(gaussian_0cov_1) == np.inf)
+    #    self.assertTrue(gaussian_0cov_1.kl_divergence(gaussian_1cov) == np.inf)
+
     def test_vacuous_equals(self):
         g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
         g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
@@ -862,4 +874,19 @@ class TestGaussian(unittest.TestCase):
         g1_m_projection = gm1.moment_match_to_single_gaussian()
         self.assertTrue(g1.equals(g1_m_projection))
 
+    def test_sample(self):
+
+        """
+        Test that the samples drawn from a Gaussian distribution have the correct statistics.
+        """
+        g1 = make_random_gaussian(var_names=['a', 'b', 'c'])
+        expected_cov = g1.get_cov()
+        expected_mean = g1.get_mean()
+
+        samples = g1.sample(1000000)
+        actual_mean = np.expand_dims(np.mean(samples, axis=1), axis=1)
+        actual_cov = np.cov(samples)
+
+        self.assertTrue(np.allclose(expected_cov, actual_cov, rtol=1.e-3, atol=1.e-2))
+        self.assertTrue(np.allclose(expected_mean, actual_mean, rtol=1.e-3, atol=1.e-2))
 # pylint: enable=too-many-public-methods
