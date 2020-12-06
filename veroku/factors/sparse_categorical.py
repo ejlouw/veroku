@@ -322,8 +322,7 @@ class SparseCategorical(Factor):
         """
         factor_ = factor
         if not isinstance(factor_, SparseCategorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
 
         if set(self.var_names) != set(factor_.var_names):
             return False
@@ -374,29 +373,6 @@ class SparseCategorical(Factor):
                                  log_probs_table=_fast_copy_probs_table(self.log_probs_table),
                                  cardinalities=copy.deepcopy(self.cardinalities),
                                  default_log_prob=self.default_log_prob)
-
-    @staticmethod
-    def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
-        """
-        larger_vars = ['a', 'c', 'd', 'b']
-        smaller_vars = ['c', 'e', 'b']
-        return ['c', 'b']
-        """
-        shared_vars = [v for v in smaller_vars if v in larger_vars]
-        remaining_smaller_vars = list(set(larger_vars) - set(shared_vars))
-        smaller_vars_new_order = shared_vars + remaining_smaller_vars
-        return smaller_vars_new_order
-
-    @staticmethod
-    def _intersection_has_same_order(larger_vars, smaller_vars):
-        """
-        Check if the intersection of two lists has the same order in both lists.
-        Will return true if either list is empty? SHOULD THIS BE THE CASE?
-        """
-        indices_of_smaller_in_larger = [larger_vars.index(v) for v in smaller_vars if v in larger_vars]
-        if sorted(indices_of_smaller_in_larger) == indices_of_smaller_in_larger:
-            return True
-        return False
 
     # TODO: change back to log form
     def marginalize(self, vrs, keep=False):
@@ -471,6 +447,8 @@ class SparseCategorical(Factor):
         :return: The factor product.
         :rtype: SparseCategorical
         """
+        if not isinstance(factor, SparseCategorical):
+            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
         return self._apply_binary_operator(factor, operator.add, default_rules='any')
 
     def cancel(self, factor):
@@ -537,7 +515,7 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
         if not isinstance(factor, SparseCategorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
         intersection_vars = list(set(self.var_names).intersection(set(factor.var_names)))
         intersection_vars = sorted(intersection_vars)
@@ -619,6 +597,34 @@ class SparseCategorical(Factor):
             return True
         return False
 
+    @staticmethod
+    def _raw_kld(log_p, log_q):
+        """
+        Get the raw numerically calculated kld (which could result in numerical errors causing negative KLDs).
+        :param log_p: The log_p tensor
+        :param log_q:
+        :return: The KL-divergence
+        :rtype: float
+        """
+        def kld_from_log_elements(log_pi, log_qi):
+            if log_pi == -np.inf:
+                # lim_{p->0} p*log(p/q) = 0
+                # lim_{p->0} p*log(p/q) = 0, with q = p
+                # So if p_i = 0, kld_i = 0
+                return 0.0
+            else:
+                kld_i = np.exp(log_pi) * (log_pi - log_qi)
+                return kld_i
+
+        kld_factor = SparseCategorical._apply_binary_operator(log_p,
+                                                              log_q,
+                                                              kld_from_log_elements,
+                                                              default_rules='none')  # TODO: check this
+
+        klds = list(kld_factor.log_probs_table.values())
+        kld = np.sum(klds)
+        return kld
+
     def kl_divergence(self, factor, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
@@ -631,42 +637,22 @@ class SparseCategorical(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-
-        def kld_from_log_elements(log_pi, log_qi):
-            if log_pi == -np.inf:
-                # lim_{p->0} p*log(p/q) = 0
-                # lim_{p->0} p*log(p/q) = 0, with q = p
-                # So if p_i = 0, kld_i = 0
-                return 0.0
-            else:
-                kld_i = np.exp(log_pi) * (log_pi - log_qi)
-                return kld_i
-
         log_P = self.normalize()
         log_Q = factor
         if normalize_factor:
             log_Q = factor.normalize()
 
-        kld_factor = SparseCategorical._apply_binary_operator(log_P,
-                                                              log_Q,
-                                                              kld_from_log_elements,
-                                                              default_rules='none')  # TODO: check this
-
-        klds = list(kld_factor.log_probs_table.values())
-        kld = np.sum(klds)
+        kld = self._raw_kld(log_P, log_Q)
 
         if kld < 0.0:
-            if np.isclose(kld, 0.0, atol=1e-5):
+            if np.isclose(kld, 0.0, atol=1e-4):
                 #  this is fine (numerical error)
                 return 0.0
-            print('\nnormalize_factor = ', log_P)
-            print('self = ')
-            self.show()
-            print('normalized_self = ')
-            log_P.show()
-            print('\nfactor = ')
-            log_Q.show()
-            raise ValueError(f'Negative KLD: {kld}')
+            kld_msg_details = 'Categorical:\n' + \
+                              log_P.__repr__() + \
+                              '\nfactor:' + \
+                              log_Q.__repr__()
+            raise ValueError(f'Negative KLD: {kld}. Details:\n{kld_msg_details}')
         return kld
 
     def distance_from_vacuous(self):
@@ -707,23 +693,25 @@ class SparseCategorical(Factor):
         df.drop(columns=['assignment'], inplace=True)
         return df
 
-    def show(self, exp_log_probs=True):
+    def show(self):
         """
-        Print the factor.
+        Print the factor's string representation.
+        """
+        print(self.__repr__())
 
-        :param exp_log_probs: Whether or no to exponentiate the log probabilities (to display probabilities instead of
-        log-probabilities)
-        :type exp_log_probs: bool
+    def __repr__(self):
         """
-        prob_string = 'log(prob)'
-        if exp_log_probs:
-            prob_string = 'prob'
-        print(self.var_names, ' ', prob_string)
+        Get the string representation for the factor.
+        :return: The representation string
+        :rtype: str
+        """
+        tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
+        repr_str = tabbed_spaced_var_names
         for assignment, log_prob in self.log_probs_table.items():
             prob = log_prob
-            if exp_log_probs:
-                prob = np.exp(prob)
-            print(assignment, ' ', prob)
+            prob = np.exp(prob)
+            repr_str += '\t'.join(map(str, assignment)) + f'\t{prob:.4f}\n'
+        return repr_str
 
     def reorder(self, new_var_names_order):
         """

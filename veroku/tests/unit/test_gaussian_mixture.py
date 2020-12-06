@@ -6,10 +6,11 @@ import unittest
 
 # Third-party imports
 import numpy as np
+import mockito
 
 # Local imports
 from veroku.factors.gaussian import Gaussian
-from veroku.factors.gaussian_mixture import GaussianMixture
+from veroku.factors.experimental.gaussian_mixture import GaussianMixture
 
 
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
@@ -28,7 +29,7 @@ def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
     return random_gaussian
 
 
-def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3, seed=None):
+def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3, seed=0):
     """
     A test helper function that generates random Gaussian factors.
     :param n: the number of components.
@@ -36,10 +37,10 @@ def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3,
     :param mean_coeff:  The scale coefficient for the uniform distribution that the mean parameter is drawn from.
     :return: a random Gaussian factor
     """
+    assert seed >= 0
     random_gaussians = []
     for i in range(num_components):
-        if seed is not None:
-            comp_seed = seed*i
+        comp_seed = (seed+1)*i
         random_gaussians.append(get_random_gaussian(cov_coeff, mean_coeff, seed=comp_seed))
     return GaussianMixture(random_gaussians)
 
@@ -74,6 +75,15 @@ class TestGaussianMixture(unittest.TestCase):
         with self.assertRaises(ValueError):
             GaussianMixture([self.gaussian_ab_1, self.gaussian_cd_1])
 
+    def test_equals_not_gm_fails(self):
+        """
+        Test that the equals function returns false when the factor comparing with is not a GaussianMixture.
+        """
+        not_a_gm_factor = mockito.mock()
+        gm = get_random_gaussian_mixture()
+        with self.assertRaises(TypeError):
+            gm.equals(not_a_gm_factor)
+
     def test_equals_true(self):
         """
         Test that the equals function returns true for identical Gaussian mixtures.
@@ -86,7 +96,16 @@ class TestGaussianMixture(unittest.TestCase):
         """
         self.assertFalse(self.gaussian_mixture_ab_12.equals(self.gaussian_mixture_ab_34))
 
-    def test_absorb(self):
+    def test_equals_false_ncomps(self):
+        """
+        Test that the equals function returns false for a GaussianMixture with a different number of components.
+        """
+        gm3 = get_random_gaussian_mixture(num_components=3)
+        gm4_components = gm3.copy().components + [gm3.components[0].copy()]
+        gm4 = GaussianMixture(gm4_components)
+        self.assertFalse(gm3.equals(gm4))
+
+    def test_multiply_gm(self):
         """
         Test that the multiply function results in the correct components.
         """
@@ -98,6 +117,27 @@ class TestGaussianMixture(unittest.TestCase):
 
         actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_mixture_ab_34)
         self.assertTrue(actual_gm.equals(expected_gm))
+
+    def test_multiply_guassian(self):
+        """
+        Test that the multiply function results in the correct components.
+        """
+
+        expected_product_components = [self.gaussian_ab_1.multiply(self.gaussian_ab_3),
+                                       self.gaussian_ab_2.multiply(self.gaussian_ab_3)]
+        expected_gm = GaussianMixture(expected_product_components)
+
+        actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_ab_3)
+        self.assertTrue(actual_gm.equals(expected_gm))
+
+    def test_multiply_invalid_type_fails(self):
+        """
+        Test that the multiply function fails with invalid type.
+        """
+        not_a_gm = mockito.mock()
+        gm = get_random_gaussian_mixture()
+        with self.assertRaises(TypeError):
+            gm.multiply(not_a_gm)
 
     def test_marginalise(self):
         """

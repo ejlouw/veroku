@@ -11,11 +11,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
-#from veroku.factors.gaussian import Gaussian
-#from veroku.factors.gaussian_mixture import GaussianMixture
-
 
 def format_list_elements(lst, format_dict):
+    """
+    Format a list of formattable stings.
+
+    :param list lst: The list of strings.
+    :param format_dict: The dictionary specifying the values of the formattable parts of the strings.
+    :return: A list of formatted
+    :rtype: str list
+
+    Example:
+        >>> format_list_elements(['a_{i}', 'b_{i}', 'c_{i}'], {'i':0})
+        ['a_0', 'b_0', 'c_0']
+
+    """
     formatted_list = [e.format(**format_dict) for e in lst]
     return formatted_list
 
@@ -24,6 +34,7 @@ def get_subset_evidence(all_evidence_dict, subset_vars):
     """
     Select evidence for certain variables only from a evidence_dict and return the variables for which there is evidence
      and the corresponding values.
+
     :param all_evidence_dict: (dict) The evidence dictionary.
     :param subset_vars: (string list) the subset of variables for which to select evidence from all_evidence_dict.
     :return: evidence variable names and values
@@ -36,7 +47,8 @@ def get_subset_evidence(all_evidence_dict, subset_vars):
 
 def is_pos_def(matrix):
     """
-    Check if matrix is positive definite
+    Check if matrix is positive definite.
+
     :param matrix: the matrix to check
     :return: (bool) whether the matrix is positive-definite or not
     """
@@ -46,7 +58,7 @@ def is_pos_def(matrix):
 def remove_duplicate_values(array_like, tol=0.0):
     """
     Removes duplicate values from list (when tol=0.0) or remove approximately duplicate
-    values if tol!=0.0
+    values if tol!=0.0.
     """
     unique_values = [array_like[0]]
     for element in array_like:
@@ -59,21 +71,10 @@ def remove_duplicate_values(array_like, tol=0.0):
     return unique_values
 
 
-def make_list(list_like_object):
-    """
-    Convert a object to a list
-    :param list_like_object: a list like object (i.e string or 1d numpy array)
-    :return: the equivalent list
-    """
-    if not isinstance(list_like_object, list):
-        lst = [list_like_object]
-        return lst
-    return list_like_object
-
-
 def make_scalar(scalar_like_object):
     """
     Convert a list or numpy array containing a single element to a scalar.
+
     :param scalar_like_object: a list or numpy array containing a single element (either int or float).
     :return: the int or float contained in the scalar_like_object
     """
@@ -87,13 +88,14 @@ def make_scalar(scalar_like_object):
         return scalar_like_object[0]
     if isinstance(scalar_like_object, (int, float)):
         return scalar_like_object
-    raise ValueError(f'{type(scalar_like_object)} is not supported')
+    raise TypeError(f'{type(scalar_like_object)} is not supported')
 
 
 def make_column_vector(vector_like_object):
     """
     This function converts a vector like object into a standard
     numpy column vector.
+
     :param vector_like_object: an int, float, list or (one dimensional) array
     :return: a numpy column vector (array)
     """
@@ -108,11 +110,11 @@ def make_column_vector(vector_like_object):
     return np.expand_dims(array, axis=1)
 
 
-#TODO: simplify this function like the one above
-# pylint: disable=inconsistent-return-statements
+# TODO: simplify this function like the one above
 def list_to_square_matrix(matrix_like_object):
     """
     Make a square matrix from a list.
+
     :param matrix_like_object: a list containing a single int or float or n lists of length n
     :return: an nxn numpy array.
     """
@@ -122,30 +124,34 @@ def list_to_square_matrix(matrix_like_object):
     if len_list > 1:
         for element in matrix_like_object:
             if not isinstance(element, list):
-                raise ValueError('cannot make square matrix from one dimensional list')
+                raise ValueError('cannot make square matrix from one dimensional list.')
             if len(element) != len_list:
-                raise ValueError('cannot make square matrix from different length lists')
+                raise ValueError('cannot make square matrix from different length lists.')
             # if isinstance(element[0], list):
             #    raise ValueError('cannot make square matrix from 3d list')
-        return np.array(matrix_like_object)
+        matrix = np.array(matrix_like_object)
     # len_list == 1:
-    if isinstance(matrix_like_object[0], (int, float)):
+    elif isinstance(matrix_like_object[0], (int, float)):
         # matrix_like_object = [float or int]
-        return np.array([matrix_like_object])
-    if len(matrix_like_object[0]) == 1:
+        matrix = np.array([matrix_like_object])
+    elif len(matrix_like_object[0]) == 1:
         if isinstance(matrix_like_object[0][0], (int, float)):
             # matrix_like_object = [[float or int]]
-            return np.array(matrix_like_object)
-    raise ValueError(f'cannot convert matrix_like_object {matrix_like_object} to square matrix')
+            matrix = np.array(matrix_like_object)
+    else:
+        raise ValueError(f'cannot convert matrix_like_object {matrix_like_object} to square matrix')
+    if (matrix.shape[0] != matrix.shape[1]) or len(matrix.shape) > 2:
+        raise ValueError(f'cannot convert {matrix_like_object} to a square matrix')
+    return matrix
 # pylint: enable=inconsistent-return-statements
 
 
 # pylint: disable=inconsistent-return-statements
 def make_square_matrix(matrix_like_object):
     """
-    This function converts a matrix like object into a standard
-    numpy square matrix.
-    :param matrix_like_object: an int, float, list, list of lists or (square, two dimensional) array
+    This function converts a matrix like object into a standard numpy square matrix.
+
+    :param matrix_like_object: an int, float, list of lists or (square, two dimensional) array
     :return: a numpy square matrix (array)
     """
     if isinstance(matrix_like_object, (int, float)):
@@ -154,10 +160,8 @@ def make_square_matrix(matrix_like_object):
         return list_to_square_matrix(matrix_like_object)
 
     if isinstance(matrix_like_object, np.ndarray):
-        if len(matrix_like_object.shape) > 2:
-            raise ValueError('cannot convert higher (than 2) dimensional tensor to 2d matrix')
-        if len(matrix_like_object.shape) == 1:
-            return np.expand_dims(matrix_like_object, axis=0)
+        if len(matrix_like_object.shape) != 2:
+            raise ValueError('cannot convert non 2-dimensional array to matrix')
         assert matrix_like_object.shape[0] == matrix_like_object.shape[1]
         return matrix_like_object.copy()
     raise ValueError(f'cannot convert matrix_like_object {matrix_like_object} to square matrix.')
@@ -165,7 +169,6 @@ def make_square_matrix(matrix_like_object):
 
 
 def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, operator):
-    # TODO: update usages
     """
     A function that performs element wise operations between square matrices where the corresponding indices in the
     different matrices do not necessarily correspond to the same variables, but can be mapped to each other through the
@@ -200,14 +203,10 @@ def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, oper
     assert len(mat_b.shape) == 2, 'Error: matrix needs to be 2 dimensional'
     assert mat_a.shape[0] == mat_a.shape[1], 'Error: matrix needs to be square'
     assert mat_b.shape[0] == mat_b.shape[1], 'Error: matrix needs to be square'
-    if len(var_names_a) != mat_a.shape[0]:
-        print('var_names_a = ', len(var_names_a))
-        print('mat_a = \n', mat_a.shape)
-        raise AssertionError('The number of variables in var_names_a does not match the dimensions of mat_a.')
-    if len(var_names_b) != mat_b.shape[0]:
-        print('var_names_b = ', len(var_names_b))
-        print('mat_b = \n', mat_b.shape)
-        raise AssertionError('The number of variables in var_names_b does not match the dimensions of mat_b.')
+    var_names_len_error_msg = 'The number of variables in var_names_{aorb} does not match the dimensions of mat_{aorb}.'
+    assert len(var_names_a) == mat_a.shape[0], var_names_len_error_msg.format(aorb='a')
+    assert len(var_names_b) == mat_b.shape[0], var_names_len_error_msg.format(aorb='b')
+
     # TODO: clean this up (also see todo in indexed_column_vector_operation)
     if set(var_names_b) <= set(var_names_a):
         new_vars = var_names_a
@@ -233,7 +232,6 @@ def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, oper
 
 
 def indexed_column_vector_operation(colvec_a, colvec_b, var_names_a, var_names_b, operator):
-    # TODO: modify to match indexed_square_matrix_operation and update usages
     """
     A function that performs element operations between column vectors, where the corresponding indices in the different
     vectors do not necessarily correspond to the same variables, but can be mapped to each other through the variable
@@ -297,7 +295,8 @@ def indexed_column_vector_operation(colvec_a, colvec_b, var_names_a, var_names_b
 
 def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
     """
-    Plot a 2d function
+    Plot a 2d function, with specific x limits and y limits.
+
     :param xlim: the x limits to plot the function over.
     :param ylim: the y limits to plot the function over.
     :param func: the function to plot
@@ -328,6 +327,7 @@ def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
 def inv_matrix(m):
     """
     Invert matrix using the numpy.linalg.inv function and describe matrix if inversion fails.
+
     :param nupmy.ndarry m: The matrix to invert.
     :return: The inverted matrix
     :rtype: np.ndarray
@@ -342,6 +342,7 @@ def inv_matrix(m):
 def log(x):
     """"
     Get the log of a value using the numpy.log function and output the input value if invalid.
+
     :param numerical x: The value to compute the log of.
     :return: The log value.
     :rtype: numerical

@@ -4,7 +4,12 @@
 	- Add tests to your contributions to avoid failing on coverage
 	- Check codestyle to avoid failing on code style.
 	- What to work on: implementation priorities (suggestion)
+	- Add test with bug fixes as well.
 	- etc
+	Suggestions for Contributions:
+	* Improve and add tests for experimental modules
+	* Look at TODOs
+	* Work on Roadmap
 
 * add code blurb to readme.
 * add license reference to all files?

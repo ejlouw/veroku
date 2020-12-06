@@ -6,6 +6,8 @@ from tqdm.auto import tqdm
 import pandas as pd
 from graphviz import Source
 
+from unittest.mock import MagicMock
+
 from veroku._cg_helpers._cluster import Cluster
 import veroku._cg_helpers._animation as cg_animation
 from veroku.factors._factor_utils import get_subset_evidence
@@ -53,6 +55,7 @@ def _evidence_reduce_factors(factors, evidence):
         reduced_factors.append(factor.copy())
     return reduced_factors
 
+
 def _absorb_subset_factors(factors):
     """
     Absorb any factors that has a scope that is a subset of another factor into such a factor.
@@ -86,25 +89,6 @@ def _absorb_subset_factors(factors):
             final_graph_cluster_factors.append(factor_i)
     assert all(factor_processed_mask), 'Error: Some factors where not included during variable subset processing.'
     return final_graph_cluster_factors
-
-
-def _make_subset_factor_df(subset_dict):
-    """
-    Make a ...
-    :param subset_dict: (dict) A dictionary mapping factors to factors that have subset scopes
-    :return:
-    """
-    keys = list(subset_dict.keys())
-    values = list(subset_dict.values())
-    assert(len(keys) == len(values))
-    # TODO: This raises different list lengths warning (see below). Investigate this.
-    #   VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences...
-    data = np.array([keys, values]).T
-    df = pd.DataFrame(columns=['factor_index', 'subfactor_indices'],
-                      data=data)
-    df['num_subfactors'] = df['subfactor_indices'].apply(lambda x: len(x))
-    df.sort_values(by='num_subfactors', inplace=True, ascending=False)
-    return df
 
 
 class ClusterGraph(object):

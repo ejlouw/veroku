@@ -31,7 +31,7 @@ class TestFactorisedFactor(unittest.TestCase):
         self.gab3 = Gaussian(K=[[5, 1], [1, 2]], h=[1, 2], g=0.0, var_names=['a', 'b'])
         self.ga3 = Gaussian(K=[[1]], h=[1], g=0.0, var_names=['a'])
 
-    def test_absorb_independent(self):
+    def test_multiply_independent(self):
         """
         Test that the joint distribution has been correctly calculated.
         """
@@ -51,7 +51,7 @@ class TestFactorisedFactor(unittest.TestCase):
         self.assertEqual(len(actual_joint_ff.factors), 3)
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
 
-    def test_absorb_dependent(self):
+    def test_multiply_dependent(self):
         """
         Test that the joint distribution has been correctly calculated.
         """
@@ -68,7 +68,7 @@ class TestFactorisedFactor(unittest.TestCase):
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
 
-    def test_absorb_same_scope(self):
+    def test_multiply_same_scope(self):
         """
         Test that the joint distribution has been correctly calculated.
         """
@@ -86,7 +86,7 @@ class TestFactorisedFactor(unittest.TestCase):
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
 
-    def test_absorb_subset_scope(self):
+    def test_multiply_subset_scope(self):
         """
         Test that the joint distribution has been correctly calculated.
         """

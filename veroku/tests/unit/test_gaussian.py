@@ -274,7 +274,7 @@ class TestGaussian(unittest.TestCase):
 
     # pylint: enable=protected-access
 
-    def test_absorb_1d(self):
+    def test_multiply_1d(self):
         """
         Test that the Gaussian multiplication function returns the correct result for one dimensional Gaussians.
         """
@@ -294,7 +294,7 @@ class TestGaussian(unittest.TestCase):
         actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
-    def test_absorb_2d(self):
+    def test_multiply_2d(self):
         """
         Test that the Gaussian multiplication function returns the correct result for two dimensional Gaussians.
         """

@@ -12,7 +12,10 @@ omit =
     examples/*
     source/*
     veroku/tests/*
+    veroku/factors/_factor.py
+    veroku/factors/_factor_template.py
     veroku/factors/experimental/*
+
 
 [report]
 # Regexes for lines to exclude from consideration

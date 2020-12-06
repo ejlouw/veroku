@@ -3,15 +3,10 @@ A module for instantiating and performing operations on multivariate Gaussian an
 """
 # System imports
 import cmath
-import copy
-import operator
 
 # Third-party imports
 import numpy as np
 import numdifftools as nd
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 from scipy.optimize import minimize
 from scipy import special
@@ -19,8 +14,12 @@ from scipy import special
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
-from veroku.factors._factor_template import FactorTemplate
 from veroku.factors.gaussian import Gaussian
+
+# TODO: confirm that the different GaussianMixture divide methods have sufficient stability and accuracy in their
+#  approximations.
+# TODO: Add tests for the divide methods.
+# TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
 
 class GaussianMixture(Factor):
@@ -63,11 +62,11 @@ class GaussianMixture(Factor):
         :return: The result of the comparison.
         :rtype: bool
         """
+        # TODO: consider adding type error here rather
         if not isinstance(factor, GaussianMixture):
-            return False
+            raise TypeError(f'factor must be of GaussianMixture type but has type {type(factor)}')
         if factor.num_components != self.num_components:
-            return False
-
+                return False
         for i in range(self.num_components):
             found_corresponding_factor = False
             for j in range(i, self.num_components):
@@ -109,17 +108,17 @@ class GaussianMixture(Factor):
         :return: The factor product.
         :rtype: GaussianMixture
         """
-        new_componnents = []
+        new_components = []
         if isinstance(factor, Gaussian):
             for gauss in self.components:
-                new_componnents.append(gauss.multiply(factor))
+                new_components.append(gauss.multiply(factor))
         elif isinstance(factor, GaussianMixture):
             for gauss_ai in self.components:
                 for gauss_bi in factor.components:
-                    new_componnents.append(gauss_ai.multiply(gauss_bi))
+                    new_components.append(gauss_ai.multiply(gauss_bi))
         else:
             raise TypeError('unsupported factor type.')
-        return GaussianMixture(new_componnents)
+        return GaussianMixture(new_components)
 
     def divide(self, factor):
         """
@@ -157,14 +156,14 @@ class GaussianMixture(Factor):
         :param vrs: the names of the observed variable (list)
         :type vrs: str list
         :param values: the values of the observed variables (list or vector-like object)
-        :type values: vactor-like
+        :type values: vector-like
         :return: the observation reduced factor.
         :rtype: GaussianMixture
         """
-        new_componnents = []
+        new_components = []
         for gauss in self.components:
-            new_componnents.append(gauss.reduce(vrs, values))
-        return GaussianMixture(new_componnents)
+            new_components.append(gauss.reduce(vrs, values))
+        return GaussianMixture(new_components)
 
     def marginalize(self, vrs, keep=False):
         """
@@ -177,10 +176,10 @@ class GaussianMixture(Factor):
         :return: the resulting marginal factor.
         :rtype: GaussianMixture
         """
-        new_componnents = []
+        new_components = []
         for gauss in self.components:
-            new_componnents.append(gauss.marginalize(vrs, keep))
-        return GaussianMixture(new_componnents)
+            new_components.append(gauss.marginalize(vrs, keep))
+        return GaussianMixture(new_components)
 
     # pylint: disable=invalid-name
     def log_potential(self, x):

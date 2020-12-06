@@ -19,7 +19,7 @@ class TestNonLinearGaussian(unittest.TestCase):
     Tests for NonlinearGaussian Class.
     """
 
-    def test_absorb(self):
+    def test_multiply(self):
         """
         Test that the multiply function results in the correct joint distribution when the absorbed factor has the same
         scope as the conditioning scope.
@@ -53,7 +53,7 @@ class TestNonLinearGaussian(unittest.TestCase):
         actual_joint = nlg_factor.joint_distribution
         self.assertTrue(expected_joint.equals(actual_joint))
 
-    def test_absorb_both_sides(self):
+    def test_multiply_both_sides(self):
         """
         Test that the multiply function results in the correct joint distribution when a factor with the conditional scope
         is received first and a conditioning scope factor is received afterwards.

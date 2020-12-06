@@ -993,7 +993,7 @@ class Gaussian(Factor):
         :return: The split Gaussian Mixture.
         :rtype: GaussianMixture
         """
-        from veroku.factors.gaussian_mixture import GaussianMixture
+        from veroku.factors.experimental.gaussian_mixture import GaussianMixture
         if self.dim != 1:
             raise NotImplementedError('Gaussian must be one dimensional.')
         weights = [1.0/3.0, 1.0/3.0, 1.0/3.0]

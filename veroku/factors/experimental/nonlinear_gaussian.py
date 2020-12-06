@@ -14,7 +14,7 @@ from veroku.factors import _factor_utils
 from veroku.factors._sigma_points import get_sigma_points_array, sigma_points_array_to_joint_params
 from veroku.factors._factor import Factor
 from veroku.factors.gaussian import Gaussian
-from veroku.factors.gaussian_mixture import GaussianMixture
+from veroku.factors.experimental.gaussian_mixture import GaussianMixture
 from veroku.factors._factor_utils import make_square_matrix, indexed_square_matrix_operation, \
     format_list_elements
 from veroku.factors._factor_template import FactorTemplate
@@ -460,8 +460,6 @@ class NonLinearGaussianMixture(Factor):
         :return: the resulting factor
         :rtype: NonLinearGaussianMixture
         """
-
-
         if isinstance(factor, GaussianMixture):
             gm_factor = factor
         elif isinstance(factor, Gaussian):

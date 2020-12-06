@@ -8,15 +8,12 @@ import operator
 
 # Third-party imports
 import numpy as np
+import mockito
+from mockito import when, unstub, ANY
 
 # Local imports
-from veroku.factors.gaussian import make_random_gaussian
 from veroku.factors.categorical import Categorical
 from veroku.factors.sparse_categorical import SparseCategorical, _make_dense, _any_scope_binary_operation
-
-
-#  TODO: add tests for strange KLD (i.e with divide by zeros)
-#  TODO: add tests divide operation
 
 
 def make_abc_factor_1(CatClass):
@@ -44,11 +41,24 @@ class TestCategorical(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.CatClass = Categorical
 
+    def setUp(self):
+        """
+        This runs before every test.
+        """
+        self.not_a_categorical_factor = mockito.mock()
+
+    def tearDown(self):
+        """
+        This after every test.
+        """
+        unstub()
+
     # Categorical only
     def test_init_fails_params(self):
         """
         Test that the Categorical constructor fails when neither probs_table or log_probs_tensor is given.
         """
+
         if self.CatClass == Categorical:
             with self.assertRaises(ValueError):
                 Categorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table=None, log_probs_tensor=None)
@@ -57,13 +67,40 @@ class TestCategorical(unittest.TestCase):
             Categorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_tensor=log_probs_tensor)
 
     # Categorical only
+    def test_init_fails_missing_cards(self):
+        """
+        Test that the Categorical constructor fails when the cardinalities are not given with the probs_table.
+        """
+
+        if self.CatClass == Categorical:
+            with self.assertRaises(ValueError):
+                Categorical(var_names=['a', 'b'], cardinalities=None, probs_table={(0, 0): 1.0})
+            log_probs_tensor = np.random.rand(2, 2)
+            # test that it completes successfully when cardinalities are there
+            Categorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_tensor=log_probs_tensor)
+
+    # SparseCategorical only
+    def test_sparse_init_fails_params(self):
+        """
+        Test that the Categorical constructor fails when neither probs_table or log_probs_tensor is given.
+        """
+
+        if self.CatClass == SparseCategorical:
+            with self.assertRaises(ValueError):
+                print('f')
+                SparseCategorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table=None, log_probs_table=None)
+
+            # test that it completes successfully when probs_table is there
+            SparseCategorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table={(0, 0): 1.0})
+            # test that it completes successfully when probs_table is there
+            SparseCategorical(var_names=['a', 'b'], cardinalities=[2, 2], log_probs_table={(0, 0): 0.0})
+
     def test_init_fails_cards(self):
         """
         Test that the Categorical constructor fails when the number of cardinalities dont match the number of variables.
         """
-        if self.CatClass == Categorical:
-            with self.assertRaises(ValueError):
-                Categorical(var_names=['a', 'b'], cardinalities=[2, 2, 2], log_probs_tensor=np.random.rand(2, 2))
+        with self.assertRaises(ValueError):
+            self.CatClass(var_names=['a', 'b'], cardinalities=[2, 2, 2])
 
     # Categorical only
     def test_init_fails_bad_index(self):
@@ -106,11 +143,106 @@ class TestCategorical(unittest.TestCase):
                    (1, 0): 0.3,
                    (1, 1): 0.4}
         sp_table_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
-        g1 = make_random_gaussian(var_names=vars_a)
-        with self.assertRaises(ValueError):
-            sp_table_a.equals(g1)
+        with self.assertRaises(TypeError):
+            sp_table_a.equals(self.not_a_categorical_factor)
 
-    def test_absorb_same_scope(self):
+    def test_equals_false_var_set(self):
+        """
+        Test that the equals method returns false when the comparing to a factor with different var_names.
+        """
+        vars_a = ['a', 'b']
+        vars_b = ['c', 'd']
+        probs_a = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        categorical_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        categorical_b = self.CatClass(var_names=vars_b, probs_table=probs_a, cardinalities=[2, 2])
+        self.assertFalse(categorical_a.equals(categorical_b))
+
+    def test_equals_false_fails(self):
+        """
+        Test that the equals method returns false when the comparing to a factor with different probs.
+        """
+        vars_a = ['a', 'b']
+
+        probs_a = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        probs_b = {(0, 0): 0.1001,
+                   (0, 1): 0.1999,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        categorical_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        categorical_b = self.CatClass(var_names=vars_a, probs_table=probs_b, cardinalities=[2, 2])
+        self.assertFalse(categorical_a.equals(categorical_b))
+
+    def test_equals_false_present_not_default(self):
+        """
+        Test that the equals method returns false when a (non-default) value present in factor b and the corresponding value
+        in the factor a is not the default value of factor b (and vice-versa).
+        """
+        vars_a = ['a', 'b']
+
+        probs_a = {(0, 0): 0.1}
+        probs_b = {(0, 1): 0.1}
+        categorical_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        categorical_b = self.CatClass(var_names=vars_a, probs_table=probs_b, cardinalities=[2, 2])
+
+        self.assertFalse(categorical_a.equals(categorical_b))
+        self.assertFalse(categorical_b.equals(categorical_a))
+
+    def test_equals_false_non_default_not_close(self):
+        """
+        Test that the equals method returns false when the (non-default) values present in both factors are not close.
+        """
+        vars_a = ['a', 'b']
+
+        probs_a = {(0, 0): 0.11}
+        probs_b = {(0, 0): 0.1}
+        categorical_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        categorical_b = self.CatClass(var_names=vars_a, probs_table=probs_b, cardinalities=[2, 2])
+        self.assertFalse(categorical_a.equals(categorical_b))
+        self.assertFalse(categorical_b.equals(categorical_a))
+
+    # SparseCategorical only
+    def test_equals_false_non_default_not_close(self):
+        """
+        Test that the equals method returns false when the all the non-default values are the same, but the default
+        values differ.
+        """
+        if self.CatClass == SparseCategorical:
+            vars_a = ['a', 'b']
+
+            probs_a = {(0, 0): 0.1}
+            probs_b = {(0, 0): 0.1}
+            categorical_a = SparseCategorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2],
+                                              default_log_prob=0.0)
+            categorical_b = SparseCategorical(var_names=vars_a, probs_table=probs_b, cardinalities=[2, 2],
+                                              default_log_prob=0.1)
+            self.assertFalse(categorical_a.equals(categorical_b))
+            self.assertFalse(categorical_b.equals(categorical_a))
+
+    # SparseCategorical only
+    def test_equals_false_diff_default_but_dense(self):
+        """
+        Test that the equals method returns false when the all the non-default values are the same, and the default
+        values differ, but all the assignments are accounted for with non-default values.
+        """
+        if self.CatClass == SparseCategorical:
+            vars_a = ['a']
+
+            probs_a = {(0,): 0.6, (1,): 0.4}
+            probs_b = {(0,): 0.6, (1,): 0.4}
+            categorical_a = SparseCategorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2],
+                                              default_log_prob=0.0)
+            categorical_b = SparseCategorical(var_names=vars_a, probs_table=probs_b, cardinalities=[2],
+                                              default_log_prob=0.1)
+            self.assertTrue(categorical_a.equals(categorical_b))
+            self.assertTrue(categorical_b.equals(categorical_a))
+
+    def test_multiply_same_scope(self):
         """
         Test that the multiply function returns the correct result.
         """
@@ -130,7 +262,64 @@ class TestCategorical(unittest.TestCase):
         actual_resulting_factor = sp_table_b.multiply(sp_table_b)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
-    def test_absorb_subset_scope(self):
+    def test_multiply_fails_invalid_factor(self):
+        """
+        Test that the multiply function fails when attempting to multiply with a non-categorical factor type.
+        """
+        categorical_a = make_abc_factor_1(CatClass=self.CatClass)
+        with self.assertRaises(TypeError):
+            categorical_a.multiply(self.not_a_categorical_factor)
+
+    def test_divide_fails_invalid_factor(self):
+        """
+        Test that the divide function fails when attempting to multiply with a non-categorical factor type.
+        """
+        categorical_a = make_abc_factor_1(CatClass=self.CatClass)
+        with self.assertRaises(TypeError):
+            categorical_a.divide(self.not_a_categorical_factor)
+
+    def test_argmax(self):
+        """
+        Test that the argmax function returns the correct variable assignment.
+        """
+        vars_b = ['a', 'b']
+        probs_b = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.5,
+                   (1, 1): 0.2}
+        expected_result = (1, 0)
+        categorical_a = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+
+        actual_result = categorical_a.argmax()
+
+        self.assertEquals(expected_result, actual_result)
+
+    def test_kl_divergence_small_neg_works(self):
+        """
+        Test that the kl_divergence function does not fail on a negative KLD as a result of numerical errors.
+        """
+        vars_names = ['a']
+        e = 1e-12
+        probs_table_p = {(0,): 0.2, (1,): 0.8}
+        probs_tensor_p = np.array(list(probs_table_p.values()))
+
+        probs_table_q = {(0,): 0.2 + e, (1,): 0.8 - e}
+        probs_tensor_q = np.array(list(probs_table_q.values()))
+
+        log_p = np.log(probs_tensor_p)
+        log_q = np.log(probs_tensor_q)
+        kl_array = np.where(log_p != -np.inf, np.exp(log_p) * (log_p - log_q), 0.0)
+        kld = np.sum(kl_array)
+        self.assertTrue(kld < 0.0)
+        categorical_p = self.CatClass(var_names=vars_names, probs_table=probs_table_p, cardinalities=[2])
+        categorical_q = self.CatClass(var_names=vars_names, probs_table=probs_table_q, cardinalities=[2])
+
+        expected_kld = 0.0
+        actual_kld = categorical_p.kl_divergence(categorical_q)
+
+        self.assertEqual(actual_kld, expected_kld)
+
+    def test_multiply_subset_scope(self):
         """
         Test that the multiply function returns the correct result.
         """
@@ -156,7 +345,7 @@ class TestCategorical(unittest.TestCase):
         actual_resulting_factor = sp_table_abc.multiply(sp_table_ab)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
-    def test_absorb_partially_overlapping(self):
+    def test_multiply_partially_overlapping(self):
         vars_abc = ['a', 'b', 'c']
         probs_abc = {(0, 0, 0): 0.1,
                      (0, 0, 1): 0.2,
@@ -193,7 +382,7 @@ class TestCategorical(unittest.TestCase):
         actual_factor_dabc = factor_abc.absorb(factor_dc)
         self.assertTrue(expected_factor_dabc.equals(actual_factor_dabc))
 
-    def test_absorb_different_scope(self):
+    def test_multiply_different_scope(self):
         """
         Test that the multiply function returns the correct result.
         """
@@ -372,11 +561,11 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the distance from vacuous function returns the correct result.
         """
-        vars = ['a', 'c']
+        var_names = ['a', 'c']
         probs = {(0, 1): 0.4,
                  (1, 0): 0.2,
                  (1, 1): 0.3}
-        factor = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[2, 2])
+        factor = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[2, 2])
 
         correct_KL_p_vac = sum([(0.4 / 0.9) * (np.log(0.4 / 0.9) - np.log(0.25)),
                                 (0.2 / 0.9) * (np.log(0.2 / 0.9) - np.log(0.25)),
@@ -388,11 +577,11 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the distance from vacuous function returns the correct result.
         """
-        vars = ['a', 'c']
+        var_names = ['a', 'c']
         probs = {(0, 1): 0.5,
                  (1, 0): 0.2,
                  (1, 1): 0.3}
-        factor = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[2, 2])
+        factor = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[2, 2])
 
         correct_KL_p_vac = sum([0.5 * (np.log(0.5) - np.log(0.25)),
                                 0.2 * (np.log(0.2) - np.log(0.25)),
@@ -404,15 +593,15 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the kld function returns the correct result.
         """
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 0.2,
                  (3,): 0.8}
-        factor_1 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_1 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
 
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 0.3,
                  (3,): 0.7}
-        factor_2 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_2 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 0.2 * (np.log(0.2) - np.log(0.3)) + 0.8 * (np.log(0.8) - np.log(0.7))
         self.assertAlmostEqual(correct_kld, computed_kld)
@@ -421,14 +610,14 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the kld function returns the correct result.
         """
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 1.0}
-        factor_1 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_1 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
 
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 0.5,
                  (3,): 0.5}
-        factor_2 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_2 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld = 1.0 * (np.log(1.0) - np.log(0.5))
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
@@ -437,20 +626,61 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the kld function returns the correct result.
         """
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 1.0,
                  (3,): 1e-5}
-        factor_1 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_1 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
 
-        vars = ['a']
+        var_names = ['a']
         probs = {(2,): 1.0,
                  (3,): 1.0}
-        factor_2 = self.CatClass(var_names=vars, probs_table=probs, cardinalities=[4])
+        factor_2 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[4])
         computed_kld = factor_1.kl_divergence(factor_2)
         correct_kld_1 = 1.0 * (np.log(1.0) - np.log(0.5))
         correct_kld_2 = 1e-5 * (np.log(1e-5) - np.log(0.5))
         correct_kld = correct_kld_1 + correct_kld_2
         self.assertAlmostEqual(computed_kld, correct_kld, places=4)
+
+    def test_divide_fails_cards(self):
+        """
+        Test that the divide function fails on inconsistent cardinalities.
+        """
+        var_names = ['a']
+        probs = {(0,): 1.0}
+        factor_1 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[2])
+
+        var_names = ['a']
+        probs = {(2,): 0.0}
+        factor_2 = self.CatClass(var_names=var_names, probs_table=probs, cardinalities=[3])
+
+        with self.assertRaises(AssertionError):
+            factor_1.divide(factor_2)
+
+    def test_kld_2d_factor(self):
+        """
+        Test that the kld function returns the correct result.
+        """
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.2,
+                   (0, 1): 0.1,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+
+        vars_b = ['b', 'a']
+        probs_b = {(0, 0): 0.1,
+                   (0, 1): 0.4,
+                   (1, 0): 0.2,
+                   (1, 1): 0.3}
+
+        correct_kld = 0.2 * np.log(0.2 / 0.1) + \
+                      0.1 * np.log(0.1 / 0.2) + \
+                      0.3 * np.log(0.3 / 0.4) + \
+                      0.4 * np.log(0.4 / 0.3)
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
+        computed_kld = factor_a.kl_divergence(factor_b)
+
+        self.assertAlmostEqual(correct_kld, computed_kld)
 
     def test_KLD_with_zeros(self):
         vars_a = ['a', 'b']
@@ -568,6 +798,38 @@ class TestCategorical(unittest.TestCase):
         expected_kld = sum(expected_kld_list)
         self.assertEqual(expected_kld, actual_kld)
 
+    # def test_kld_fails2(self):
+    #    """
+    #    Test that the kl_divergence fails when the calculated kld is negative and too large to be a numeric error.
+    #    """
+    #    categorical_a = self.CatClass(var_names=['a'], probs_table={(0,): 1.0}, cardinalities=[2])
+    #    categorical_b = self.CatClass(var_names=['a'], probs_table={(0,): 1.0}, cardinalities=[2])
+    #
+    #    when(categorical_b)._raw_kld(ANY, ANY).thenReturn(-1.0)
+    #    with self.assertRaises(ValueError):
+    #        categorical_a.kl_divergence(categorical_b)
+    #
+    # def test_kld_fails(self):
+    #    """
+    #    Test that the kl_divergence fails when the calculated kld is negative and too large to be a numeric error.
+    #    """
+    #    categorical_a = self.CatClass(var_names=['a'], probs_table={(0,): 1.0}, cardinalities=[2])
+    #    categorical_b = self.CatClass(var_names=['a'], probs_table={(0,): 1.0}, cardinalities=[2])
+    #
+    #    dummy_sparse_categorical = mockito.mock(self.CatClass)
+    #
+    #    if self.CatClass == Categorical:
+    #        dummy_tensor = np.array([0])
+    #        categorical_a.log_probs_tensor = dummy_tensor
+    #        categorical_b.log_probs_tensor = dummy_tensor
+    #        dummy_value = dummy_tensor
+    #    if self.CatClass == SparseCategorical:
+    #        dummy_value = self.CatClass(var_names=['a'], probs_table={(0,): 1.0}, cardinalities=[2])
+    #
+    #    when(categorical_b)._raw_kld(dummy_value, dummy_value).thenReturn(-1.0)
+    #    with self.assertRaises(ValueError):
+    #        categorical_a.kl_divergence(categorical_b)
+    #
     # SparseCategorical only
     def test__make_dense(self):
         if self.CatClass == SparseCategorical:
@@ -700,6 +962,65 @@ class TestCategorical(unittest.TestCase):
         factor_cab = self.CatClass(var_names=vars_cab, probs_table=probs_cab, cardinalities=[2, 2, 2])
         actual_result = factor_cab.reorder(vars_abc)
         self.assertTrue(actual_result.equals(expected_result))
+
+    def test__assert_consistent_cardinalities_pass(self):
+        """
+        Test that the _assert_consistent_cardinalities passes with consistent cardinalities
+        :return:
+        """
+        vars_a = ['a', 'b']
+        probs_a = {(2, 1): 0.0}
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[3, 2])
+
+        vars_b = ['b', 'a']
+        probs_b = {(0, 2): 0.0}
+        factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 3])
+        factor_a._assert_consistent_cardinalities(factor_b)
+        factor_b._assert_consistent_cardinalities(factor_a)
+
+    def test__assert_consistent_cardinalities_fails(self):
+        """
+        Test that the _assert_consistent_cardinalities fails with inconsistent cardinaties
+        """
+        vars_a = ['a', 'b']
+        probs_a = {(2, 1): 0.0}
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[3, 2])
+
+        vars_b = ['b', 'a']
+        probs_b = {(2, 1): 0.0}
+        factor_b = self.CatClass(var_names=vars_b, probs_table=probs_b, cardinalities=[3, 2])
+        with self.assertRaises(AssertionError):
+            factor_a._assert_consistent_cardinalities(factor_b)
+        with self.assertRaises(AssertionError):
+            factor_b._assert_consistent_cardinalities(factor_a)
+
+    def test_is_vacuous_close_true(self):
+        """
+        Test that the is_vacuous property is True when the factor is close to vacuous.
+        """
+        e = 1e-10
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.25 + e,
+                   (0, 1): 0.25,
+                   (1, 0): 0.25 - e,
+                   (1, 1): 0.25}
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        self.assertTrue(factor_a.is_vacuous)
+
+    def test___repr__(self):
+        vars_a = ['a', 'b']
+        probs_a = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
+        factor_a = self.CatClass(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
+        actual_repr_string = factor_a.__repr__()
+        expected_repr_string = "a\tb\tprob\n" + \
+                               "0\t0\t0.1000\n" + \
+                               "0\t1\t0.2000\n" + \
+                               "1\t0\t0.3000\n" + \
+                               "1\t1\t0.4000\n"
+        self.assertEqual(expected_repr_string, actual_repr_string)
 
 
 class TestSparseCategorical(TestCategorical):

@@ -30,7 +30,7 @@ state of a process or system, given noisy measurements. PGMs can in principle be
 uncertainty and is therefore applicable to many problems.</div> 
 
 Veroku currently supports the following distributions:
-* Categorical
+* Categorical (sparse and dense implementations)
 * Gaussian
 * Gaussian mixture
 * Linear Gaussian<sup>1</sup>

@@ -11,7 +11,6 @@ import warnings
 import numpy as np
 from numpy import unravel_index
 from scipy import special
-from itertools import product
 
 # Local imports
 from veroku.factors._factor import Factor
@@ -33,7 +32,7 @@ class Categorical(Factor):
     A class for instantiating sparse tables with log probabilities.
     """
 
-    def __init__ (self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
+    def __init__(self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -60,8 +59,9 @@ class Categorical(Factor):
 
         if cardinalities is None:
             if log_probs_tensor is None:
-                raise ValueError('numpy array type log_probs_tensor is expected cardinalities are not supplied.\n' +
-                                 'Alternatively, provide cardinalities with dict type probs_table.')
+                msg = 'numpy array type log_probs_tensor is expected cardinalities are not supplied.\n' + \
+                      'Alternatively, provide cardinalities with dict type probs_table.'
+                raise ValueError(msg)
             cardinalities = log_probs_tensor.shape
         elif len(cardinalities) != len(var_names):
             raise ValueError('The cardinalities and var_names lists should be the same length.')
@@ -124,7 +124,7 @@ class Categorical(Factor):
         :rtype: bool
         """
         if not isinstance(factor, Categorical):
-            raise ValueError(f'factor must be of Categorical type but has type {type(factor)}')
+            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
         if set(self.var_names) != set(factor.var_names):
             return False
         factor_copy = factor.reorder(self.var_names)
@@ -141,36 +141,6 @@ class Categorical(Factor):
         """
         return Categorical(var_names=self.var_names.copy(),
                            log_probs_tensor=self.log_probs_tensor.copy())
-
-    @staticmethod
-    def _get_shared_order_smaller_vars(smaller_vars, larger_vars):
-        """
-
-        :param smaller_vars:
-        :param larger_vars:
-        :return:
-
-            Example:
-            >>> larger_vars = ['a', 'c', 'd', 'b']
-            >>> smaller_vars = ['c', 'e', 'b']
-            >>> _get_shared_order_smaller_vars(smaller_vars, larger_vars)
-            >>> ['c', 'b']
-        """
-        shared_vars = [v for v in smaller_vars if v in larger_vars]
-        remaining_smaller_vars = list(set(larger_vars) - set(shared_vars))
-        smaller_vars_new_order = shared_vars + remaining_smaller_vars
-        return smaller_vars_new_order
-
-    @staticmethod
-    def _intersection_has_same_order(larger_vars, smaller_vars):
-        """
-        Check if the intersection of two lists has the same order in both lists.
-        Will return true if either list is empty? SHOULD THIS BE THE CASE?
-        """
-        indices_of_smaller_in_larger = [larger_vars.index(v) for v in smaller_vars if v in larger_vars]
-        if sorted(indices_of_smaller_in_larger) == indices_of_smaller_in_larger:
-            return True
-        return False
 
     @staticmethod
     def tensor_operation(tensor_a, tensor_b, tensor_a_var_names, tensor_b_var_names, func):
@@ -217,7 +187,6 @@ class Categorical(Factor):
         result_tensor = func(f1_tensor_std_shape, f2_tensor_std_shape)
         return result_tensor, result_vars
 
-    # TODO: change back to log form
     def marginalize(self, vrs, keep=False):
         """
         Sum out variables from this factor.
@@ -272,7 +241,7 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         if not isinstance(factor, Categorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
         result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
                                                            self.var_names, factor.var_names, operator.add)
@@ -292,18 +261,12 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         augmented_factor_tensor = factor.log_probs_tensor.copy()
-        # when cancelling out a factor
         special_case_indices = np.where((augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf))
 
         indices_are_empty = [a.size == 0 for a in special_case_indices]
-        if not any(indices_are_empty):
+
+        if not all(indices_are_empty):
             augmented_factor_tensor[special_case_indices] = np.float(0.0)
-        elif not all(indices_are_empty):
-            print('augmented_factor_tensor: ')
-            print(augmented_factor_tensor)
-            print('self.log_probs_tensor: ')
-            print(self.log_probs_tensor)
-            raise ValueError('something strange happened.')
         result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, augmented_factor_tensor,
                                                            self.var_names, factor.var_names, operator.sub)
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
@@ -321,7 +284,7 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         if not isinstance(factor, Categorical):
-            raise ValueError(f'factor must be of SparseLogTable type but has type {type(factor)}')
+            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
         self._assert_consistent_cardinalities(factor)
         result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
                                                            self.var_names, factor.var_names, operator.sub)
@@ -329,12 +292,12 @@ class Categorical(Factor):
 
     def argmax(self):
         """
-        Get the Categorical assignment (vector value) that maximises the factor potential.
+        Get the first assignment (vector value) that maximises the factor potential.
 
         :return: The argmax assignment.
         :rtype: int list
         """
-
+        # TODO: add functionality to deal with more that one instance of the maximum value.
         argmax_index = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
         return argmax_index
 
@@ -362,6 +325,21 @@ class Categorical(Factor):
             return True
         return False
 
+    @staticmethod
+    def _raw_kld(log_p, log_q):
+        """
+        Get the raw numerically calculated kld (which could result in numerical errors causing negative KLDs).
+        :param log_p: The log_p tensor
+        :param log_q:
+        :return: The KL-divergence
+        :rtype: float
+        """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            kl_array = np.where(log_p != -np.inf, np.exp(log_p) * (log_p - log_q), 0.0)
+        kld = np.sum(kl_array)
+        return kld
+
     def kl_divergence(self, factor, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and another factor.
@@ -375,27 +353,22 @@ class Categorical(Factor):
         :rtype: float
         """
         normalized_self = self.normalize()
+        normalized_self = normalized_self.reorder(factor.var_names)
         log_p = normalized_self.log_probs_tensor
         factor_ = factor
         if normalize_factor:
             factor_ = factor.normalize()
         log_q = factor_.log_probs_tensor
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            kl_array = np.where(log_p != -np.inf, np.exp(log_p) * (log_p - log_q), 0.0)
-        kld = np.sum(kl_array)
+        kld = self._raw_kld(log_p, log_q)
         if kld < 0.0:
-            if np.isclose(kld, 0.0, atol=1e-5):
+            if np.isclose(kld, 0.0, atol=1e-4):
                 #  this is fine (numerical error)
                 return 0.0
-            print('\nnormalize_factor = ', normalize_factor)
-            print('self = ')
-            self.show()
-            print('normalized_self = ')
-            normalized_self.show()
-            print('\nfactor = ')
-            factor_.show()
-            raise ValueError(f'Negative KLD: {kld}')
+            kld_msg_details = 'Categorical:\n' + \
+                              normalized_self.__repr__() + \
+                              '\nfactor:' + \
+                              factor_.__repr__()
+            raise ValueError(f'Negative KLD: {kld}. Details:\n{kld_msg_details}')
         return kld
 
     def distance_from_vacuous(self):
@@ -427,23 +400,25 @@ class Categorical(Factor):
         obs_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
         return self.log_probs_tensor[obs_tensor_indexing]
 
-    def show(self, exp_log_probs=True):
+    def show(self):
         """
-        Print the factor.
+        Print the factor's string representation.
+        """
+        print(self.__repr__())
 
-        :param exp_log_probs: Whether or no to exponentiate the log probabilities (to display probabilities instead of
-        log-probabilities)
-        :type exp_log_probs: bool
+    def __repr__(self):
         """
-        prob_string = 'log(prob)'
-        if exp_log_probs:
-            prob_string = 'prob'
-        print(self.var_names, ' ', prob_string)
+        Get the string representation for the factor.
+        :return: The representation string
+        :rtype: str
+        """
+        tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
+        repr_str = tabbed_spaced_var_names
         for assignment in np.ndindex(self.log_probs_tensor.shape):
             prob = self.log_probs_tensor[assignment]
-            if exp_log_probs:
-                prob = np.exp(prob)
-            print(assignment, ' ', prob)
+            prob = np.exp(prob)
+            repr_str += '\t'.join(map(str, assignment)) + f'\t{prob:.4f}\n'
+        return repr_str
 
 
 class CategoricalTemplate(FactorTemplate):
@@ -452,8 +427,8 @@ class CategoricalTemplate(FactorTemplate):
         """
         Create a Categorical factor template.
 
-        :param probs_table: The log_probs_table that specifies the assignments and values for the template.
-        :type probs_table: tuple:float dict
+        :param log_probs: The log probs table that specifies the assignments and values for the template.
+        :type log_probs: tuple:float dict
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
