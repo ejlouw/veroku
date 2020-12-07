@@ -14,6 +14,7 @@ from veroku.factors._factor_utils import get_subset_evidence
 import matplotlib.pyplot as plt
 import collections
 
+
 # TODO: optimise _pass_message
 # TODO: improve sepsets selection for less loopiness
 # TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need
@@ -31,7 +32,8 @@ def _sort_almost_sorted(almost_sorted_deque, key):
     :param key: The key (function) to use for sorting.
     :return: The sorted (given that the conditions are met) deque.
     """
-    almost_sorted_deque.append(almost_sorted_deque.popleft())
+    if key(almost_sorted_deque[0]) < key(almost_sorted_deque[1]):
+        almost_sorted_deque.append(almost_sorted_deque.popleft())
     if key(almost_sorted_deque[-1]) <= key(almost_sorted_deque[-2]):
         return almost_sorted_deque
     almost_sorted_deque = collections.deque(sorted(almost_sorted_deque, key=key, reverse=True))
@@ -74,13 +76,11 @@ def _absorb_subset_factors(factors):
                 if i != j:
                     if not factor_processed_mask[j]:
                         if set(factor_j.var_names) < set(factor_product.var_names):
-                            try:
-                                factor_product = factor_product.multiply(factor_j)
-                                factors_absorbtion_dict[i].append(j)
-                                factor_processed_mask[j] = 1
-                                factor_processed_mask[i] = 1
-                            except NotImplementedError:
-                                print(f'Warning: could not multiply {type(factor_product)} with {type(factor_j)} (Not Implemented)')
+                            factor_product = factor_product.multiply(factor_j)
+                            factors_absorbtion_dict[i].append(j)
+                            factor_processed_mask[j] = 1
+                            factor_processed_mask[i] = 1
+
             if factor_processed_mask[i]:
                 final_graph_cluster_factors.append(factor_product)
     for i, factor_i in enumerate(factors):  # add remaining factors
@@ -92,7 +92,7 @@ def _absorb_subset_factors(factors):
 
 
 class ClusterGraph(object):
-    
+
     def __init__(self, factors, evidence=None, special_evidence=dict(),
                  make_animation_gif=False, disable_tqdm=False, verbose=False):
         """
@@ -131,7 +131,8 @@ class ClusterGraph(object):
 
         # Add special evidence to factors
         for cluster in self._clusters:
-            cluster_special_evidence_vars, cluster_special_evidence_values = get_subset_evidence(self.special_evidence, cluster.var_names)
+            cluster_special_evidence_vars, cluster_special_evidence_values = get_subset_evidence(self.special_evidence,
+                                                                                                 cluster.var_names)
             cluster_special_evidence = dict(zip(cluster_special_evidence_vars, cluster_special_evidence_values))
             cluster.add_special_evidence(cluster_special_evidence)
 
@@ -366,7 +367,7 @@ class ClusterGraph(object):
 
         # TODO: see if the definition of max_iter can be improved
         key_func = lambda x: x.next_information_gain
-        max_message_passes = max_iter*len(self.graph_message_paths)
+        max_message_passes = max_iter * len(self.graph_message_paths)
 
         self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
 
@@ -401,6 +402,7 @@ class _GraphMessagePath:
     """
     A specific path (direction along an edge) in a graph along which a message can be passed.
     """
+
     def __init__(self, sender_cluster, receiver_cluster):
         """
         The initializer.

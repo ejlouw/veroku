@@ -1,18 +1,22 @@
+import builtins
+
 import unittest
-from mockito import verify, patch
-import matplotlib
+#from mockito import verify, patch, when, unstub
+from mockito import unstub
+from unittest.mock import patch
 import matplotlib.pyplot as plt
 from unittest import mock
 
-#import mock
-from veroku.cluster_graph import ClusterGraph, _sort_almost_sorted
+# import mock
+from veroku.cluster_graph import ClusterGraph, _sort_almost_sorted, Cluster
 from veroku._cg_helpers._cluster import Message
 from veroku.factors.gaussian import Gaussian
 import numpy as np
 from collections import deque
+from veroku.factors.gaussian import make_random_gaussian
 
 
-def make_cg1():
+def get_cg1_and_factors():
     """
     Helper function for making a cluster graph.
     """
@@ -26,18 +30,39 @@ def make_cg1():
     return cg, cg_factors
 
 
+def get_cg2(seed=0, process=False):
+    """
+    Helper function for making a cluster graph.
+    """
+    np.random.seed(seed)
+    factors = [make_random_gaussian(['a', 'b']),
+               make_random_gaussian(['c', 'b']),
+               make_random_gaussian(['c', 'd']),
+               make_random_gaussian(['e', 'd']),
+               make_random_gaussian(['e', 'f'])]
+    cg = ClusterGraph(factors)
+    if process:
+        cg.process_graph()
+    return cg
+
+
 class TestClusterGraph(unittest.TestCase):
     """
     A test class for the ClusterGraph class
     """
+
     def setUp(self):
-        self.cg1, self.cg1_factors = make_cg1()
-        self.processed_cg1, _ = make_cg1()
+        self.cg1, self.cg1_factors = get_cg1_and_factors()
+        self.processed_cg1, _ = get_cg1_and_factors()
         self.processed_cg1.process_graph()
+        print()
+
+    def tearDown(self):
+        unstub()
 
     def test__sort_almost_sorted_sorted(self):
         """
-        Test that the _sort_almost_sorted function returns a already sorted deque unchanged.
+        Test that the _sort_almost_sorted function returns  a already sorted deque unchanged.
         """
         expected_result = deque([8, 6, 4, 0])
         input_deque = deque([8, 6, 4, 0])
@@ -49,7 +74,16 @@ class TestClusterGraph(unittest.TestCase):
         Test that the _sort_almost_sorted function sorts the deque correctly.
         """
         expected_result = deque([8, 6, 5, 4])
-        input_deque = deque([8, 6, 4, 5])
+        input_deque = deque([5, 8, 6, 4])
+        actual_result = _sort_almost_sorted(input_deque, key=lambda x: x)
+        self.assertEqual(expected_result, actual_result)
+
+    def test__sort_almost_sorted_front_to_back(self):
+        """
+        Test that the _sort_almost_sorted function sorts the deque correctly.
+        """
+        expected_result = deque([8, 6, 4, 3])
+        input_deque = deque([3, 8, 6, 4])
         actual_result = _sort_almost_sorted(input_deque, key=lambda x: x)
         self.assertEqual(expected_result, actual_result)
 
@@ -149,3 +183,50 @@ class TestClusterGraph(unittest.TestCase):
         """
         self.processed_cg1.plot_next_messages_info_gain(legend_on=True)
         mock.assert_called()
+
+    def test_init_fail_duplicate_cluster_ids(self):
+        """
+        Test that the initializer fails when clusters have duplicate cluster_ids and returns the correct error message.
+        """
+        with mock.patch('veroku.cluster_graph.Cluster.cluster_id',
+                        new_callable=unittest.mock.PropertyMock) as mock_cluster_id:
+            mock_cluster_id.return_value = 'same_id'
+            with self.assertRaises(ValueError) as error_context:
+                ClusterGraph([make_random_gaussian(['a', 'b']),
+                              make_random_gaussian(['b', 'c']),
+                              make_random_gaussian(['c', 'd'])])
+            exception_msg = error_context.exception.args[0]
+
+            self.assertTrue('non-unique' in exception_msg.lower())
+
+            expected_num_same_id_cluster = 3
+            actual_same_id_clusters = exception_msg.count('same_id')
+            self.assertTrue(expected_num_same_id_cluster, actual_same_id_clusters)
+
+    @mock.patch.object(plt, "plot")
+    def test_plot_message_convergence(self, mock_plot):
+        """
+        Test that the correct functions are called within the plot_message_convergence function.
+        """
+        cg2_processed = get_cg2(seed=0, process=True)
+        # TODO: Add check that log is called when log=True
+        cg2_processed.plot_message_convergence(log=True)
+        mock_plot.assert_called()
+
+    @patch('builtins.print')
+    def test__conditional_print_called(self, print_mock):
+        """
+        Test that the _conditional_print function is called when verbose=True.
+        """
+        self.cg1.verbose = True
+        self.cg1._conditional_print('dummy')
+        print_mock.assert_called()
+
+    @patch('builtins.print')
+    def test__conditional_print_not_called(self, print_mock):
+        """
+        Test that the _conditional_print function is not called when verbose=False.
+        """
+        self.cg1.verbose = False
+        self.cg1._conditional_print("dummy")
+        print_mock.assert_not_called()
