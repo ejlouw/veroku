@@ -1,12 +1,8 @@
-from IPython.core.display import Image, display
-from graphviz import Graph
+import IPython
 import networkx as nx
 import numpy as np
 from tqdm.auto import tqdm
-import pandas as pd
-from graphviz import Source
-
-from unittest.mock import MagicMock
+import graphviz
 
 from veroku._cg_helpers._cluster import Cluster
 import veroku._cg_helpers._animation as cg_animation
@@ -26,11 +22,13 @@ def _sort_almost_sorted(almost_sorted_deque, key):
     """
     Sort a deque like that where only the first element is potentially unsorted and should probably be last and the rest
      of the deque is sorted in descending order.
+
     :param collections.deque almost_sorted_deque: The deque of size n, where the first n-1 elements are definitely
         sorted (in descending order) and where the last element is also probably in the correct place, but needs to be
         checked
-    :param key: The key (function) to use for sorting.
+    :param callable key: The key (function) to use for sorting.
     :return: The sorted (given that the conditions are met) deque.
+    :rtype: collections.deque
     """
     if key(almost_sorted_deque[0]) < key(almost_sorted_deque[1]):
         almost_sorted_deque.append(almost_sorted_deque.popleft())
@@ -43,9 +41,12 @@ def _sort_almost_sorted(almost_sorted_deque, key):
 def _evidence_reduce_factors(factors, evidence):
     """
     Observe relevant evidence for each factor.
-    :param factors:
-    :param evidence:
-    :return:
+
+    :param factors: The factors to reduce with the (relevant) evidence.
+    :type factors: Factor list
+    :param dict evidence: The evidence (i.e {'a':1.0, 'b':2.0})
+    :return: The reduced factors.
+    :rtype factors: Factor list
     """
     reduced_factors = []
     for i, factor in enumerate(factors):
@@ -61,8 +62,11 @@ def _evidence_reduce_factors(factors, evidence):
 def _absorb_subset_factors(factors):
     """
     Absorb any factors that has a scope that is a subset of another factor into such a factor.
-    :param factors:
-    :return:
+
+    :param factors: The list of factors to check for subset factors.
+    :type factors: Factor list
+    :return: The (potentially reduced) list of factors.
+    :rtype: Factor list
     """
     factors_absorbtion_dict = {i: [] for i in range(len(factors))}
     final_graph_cluster_factors = []
@@ -94,25 +98,27 @@ def _absorb_subset_factors(factors):
 class ClusterGraph(object):
 
     def __init__(self, factors, evidence=None, special_evidence=dict(),
-                 make_animation_gif=False, disable_tqdm=False, verbose=False):
+                 disable_tqdm=False, verbose=False, debug=False):
         """
-        Construct a Cluster graph from a list of factors
-        :param factors: (list of factors) The factors to construct the graph from
-        :param evidence: (dict) evidence dictionary (mapping variable names to values) that should be used to reduce
-            factors before building the cluster graph.
-        :param special_evidence: (dict) evidence dictionary (mapping variable names to values) that should be used in
-            the calculation of messages, and not to reduce factors. This allows factor approximations - such as the
-            non-linear Gaussian to be iteratively refined.
+        Construct a Cluster graph from a list of factors.
+
+        :param factors: The factors to construct the graph from
+        :type factors: factor list
+        :param dict evidence: evidence dictionary (mapping variable names to values) that should be used to reduce
+            factors before building the cluster graph.  Example: {'a': 2, 'b':1}
+        :param dict special_evidence: evidence dictionary (mapping variable names to values) that should be used in the
+            calculation of messages, and not to reduce factors. This allows factor approximations - such as the
+            non-linear Gaussian to be iteratively refined. Example: {'a': 2, 'b':1}
+        :param bool disable_tqdm: Disable the tqdm progress bars used in graph construction and processing.
+        :param bool verbose: Whether or not to output additional information messages during graph construction and
+        processing.
+        :param debug:
         """
         # TODO: see if evidence and special_evidence can be replaced by a single variable.
         self.num_messages_passed = 0
-        self.make_animation_gif = make_animation_gif
         self.special_evidence = special_evidence
         self.disable_tqdm = disable_tqdm
-        self.last_passed_message_factors_dict = dict()
         self.verbose = verbose
-        # new
-        self.last_sent_message_dict = {}  # {(rec_cluster_id1, rec_cluster_id1): msg1, ...}
 
         self.sync_message_passing_max_distances = []
 
@@ -142,14 +148,15 @@ class ClusterGraph(object):
         # TODO: consolidate these two, if possible
         self.message_passing_log_df = None
         self.message_passing_animation_frames = []
-        self.messages_passed = []
+        self.debug = debug
+        self.passed_messages = []
 
     def _set_non_rip_sepsets_dict(self, clusters, all_evidence_vars):
         """
         Calculate the preliminary sepsets dict before the RIP property is enforced.
-        :param clusters:
-        :param all_evidence_vars:
-        :return:
+
+        :param clusters: The clusters for which the sepsets should be calculated.
+        :param all_evidence_vars: The variables for which there is observed evidence.
         """
         self._non_rip_sepsets = {}
         for i in tqdm(range(len(clusters)), disable=self.disable_tqdm):
@@ -170,7 +177,7 @@ class ClusterGraph(object):
             raise ValueError(f'Non-unique cluster ids: {cluster_ids}')
 
         self._conditional_print('Info: Building graph.')
-        self._graph = Graph(format='png')
+        self._graph = graphviz.Graph(format='png')
         rip_sepsets_dict = self._get_running_intersection_sepsets()
 
         # TODO: see why this is necessary, remove if not
@@ -204,7 +211,7 @@ class ClusterGraph(object):
                     self._graph.node(name=sepset_node_name, label=sepset_node_label, shape='rectangle')
                     self._graph.edge(node_i_name, sepset_node_name, color='black', penwidth='2.0')
                     self._graph.edge(sepset_node_name, node_j_name, color='black', penwidth='2.0')
-        print('num self.graph_message_paths: ', len(self.graph_message_paths))
+        self._conditional_print(f'num graph message paths: {len(self.graph_message_paths)}')
 
     def _conditional_print(self, message):
         if self.verbose:
@@ -214,6 +221,7 @@ class ClusterGraph(object):
         """
         Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the
             graph.
+
         :param bool legend_on: Whether or not to show the message paths (specified by connected cluster pairs) in the
             plot legend.
         :param list figsize: The matplotlib figure size.
@@ -234,8 +242,10 @@ class ClusterGraph(object):
         """
         Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
         convergence.
-        """
 
+        :param bool log: If True, plot the log of the KL-divergence.
+        :param list figsize: The matplotlib [width, height] of the figure.
+        """
         mp_max_dists = self.sync_message_passing_max_distances
         if log:
             mp_max_dists = np.log(mp_max_dists)
@@ -303,22 +313,24 @@ class ClusterGraph(object):
         Show the cluster graph.
         """
         self._graph.render('/tmp/test.gv', view=False)
-        image = Image('/tmp/test.gv.png')
-        display(image)
+        image = IPython.core.display.Image('/tmp/test.gv.png')
+        IPython.core.display.display(image)
 
     def save_graph_image(self, filename):
         """
         Save image of the graph.
+
         :param filename: The filename of the file.
         """
-        # Source(self._graph, filename="/tmp/test.gv", format="png")
-        Source(self._graph, filename=filename, format="png")
+        graphviz.Source(self._graph, filename=filename, format="png")
 
     def get_marginal(self, vrs):
         """
         Search the graph for a specific variable and get that variables marginal (posterior marginal if process_graph
         has been run previously).
+
         :return: The marginal
+        :rtype: Factor child
         """
         for cluster in self._clusters:
             if set(vrs) <= set(cluster.var_names):
@@ -332,37 +344,46 @@ class ClusterGraph(object):
 
     def get_posterior_joint(self):
         """
-        Get the posterior joint distribution.
+        Get the posterior joint distribution. This function is only intended to be used as a research / debugging tool
+        for small networks.
         """
         # TODO: add functionality for efficiently getting a posterior marginal over any subset of variables and replace
         #  the get_marginal function above.
         cluster_product = self._clusters[0]._factor.joint_distribution
         for cluster in self._clusters[1:]:
             cluster_product = cluster_product.multiply(cluster._factor.joint_distribution)
-        last_passed_message_factors = list(self.last_passed_message_factors_dict.values())
+        last_passed_message_factors = self._last_passed_message_factors
         if len(last_passed_message_factors) == 0:
             assert self.num_messages_passed == 0
-            return cluster_product
-        message_product = last_passed_message_factors[0]
-        for message_factor in last_passed_message_factors[1:]:
-            message_product = message_product.multiply(message_factor)
-        joint = cluster_product.cancel(message_product)
+            joint = cluster_product
+        else:
+            message_product = last_passed_message_factors[0]
+            for message_factor in last_passed_message_factors[1:]:
+                message_product = message_product.multiply(message_factor)
+            joint = cluster_product.cancel(message_product)
         return joint
 
-    def process_graph(self, tol=1e-3, max_iter=50):
+    def process_graph(self, tol=1e-3, max_iter=50, make_animation_gif=False):
         """
         Perform synchronous message passing until convergence (or maximum iterations).
+
         :param tol: The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs
             to be reached (for all messages) before stopping message passing (before max_iter is reached).
         :param max_iter: The maximum number of iterations of message passing. The maximum number of messages that can be
             passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.
+        :param bool make_animation_gif: Whether or not to create an animation of the message passing process when. Note:
+            This can cause slow processing and high memory consumption for large graphs and is therefore recommended to
+            be used only with very small (>50 cluster) graphs.
         """
 
         self.sync_message_passing_max_distances = []
         if len(self._clusters) == 1:
             # The Cluster Graph contains only single cluster. Message passing not possible or necessary.
-            self._clusters[0]._factor = self._clusters[0]._factor.reduce(vrs=self.special_evidence.keys(),
-                                                                         values=self.special_evidence.values())
+            if self.special_evidence:
+                evidence_vrs = list(self.special_evidence.keys())
+                evidence_values = list(self.special_evidence.values())
+                self._clusters[0]._factor = self._clusters[0]._factor.reduce(vrs=evidence_vrs,
+                                                                             values=evidence_values)
             return
 
         # TODO: see if the definition of max_iter can be improved
@@ -374,8 +395,10 @@ class ClusterGraph(object):
         for _ in tqdm(range(max_message_passes), disable=self.disable_tqdm):
             sender_cluster_id = self.graph_message_paths[0].sender_cluster.cluster_id
             receiver_cluster_id = self.graph_message_paths[0].receiver_cluster.cluster_id
-
+            if self.debug:
+                self.passed_messages.append(self.graph_message_paths[0].next_message.copy())
             self.graph_message_paths[0].pass_next_message()
+            self.num_messages_passed += 1
             self.graph_message_paths = collections.deque(sorted(self.graph_message_paths, key=key_func, reverse=True))
             # self.graph_message_paths = _sort_almost_sorted(self.graph_message_paths, key=key_func)
 
@@ -384,15 +407,27 @@ class ClusterGraph(object):
             if max_next_information_gain <= tol:
                 return
 
-            if self.make_animation_gif:
+            if make_animation_gif:
                 cg_animation.add_message_pass_animation_frames(graph=self._graph,
                                                                frames=self.message_passing_animation_frames,
                                                                node_a_name=sender_cluster_id,
                                                                node_b_name=receiver_cluster_id)
 
-    def _make_message_passing_animation_gif(self):
-        print('Making message passing animation.')
-        self.message_passing_animation_frames[0].save(fp='./graph_animation.gif',
+    @property
+    def _last_passed_message_factors(self):
+        """
+        The factors of the messages passed in the last iteration of message passing.
+        """
+        return [gmp.previously_sent_message.factor for gmp in self.graph_message_paths]
+
+    def make_message_passing_animation_gif(self, filename='graph_animation.gif'):
+        """
+        Make message passing animation and save a GIF of the animation to file. Note that this function will only work
+        if the make_animation_gif variable was set to True when the process_graph method was called.
+
+        :param str filename: The name of the file.
+        """
+        self.message_passing_animation_frames[0].save(fp=f'./{filename}',
                                                       format='GIF',
                                                       append_images=self.message_passing_animation_frames[1:],
                                                       save_all=True, duration=400, loop=0)
@@ -406,8 +441,9 @@ class _GraphMessagePath:
     def __init__(self, sender_cluster, receiver_cluster):
         """
         The initializer.
-        :param sender_cluster: The cluster that defines the starting point of the path.
-        :param receiver_cluster: The cluster that defines the end point of the path.
+
+        :param Cluster sender_cluster: The cluster that defines the starting point of the path.
+        :param Cluster  receiver_cluster: The cluster that defines the end point of the path.
         """
         self.sender_cluster = sender_cluster
         self.receiver_cluster = receiver_cluster
@@ -444,7 +480,6 @@ class _GraphMessagePath:
         Pass the next message along this path.
         """
         self.receiver_cluster.receive_message(self.next_message)
-        # we 'recompute' the next message - but it will be the same
         self.previously_sent_message = self.next_message.copy()
         self.next_information_gain = 0.0
         self.information_gains_with_iters.append(self.next_information_gain)

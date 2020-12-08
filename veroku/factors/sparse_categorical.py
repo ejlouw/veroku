@@ -260,6 +260,7 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
 def _fast_copy_probs_table(table):
     """
     Copy a dictionary representation of a probability table faster than the standard deepcopy.
+
     :param dict table: A dictionary with the tuples of ints as keys and floats as values.
     :return: The copied table.
     """
@@ -366,6 +367,7 @@ class SparseCategorical(Factor):
     def copy(self):
         """
         Make a copy of this factor.
+
         :return: The copy of this factor.
         :rtype: SparseCategorical
         """
@@ -475,7 +477,6 @@ class SparseCategorical(Factor):
 
         :param factor: The factor to divide by.
         :type factor: SparseCategorical
-
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
@@ -601,6 +602,7 @@ class SparseCategorical(Factor):
     def _raw_kld(log_p, log_q):
         """
         Get the raw numerically calculated kld (which could result in numerical errors causing negative KLDs).
+
         :param log_p: The log_p tensor
         :param log_q:
         :return: The KL-divergence
@@ -702,9 +704,11 @@ class SparseCategorical(Factor):
     def __repr__(self):
         """
         Get the string representation for the factor.
+
         :return: The representation string
         :rtype: str
         """
+        # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
         tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
         repr_str = tabbed_spaced_var_names
         for assignment, log_prob in self.log_probs_table.items():

@@ -329,6 +329,7 @@ class Categorical(Factor):
     def _raw_kld(log_p, log_q):
         """
         Get the raw numerically calculated kld (which could result in numerical errors causing negative KLDs).
+
         :param log_p: The log_p tensor
         :param log_q:
         :return: The KL-divergence
@@ -409,9 +410,11 @@ class Categorical(Factor):
     def __repr__(self):
         """
         Get the string representation for the factor.
+
         :return: The representation string
         :rtype: str
         """
+        # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
         tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
         repr_str = tabbed_spaced_var_names
         for assignment in np.ndindex(self.log_probs_tensor.shape):

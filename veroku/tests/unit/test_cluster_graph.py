@@ -1,14 +1,12 @@
-import builtins
-
+import os
 import unittest
-#from mockito import verify, patch, when, unstub
+# from mockito import verify, patch, when, unstub
 from mockito import unstub
 from unittest.mock import patch
 import matplotlib.pyplot as plt
 from unittest import mock
 
-# import mock
-from veroku.cluster_graph import ClusterGraph, _sort_almost_sorted, Cluster
+from veroku.cluster_graph import ClusterGraph, _sort_almost_sorted
 from veroku._cg_helpers._cluster import Message
 from veroku.factors.gaussian import Gaussian
 import numpy as np
@@ -52,12 +50,49 @@ class TestClusterGraph(unittest.TestCase):
     """
 
     def setUp(self):
+        """
+        Run before every test.
+        """
         self.cg1, self.cg1_factors = get_cg1_and_factors()
         self.processed_cg1, _ = get_cg1_and_factors()
         self.processed_cg1.process_graph()
-        print()
+
+        vrs = ['a']
+        cov = [[10]]
+        mean = [[0]]
+        log_weight = 0.0
+        self.p_a = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
+
+        vrs = ['a', 'b']
+        K = [[0.4263, -0.4737],
+             [-0.4737, 0.5263]]
+        h = [[0.],
+             [0.]]
+        g = -1.2398654762908699
+        self.p_b_g_a = Gaussian(var_names=vrs, K=K, h=h, g=g)
+
+        vrs = ['a', 'c']
+        K = [[0.0099, -0.0330],
+             [-0.0330, 0.1099]]
+        h = [[0.],
+             [0.]]
+        g = -2.0230757399660746
+        self.p_c_g_a = Gaussian(var_names=vrs, K=K, h=h, g=g)
+
+        vrs = ['a', 'b', 'c']
+        cov = [[10.0066, 9.0065, 3.0047],
+               [9.0065, 10.0064, 2.7044],
+               [3.0047, 2.7044, 10.0014]]
+        mean = [[0.],
+                [0.],
+                [0.]]
+        log_weight = 7.069106988666363e-08
+        self.p_a_b_c = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
 
     def tearDown(self):
+        """
+        Run after every test.
+        """
         unstub()
 
     def test__sort_almost_sorted_sorted(self):
@@ -99,7 +134,7 @@ class TestClusterGraph(unittest.TestCase):
         fac = Gaussian(var_names=['a', 'c'], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
         fbd = Gaussian(var_names=['b', 'd'], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
 
-        cg = ClusterGraph([fa, fab, fac, fbd])
+        cg = ClusterGraph([fa, fab, fac, fbd], debug=True)
 
         # expected messages
 
@@ -152,7 +187,8 @@ class TestClusterGraph(unittest.TestCase):
         # maybe rather calculating a distance from almost vacuous and ensuring that the most informative messages are
         # sent first. Infinities might not be sortable, but that does not mean they are equal.
 
-        actual_messages = cg.messages_passed
+        actual_messages = cg.passed_messages
+        self.assertEqual(len(expected_messages), len(actual_messages))
         for actual_message, expected_message in zip(actual_messages, expected_messages):
             self.assertEqual(actual_message.sender_id, expected_message.sender_id)
             self.assertEqual(actual_message.receiver_id, expected_message.receiver_id)
@@ -230,3 +266,97 @@ class TestClusterGraph(unittest.TestCase):
         self.cg1.verbose = False
         self.cg1._conditional_print("dummy")
         print_mock.assert_not_called()
+
+    @patch('IPython.core.display.display')
+    def test_show(self, display_mock):
+        self.cg1.show()
+        display_mock.assert_called()
+
+    @patch('graphviz.Source')
+    def test_save_graph_image(self, source_mock):
+        filename = 'dummy_file'
+        self.cg1.save_graph_image(filename=filename)
+        source_mock.assert_called_with(self.cg1._graph, filename=filename, format="png")
+
+    def test_correct_marginal_special_evidence(self):
+        """
+        Test that the get_marginal function returns the correct marginal after a graph with special evidence has been
+        processed.
+        """
+
+        factors = [self.p_a, self.p_b_g_a, self.p_c_g_a]
+        cg = ClusterGraph(factors, special_evidence={'a': 3.0})
+        cg.process_graph(max_iter=1)
+
+        vrs = ['b']
+        cov = [[1.9]]
+        mean = [[2.7002]]
+        log_weight = -2.5202640960492313
+        expected_posterior_marginal = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
+        actual_posterior_marginal = cg.get_marginal(vrs=['b'])
+        actual_posterior_marginal._update_covform()
+        self.assertTrue(expected_posterior_marginal.equals(actual_posterior_marginal))
+
+    def test_correct_marginal_fails_vars(self):
+        """
+        Test that the get_marginal function fails when there is no factor containing the variables to keep.
+        """
+        g1 = make_random_gaussian(['a', 'b'])
+        g2 = make_random_gaussian(['b', 'c'])
+        cg = ClusterGraph([g1, g2])
+        cg.process_graph()
+        with self.assertRaises(ValueError):
+            cg.get_marginal(['a', 'c'])
+
+    def test_get_posterior_joint(self):
+        """
+        Test that the get_posterior_joint returns the correct joint distribution after the graph has been processed.
+        """
+        factors = [self.p_a, self.p_b_g_a, self.p_c_g_a]
+        cg = ClusterGraph(factors)
+        cg.process_graph()
+        actual_posterior_joint = cg.get_posterior_joint()
+        actual_posterior_joint._update_covform()
+        expected_posterior_joint = self.p_a_b_c.copy()
+        self.assertTrue(actual_posterior_joint.equals(expected_posterior_joint))
+
+    def test_process_graph_1_factor(self):
+        """
+        Test that the get_posterior_joint returns the correct joint distribution (after the graph has been processed)
+        for a graph constructed with a single factor.
+        """
+        factors = [self.p_a_b_c]
+        cg = ClusterGraph(factors)
+        cg.process_graph()
+        actual_posterior_joint = cg.get_posterior_joint()
+        expected_posterior_joint = self.p_a_b_c.copy()
+        self.assertTrue(actual_posterior_joint.equals(expected_posterior_joint))
+
+    def test_process_graph_1_factor_se(self):
+        """
+        Test that the get_posterior_joint returns the correct joint distribution (after the graph has been processed)
+        for a graph constructed with a single factor and special evidence.
+        """
+        factors = [self.p_a_b_c]
+        cg = ClusterGraph(factors, special_evidence={'a': 0.3})
+        cg.process_graph()
+        actual_posterior_joint = cg.get_posterior_joint()
+        expected_posterior_joint = self.p_a_b_c.observe(['a'], [0.3])
+        self.assertTrue(actual_posterior_joint.equals(expected_posterior_joint))
+
+    def test_make_animation_gif(self):
+        """
+        Test that the make_message_passing_animation_gif creates a file with the correct name.
+        """
+        # TODO: improve this test.
+        factors = [self.p_a, self.p_b_g_a, self.p_c_g_a]
+        cg = ClusterGraph(factors)
+        cg.process_graph(make_animation_gif=True)
+
+        filename = 'my_graph_animation_now.gif'
+        self.assertFalse(filename in os.listdir())
+        cg.make_message_passing_animation_gif(filename=filename)
+        self.assertTrue(filename in os.listdir())
+        os.remove(filename)
+
+

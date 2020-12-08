@@ -262,6 +262,7 @@ class Gaussian(Factor):
         if not np.allclose(self.K, gaussian.get_K(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         return True
+
     # pylint: enable=protected-access
 
     # pylint: disable=protected-access
@@ -269,7 +270,8 @@ class Gaussian(Factor):
         """
         Helper function for check equivalence of covariance form parameters.
         """
-        if not np.isclose(self.log_weight, gaussian.get_log_weight(), rtol=rtol, atol=atol, equal_nan=False):
+
+        if not np.isclose(self.get_weight(), gaussian.get_weight(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         gaussian._reorder_parameters(self.var_names)
         if not np.allclose(self.mean, gaussian.get_mean(), rtol=rtol, atol=atol, equal_nan=False):
@@ -277,9 +279,10 @@ class Gaussian(Factor):
         if not np.allclose(self.cov, gaussian.get_cov(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         return True
+
     # pylint: enable=protected-access
 
-    def equals(self, factor, rtol=1e-05, atol=1e-05):
+    def equals(self, factor, rtol=1e-04, atol=1e-04):
         """
         Check if this factor is the same as another factor.
 
@@ -345,6 +348,7 @@ class Gaussian(Factor):
         if self.h is not None:
             return self.h.copy()
         return None
+
     # pylint: enable=invalid-name
 
     # pylint: disable=invalid-name
@@ -357,6 +361,7 @@ class Gaussian(Factor):
         """
         self._update_canform()
         return self.g
+
     # pylint: enable=invalid-name
 
     def _cov_exists(self):
@@ -381,6 +386,7 @@ class Gaussian(Factor):
         if self.cov is not None:
             return self.cov.copy()
         return None
+
     # pylint: enable=invalid-name
 
     def get_mean(self):
@@ -602,7 +608,7 @@ class Gaussian(Factor):
         assert len(K_a.shape) == 2
         assert len(K_b.shape) == 2
         K_c, new_vars_0 = _factor_utils.indexed_square_matrix_operation(K_a, K_b, self._var_names,
-                                                                       factor.var_names, operator_function)
+                                                                        factor.var_names, operator_function)
         g_a = self.get_g()
         g_b = factor.get_g()
         g_c = operator_function(g_a, g_b)
@@ -610,7 +616,7 @@ class Gaussian(Factor):
         h_a = self.get_h()
         h_b = factor.get_h()
         h_c, new_vars_1 = _factor_utils.indexed_column_vector_operation(h_a, h_b, self._var_names,
-                                                                       factor.var_names, operator_function)
+                                                                        factor.var_names, operator_function)
         assert new_vars_0 == new_vars_1
         return Gaussian(K=K_c, h=h_c, g=g_c, var_names=new_vars_0)
         # pylint: enable=invalid-name
@@ -660,6 +666,7 @@ class Gaussian(Factor):
             (observed_vec.transpose()).dot(K_YY)).dot(observed_vec)
 
         return K_reduced, h_reduced, g_reduced
+
     # pylint: enable=invalid-name
 
     # pylint: disable=invalid-name
@@ -996,11 +1003,11 @@ class Gaussian(Factor):
         from veroku.factors.experimental.gaussian_mixture import GaussianMixture
         if self.dim != 1:
             raise NotImplementedError('Gaussian must be one dimensional.')
-        weights = [1.0/3.0, 1.0/3.0, 1.0/3.0]
+        weights = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
         full_cov = self.get_cov()
         full_mean = self.get_mean()
 
-        covs = [w*full_cov for w in weights]
+        covs = [w * full_cov for w in weights]
         means = [full_mean - np.sqrt(full_cov), full_mean, full_mean + np.sqrt(full_cov)]
 
         gaussians = []
