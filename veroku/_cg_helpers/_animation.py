@@ -25,7 +25,7 @@ def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     change_graph_edge_color(graph=graph, node_a_name=node_b_name, node_b_name=sepset_node_name, new_color=new_color)
 
 
-def check_non_overlapping_substring_presence(substring_a, substring_b, string):
+def contains_non_overlapping_substrings(substring_a, substring_b, string):
     """
     Check that both sub-strings can be found in separate locations in strings
 
@@ -34,16 +34,18 @@ def check_non_overlapping_substring_presence(substring_a, substring_b, string):
     :param string: The string to check in.
     :return: Result of check for independent string presence.
 
-     Examples:
-        substring_a = abc
-        substring_b = 123
-        string = abc123 -- def
-        returns False
+    Examples:
+    >>> substring_a = "abc"
+    >>> substring_b = "123"
+    >>> string = "abc123 -- def"
+    >>> contains_non_overlapping_substrings(substring_a, substring_b, string)
+    >>> False
 
-        substring_a = abc
-        substring_b = 123
-        string = abc -- 123
-        returns True
+    >>> substring_a = "abc"
+    >>> substring_b = "123"
+    >>> string = "abc -- 123"
+    >>> contains_non_overlapping_substrings(substring_a, substring_b, string)
+    >>> True
     """
 
     if substring_a in substring_b:
@@ -52,13 +54,22 @@ def check_non_overlapping_substring_presence(substring_a, substring_b, string):
         string = string.replace(substring_b, '')
         if substring_a in string:
             return True
+        return False
     if substring_b in substring_a:
         if substring_b not in string:
             return False
         string = string.replace(substring_a, '')
         if substring_b in string:
             return True
-    return (substring_a in string) and (substring_b in string)
+        return False
+    # Neither substring strings is a substring of the other, so we can remove the one and check if the other is still
+    # present.
+    if substring_a in string:
+        string = string.replace(substring_a, '')
+    else:
+        return False
+    result = substring_b in string
+    return result
 
 
 def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
@@ -75,7 +86,7 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     edge_found = False
     for i, s in enumerate(graph.body):
         if '--' in s:
-            if check_non_overlapping_substring_presence(node_a_name, node_b_name, s):
+            if contains_non_overlapping_substrings(node_a_name, node_b_name, s):
                 pattern = f'(\\t?"?{node_a_name}"?\s--\s"?{node_b_name}"?\s\[.*color=)([\S]*\s)(.*)'
                 new_s = re.sub(pattern, f'\g<1>{new_color} \g<3>', s)
                 # TODO: improve this (it's a bit hacky)
@@ -86,8 +97,7 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
                 graph.body[i] = new_s
                 edge_found = True
     if not edge_found:
-        raise ValueError(
-            f'cannot change colour of not existing edge: no edge between node {node_a_name} and node {node_b_name} in graph')
+        raise ValueError(f'no edge between node {node_a_name} and node {node_b_name} in graph.')
 
 
 def change_graph_node_color(graph, node_name, new_color):

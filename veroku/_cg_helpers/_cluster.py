@@ -44,7 +44,7 @@ class Cluster(object):
         """
         self._neighbour_sepsets = {}  # neighbour_id as key
 
-    def add_neighbour(self, other_cluster, sepset=None):
+    def add_neighbour(self, other_cluster, sepset):
         """
         Add a neighbour to this cluster's list of neighbours.
 
@@ -52,9 +52,6 @@ class Cluster(object):
         :param list sepset: The sepset between the neighbours (can be smaller than the scope intersection in order
                        to enforce the running intersection property)
         """
-        this_cluster_var_set = set(self.var_names)
-        if sepset is None:
-            sepset = sorted(this_cluster_var_set.intersection(set(other_cluster.var_names)))
         assert len(sepset) > 0, 'Error: cant add neighbour with no overlapping variable scope.'
         self._neighbour_references.append(other_cluster)
         self._neighbour_sepsets[other_cluster.cluster_id] = list(sepset)
