@@ -1,9 +1,9 @@
 import uuid
+import copy
+FIX_NON_PSD_MATRICES = False
 
 # TODO: add evidence observation functionality
 #   (perhaps only important for non-linear gaussian and similar approximate transformation factors)
-import copy
-FIX_NON_PSD_MATRICES = False
 
 
 class Cluster(object):
@@ -64,6 +64,7 @@ class Cluster(object):
     def make_message(self, neighbour_id):
         """
         Make a Message to send to the neighbour with a specified id.
+
         :param neighbour_id: The specified id corresponding to the neighbour cluster.
         :return: The Message
         :rtype: Message
@@ -135,6 +136,15 @@ class Cluster(object):
         """
         return self._cluster_id
 
+    @property
+    def factor(self):
+        """
+        The factor.
+
+        :return: The factor.
+        """
+        return self._factor.copy()
+
 
 class Message(object):
 
@@ -156,6 +166,15 @@ class Message(object):
         self._factor = factor
 
     def equals(self, other, rtol=1e-05, atol=1e-05):
+        """
+        Check if this message equals another message.
+
+        :param other: The other message.
+        :param rtol: The relative tolerance to use for factor equality check.
+        :param atol: The absolute tolerance to use for factor equality check.
+        :return: The result of the equality check.
+        :rtype: bool
+        """
         if self._sender_id != other.sender_id:
             return False
         if self._receiver_id != other._receiver_id:
@@ -165,6 +184,12 @@ class Message(object):
         return True
 
     def __repr__(self):
+        """
+        Get the string representation of the message.
+
+        :return: The string.
+        :rtype: str
+        """
         repr_str = 'sender_id: ' + self._sender_id + '\n' + \
                    'receiver_id: ' + self._receiver_id + '\n' + \
                    'factor: \n' + self._factor.__repr__()
@@ -226,4 +251,11 @@ class Message(object):
         return self._factor.var_names
 
     def copy(self):
-        return Message(self.factor.copy(), copy.deepcopy(self.sender_id), copy.deepcopy(self.receiver_id))
+        """
+        Copy this Message.
+
+        :return: The message copy.
+        :rtype: Message
+        """
+        msg_copy = Message(self.factor.copy(), copy.deepcopy(self.sender_id), copy.deepcopy(self.receiver_id))
+        return msg_copy

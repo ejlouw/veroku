@@ -1,6 +1,3 @@
-"""
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
-"""
 # System imports
 import cmath
 
@@ -20,6 +17,10 @@ from veroku.factors.gaussian import Gaussian
 #  approximations.
 # TODO: Add tests for the divide methods.
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
+
+"""
+A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+"""
 
 
 class GaussianMixture(Factor):
@@ -262,6 +263,7 @@ class GaussianMixture(Factor):
     def get_log_weight(self):
         """
         Get the total log weight of the Gaussian mixture.
+
         :return: The log weight
         :rtype: float
         """
@@ -494,7 +496,8 @@ class GaussianMixture(Factor):
     # pylint: disable=invalid-name
     def _complex_cov_form_to_real_canform(cov, mean, log_weight):
         """
-        A helper function for _moment_match_complex_gaussian
+        A helper function for _moment_match_complex_gaussian.
+
         :param cov: the (possibly complex) covariance matrix
         :param mean: the (possibly complex) covariance matrix
         :param log_weight: the (possibly complex) log weight
@@ -514,14 +517,16 @@ class GaussianMixture(Factor):
     def _get_inverse_gaussians(gaussian_mixture_a, gaussian_mixture_b):
         """
         A helper function for _gm_division_m1. Returns the inverse components.
-        For example:
-        if gaussian_mixture_a = Ga1 + Ga2
-        and gaussian_mixture_b = Gb1 + Gb2
-        Then return Gb1/Ga1 + Gb1/Ga2 + Gb2/Ga1 + Gb2/Ga2
+
         :param gaussian_mixture_a: The numerator mixture
         :param gaussian_mixture_b: The denominator mixture
         :return: The inverse Gaussian components and the mode locations of the quotient:
                  gaussian_mixture_a/gaussian_mixture_b
+
+        Example:
+            if gaussian_mixture_a = Ga1 + Ga2
+            and gaussian_mixture_b = Gb1 + Gb2
+            Then return Gb1/Ga1 + Gb1/Ga2 + Gb2/Ga1 + Gb2/Ga2
         """
         minimum_locations = []
         for g_a in gaussian_mixture_a.components:
@@ -559,13 +564,15 @@ class GaussianMixture(Factor):
     def _gm_division_m1(gaussian_mixture_a, gaussian_mixture_b):
         """
         Method 1 for approximating the quotient (gma/gmb) of two Gaussian mixtures as a Gaussian mixture.
-        This is an implementation of the method described in 'A Probabilistic Graphical Model Approach to Multiple Object Tracking' (section 8.2)
-        The Gaussian mixture quotient is optimised from a set of starting points in order to find modes. Laplaces method is then used at these modes
-        to appromate the mode as a Gaussian. The quotient is then approximated as a sum of these Gaussians.
+        This is an implementation of the method described in 'A Probabilistic Graphical Model Approach to Multiple
+        Object Tracking' (section 8.2) The Gaussian mixture quotient is optimised from a set of starting points in order
+        to find modes. Laplaces method is then used at these modes to approximate the mode as a Gaussian. The quotient
+        is then approximated as a sum of these Gaussians.
 
-        :params gma: The numerator Gaussian mixture
-        :params gmb: The denominator Gaussian mixture
-        returns: an approximation of the quotient function as a Gaussian mixture
+        :param GaussianMixture gma: The numerator factor
+        :param GaussianMixture gmb: The denominator factor
+        :returns: an approximation of the quotient function as a Gaussian mixture
+        :rtype: GaussianMixture
         """
 
         resulting_gaussian_components = []
@@ -603,9 +610,10 @@ class GaussianMixture(Factor):
         but also results a Gaussian mixture with the same number of components as gma. Whereas _gm_division_m2 should
         have the same number of components as the modes of the quotient function.
 
-        :params gma: The numerator Gaussian mixture
-        :params gmb: The denominator Gaussian mixture
-        returns: an approximation of the quotient function as a Gaussian mixture
+        :param GaussianMixture gma: The numerator factor
+        :param GaussianMixture gmb: The denominator factor
+        :returns: An approximation of the quotient function as a Gaussian mixture
+        :rtype: GaussianMixture
         """
         # TODO: add check for dimensions that are not devided by
         #       - the variances in these will not change (if this makes sense)
@@ -659,6 +667,7 @@ class GaussianMixture(Factor):
     def _plot_2d(self, log, xlim, ylim):  # pragma: no cover
         """
         Plot a 2d Gaussian mixture potential function
+
         :param log: if this is True, the log-potential will be plotted
         :param xlim: the x limits to plot the function over (optional)
         :param ylim: the y limits to plot the function over (optional)

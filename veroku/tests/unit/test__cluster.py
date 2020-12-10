@@ -65,7 +65,6 @@ class TestMessage(unittest.TestCase):
         Test that the message equals function returns the correct results.
         """
         msg_ab_fa_1 = Message(self.factor_a, 'cluster_a', 'cluster_b')
-        # msg_ab_fb_1 = Message(self.factor_b, 'cluster_a', 'cluster_b')
         msg_ab_fu_1 = Message(self.factor_unlike_any_other, 'cluster_a', 'cluster_b')
         msg_ab_fa_2 = Message(self.factor_a, 'cluster_a', 'cluster_b')
         msg_ac_fa_1 = Message(self.factor_a, 'cluster_a', 'cluster_c')
@@ -75,7 +74,6 @@ class TestMessage(unittest.TestCase):
         self.assertFalse(msg_ab_fa_1.equals(msg_ac_fa_1))
         self.assertFalse(msg_ab_fa_1.equals(msg_ba_fa_2))
         self.assertFalse(msg_ba_fa_2.equals(msg_ab_fa_1))
-        # self.assertTrue(msg_ab_fb_1.equals(msg_ab_fa_1))
         self.assertFalse(msg_ab_fu_1.equals(msg_ab_fa_1))
 
     def test_var_names(self):

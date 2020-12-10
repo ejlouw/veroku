@@ -38,8 +38,7 @@ class FactorizedFactor(Factor):
     @property
     def joint_distribution(self):
         """
-        compute the joint distribution.
-        :return:
+        The joint distribution.
         """
         if len(self.factors) == 0:
             raise ValueError('FactorisedFactor has no factors.')
@@ -50,9 +49,10 @@ class FactorizedFactor(Factor):
 
     def copy(self):
         """
-        Copy this factorised factor
+        Copy this factorised factor.
 
         :return: the copied factor
+        :rtype: FactorizedFactor
         """
         factor_copies = []
         for factor in self.factors:
@@ -64,7 +64,8 @@ class FactorizedFactor(Factor):
         Multiply by another factor.
 
         :param factor: any type of factor.
-        :return: the resulting Factorised Factor
+        :return: the resulting factor
+        :rtype: FactorizedFactor
         """
         # TODO: add preference for factors with conditioning scope? Not sure if practically necessary,
         #  but would be best.
@@ -81,7 +82,8 @@ class FactorizedFactor(Factor):
         Divide out a general factor.
 
         :param factor: any type of factor.
-        :return: the resulting Factorised Factor
+        :return: the resulting factor
+        :rtype: FactorizedFactor
         """
         factorised_factor_copy = self.copy()
         index = factorised_factor_copy._first_factor_with_vars_index(factor.var_names)
@@ -116,6 +118,12 @@ class FactorizedFactor(Factor):
         raise NotImplementedError()
 
     def distance_from_vacuous(self):
+        """
+        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
+
+        :return: The KL divergence.
+        :rtype: float
+        """
         # TODO: improve this
         return self.joint_distribution.distance_from_vacuous()
 
@@ -126,8 +134,6 @@ class FactorizedFactor(Factor):
 
         :param factor: The other factor
         :type factor: Gaussian
-        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
-        :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
@@ -139,7 +145,8 @@ class FactorizedFactor(Factor):
         """
         Get the number of factors in the factorised factor.
 
-        :return: (int) The number of factors.
+        :return: The number of factors.
+        :rtype: int
         """
         return len(self.factors)
 
@@ -157,11 +164,12 @@ class FactorizedFactor(Factor):
 
     def marginalize(self, vrs, keep=False):
         """
-        Marginalise out a subset of the variables in this factor's scope.
+        Marginalize out a subset of the variables in this factor's scope.
 
-        :param vrs: (list) the variable names
-        :param keep: (bool) whether to keep or sum (or integrate) out these variables.
-        :return: (FactorisedFactor) the resulting marginal
+        :param list vrs: the variable names
+        :param bool keep: whether to keep or sum (or integrate) out these variables.
+        :return: the resulting marginal
+        :rtype: FactorisedFactor
         """
         # TODO: resolve this: Non-linear Gaussian factors can cause a problem here when there is enough information
         #   that they all should be well defined, but the information resides in only one of them for instance. This
@@ -199,6 +207,7 @@ class FactorizedFactor(Factor):
         Get the covariance matrix of the joint distribution (if Gaussian).
 
         :return: The cov parameter.
+        :rtype: numpy.ndarray
         """
         return self.joint_distribution.get_cov()
 
@@ -207,6 +216,7 @@ class FactorizedFactor(Factor):
         Get the mean vector of the joint distribution (if Gaussian).
 
         :return: The mean parameter.
+        :rtype: numpy.ndarray
         """
         return self.joint_distribution.get_mean()
 
@@ -214,7 +224,8 @@ class FactorizedFactor(Factor):
         """
         Merge all factors (by multiplying) that have overlapping scopes.
 
-        :return: The reduced set of factors.
+        :return: The factor containing the reduced set of factors.
+        :rtype: FactorizedFactor
         """
         # TODO: Add tests for this function
         merged_factors = []
@@ -237,7 +248,8 @@ class FactorizedFactor(Factor):
         are merged together into disjoint (in terms of the integrand variables) factors, so that these larger factors
         can be marginalised independently.
 
-        :param vrs_set: (string list) The common scope variables to be considered to determine 'dependent' factors.
+        :param vrs_set: The common scope variables to be considered to determine 'dependent' factors.
+        :type vrs_set: str list
         """
         observed_factor_vars_list = []
 
@@ -305,7 +317,12 @@ class FactorizedFactor(Factor):
 
     def _all_intersecting_factors_indices(self, var_names):
         """
-        return indices of factors in self_factors which has overlap with var_names.
+        Get the indices of factors in self_factors which has overlap with a set of variable names.
+
+        :param var_names: The variable names
+        :type var_names: str list
+        :return: The indices
+        :rtype: int list
         """
         indices = []
         # TODO: add check for equals variable names - will be faster for multiplication
@@ -343,7 +360,7 @@ class FactorizedFactor(Factor):
 
     def show(self):
         """
-        Display this factorised factor.
+        Print this factorised factor.
         """
         for i, factor in self.factors:
             print(f'\n factor {i}/{len(self.factors)}:')

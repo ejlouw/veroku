@@ -10,6 +10,14 @@ import matplotlib
 
 from veroku.cluster_graph import ClusterGraph
 
+"""
+A test module for the example notebooks.
+"""
+
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+# pylint: disable=no-member
+
 
 class TestNotebooks(unittest.TestCase):
     """

@@ -5,7 +5,15 @@ import numpy as np
 from veroku.factors import _factor_utils
 
 
+"""
+A test module for the _factor_utils module.
+"""
+
+
 class TestFactorUtils(unittest.TestCase):
+    """
+    A test class for the _factor_utils module.
+    """
 
     def test_format_list_elements(self):
         """

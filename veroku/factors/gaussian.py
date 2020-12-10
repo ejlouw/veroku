@@ -1,6 +1,3 @@
-"""
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
-"""
 # System imports
 import cmath
 import copy
@@ -17,6 +14,9 @@ from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 
+"""
+A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+"""
 
 def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     """
@@ -365,6 +365,11 @@ class Gaussian(Factor):
     # pylint: enable=invalid-name
 
     def _cov_exists(self):
+        """
+        Check is the cov matrix has or can be calculated (i.e the precision matrix is not singular).
+        :return: The result of the check.
+        :rtype: bool
+        """
         if self.COVFORM:
             return True
         else:
@@ -527,10 +532,16 @@ class Gaussian(Factor):
                         var_names=marginal_var_names)
 
     def _destroy_canform(self):
+        """
+        Destroy the canonical form parameters.
+        """
         self.K, self.h, self.h = None, None, None
         self.CANFORM = False
 
     def _destroy_covform(self):
+        """
+        Destroy the covariance form parameters.
+        """
         self.cov, self.mean, self.log_weight = None, None, None
         self.COVFORM = False
 
@@ -853,6 +864,11 @@ class Gaussian(Factor):
     # pylint: enable=invalid-name
 
     def _get_cov_repr_str(self):
+        """
+        Get the string representation for the covariance form parameters.
+        :return: The parameter representation string.
+        :rtype: str
+        """
         self_copy = self.copy()
         self_copy._update_covform()
         np.set_printoptions(linewidth=np.inf)
@@ -862,6 +878,11 @@ class Gaussian(Factor):
         return repr_str
 
     def _get_can_repr_str(self):
+        """
+        Get the string representation for the canonical form parameters.
+        :return: The parameter representation string.
+        :rtype: str
+        """
         self_copy = self.copy()
         self_copy._update_canform()
         np.set_printoptions(linewidth=np.inf)
@@ -874,6 +895,8 @@ class Gaussian(Factor):
     def __repr__(self):  # pragma: no cover
         """
         Get the string representation of the Gaussian factor.
+        :return: The factor representation string.
+        :rtype: str
         """
         np.set_printoptions(edgeitems=3)
         np.set_printoptions(precision=4)
@@ -907,7 +930,7 @@ class Gaussian(Factor):
 
     def show_vis(self, figsize=(10, 8)):
         """
-        Visualise the parameters with plots.
+        Visualize the parameters with plots.
 
         :param figsize: The figure size.
         :type figsize: 2 element int tuple
@@ -1020,7 +1043,9 @@ class Gaussian(Factor):
 
 
 class GaussianTemplate(FactorTemplate):
-
+    """
+    A class for specifying Gaussian factor templates and creating categorical factors from these templates.
+    """
     def __init__(self, gaussian_parameters, var_templates):
         """
         Create a Categorical factor template.

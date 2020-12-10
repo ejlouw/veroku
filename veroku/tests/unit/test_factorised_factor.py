@@ -1,17 +1,14 @@
-
-"""
-Test module for the factor_utils module.
-"""
-
 # System imports
 import unittest
 import numpy as np
 
-# Third-party imports
-
 # Local imports
 from veroku.factors.experimental.factorised_factor import FactorizedFactor
 from veroku.factors.gaussian import Gaussian
+
+"""
+Test module for the factor_utils module.
+"""
 
 
 # pylint: disable=too-many-public-methods
@@ -132,8 +129,7 @@ class TestFactorisedFactor(unittest.TestCase):
 
     def test_observe(self):
         """
-        Test that
-        :return:
+        Test that the observe function returns the correct result.
         """
         var_names = ['a', 'b']
         cov = np.array([[5., 0.], [0., 4.]])
@@ -160,7 +156,7 @@ class TestFactorisedFactor(unittest.TestCase):
         expected_reduced_ff_1 = FactorizedFactor([expected_g1, expected_g2])
 
         ff = FactorizedFactor([g1, g2, g3])
-        actual_reduced_ff_1 = ff.reduce(vrs=observed_vars_1, values=observed_values_1)
+        actual_reduced_ff_1 = ff.observe(vrs=observed_vars_1, values=observed_values_1)
         self.assertTrue(expected_reduced_ff_1.equals(actual_reduced_ff_1))
 
         # Reduction 2

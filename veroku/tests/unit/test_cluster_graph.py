@@ -1,6 +1,5 @@
 import os
 import unittest
-# from mockito import verify, patch, when, unstub
 from mockito import unstub
 from unittest.mock import patch
 import matplotlib.pyplot as plt
@@ -12,6 +11,10 @@ from veroku.factors.gaussian import Gaussian
 import numpy as np
 from collections import deque
 from veroku.factors.gaussian import make_random_gaussian
+
+"""
+A test module for the ClusterGraph class
+"""
 
 
 def get_cg1_and_factors():
@@ -159,7 +162,10 @@ class TestClusterGraph(unittest.TestCase):
         # Test that the factors of the cluster in the cluster graph are correct
         expected_cluster_factors = [fabfa.copy(), fac.copy(), fbd.copy()]
         actual_cluster_factors = [c._factor for c in cg._clusters]
-        key_func = lambda f: ''.join(f.var_names)
+
+        def key_func(f):
+            return ''.join(f.var_names)
+
         actual_cluster_factors = sorted(actual_cluster_factors, key=key_func)
         expected_cluster_factors = sorted(expected_cluster_factors, key=key_func)
 
@@ -274,6 +280,9 @@ class TestClusterGraph(unittest.TestCase):
 
     @patch('graphviz.Source')
     def test_save_graph_image(self, source_mock):
+        """
+        Test that save_graph_image saves a graph to the correct file.
+        """
         filename = 'dummy_file'
         self.cg1.save_graph_image(filename=filename)
         source_mock.assert_called_with(self.cg1._graph, filename=filename, format="png")
@@ -283,7 +292,6 @@ class TestClusterGraph(unittest.TestCase):
         Test that the get_marginal function returns the correct marginal after a graph with special evidence has been
         processed.
         """
-
         factors = [self.p_a, self.p_b_g_a, self.p_c_g_a]
         cg = ClusterGraph(factors, special_evidence={'a': 3.0})
         cg.process_graph(max_iter=1)

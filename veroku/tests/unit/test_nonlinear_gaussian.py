@@ -1,7 +1,3 @@
-"""
-Tests for the NonLinearGaussian module.
-"""
-
 # System imports
 import unittest
 
@@ -11,6 +7,10 @@ import numpy as np
 # Local imports
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.nonlinear_gaussian import NonLinearGaussian
+
+"""
+Tests for the NonLinearGaussian module.
+"""
 
 
 # pylint: disable=too-many-public-methods
@@ -98,11 +98,10 @@ class TestNonLinearGaussian(unittest.TestCase):
         print('\n\n expected_joint ')
         expected_joint.show()
         nlg_factor._recompute_joint()
-        # nlg_factor._joint_distribution._update_covform()
         print('\n\n\nactual factor')
         nlg_factor.show()
 
-        self.assertTrue(expected_joint.equals(nlg_factor._joint_distribution))
+        self.assertTrue(expected_joint.equals(nlg_factor.joint_distribution))
 
     def test_marginalise_unconditioned(self):
         """
@@ -171,7 +170,10 @@ class TestNonLinearGaussian(unittest.TestCase):
         ab_vars = ['a', 'b']
         cd_vars = ['c', 'd']
         A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+
+        def transform(x, _):
+            return A.dot(x)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(conditioning_vars=ab_vars, conditional_vars=cd_vars,
                                        transform=transform, noise_cov=noise_cov)

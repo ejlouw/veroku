@@ -1,6 +1,3 @@
-"""
-A Test module for the GaussianMixture class
-"""
 # System imports
 import unittest
 
@@ -11,6 +8,10 @@ import mockito
 # Local imports
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+
+"""
+A test module for the GaussianMixture class
+"""
 
 
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
@@ -53,7 +54,9 @@ class TestGaussianMixture(unittest.TestCase):
     """
 
     def setUp(self):
-
+        """
+        Run before every test.
+        """
         self.gaussian_ab_1 = Gaussian(cov=np.eye(2), mean=[1, 1], log_weight=1.0, var_names=['a', 'b'])
         self.gaussian_ab_2 = Gaussian(cov=np.eye(2), mean=[2, 2], log_weight=2.0, var_names=['a', 'b'])
         self.gaussian_ab_3 = Gaussian(cov=np.eye(2), mean=[3, 3], log_weight=3.0, var_names=['a', 'b'])
@@ -124,7 +127,6 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Test that the multiply function results in the correct components.
         """
-
         expected_product_components = [self.gaussian_ab_1.multiply(self.gaussian_ab_3),
                                        self.gaussian_ab_2.multiply(self.gaussian_ab_3)]
         expected_gm = GaussianMixture(expected_product_components)
@@ -154,7 +156,6 @@ class TestGaussianMixture(unittest.TestCase):
     def test_normalize(self):
         """
         Test that the normalize function results in a a mixture  with a weight of 1.0.
-        :return:
         """
         normed_gm = self.gaussian_mixture_ab_123.normalize()
         log_weight = normed_gm.get_log_weight()
@@ -176,10 +177,8 @@ class TestGaussianMixture(unittest.TestCase):
     def test_cancel_method_1(self):
         """
         Test that the _gm_division_m2 function returns
-        :return:
         """
         # TODO: improve this test.
-
         gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
         gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
         gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)
@@ -189,11 +188,9 @@ class TestGaussianMixture(unittest.TestCase):
 
     def test_cancel_method_2(self):
         """
-        Test that the _gm_division_m2 function returns
-        :return:
+        Test that the _gm_division_m2 function returns.
         """
         # TODO: improve this test.
-
         gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
         gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
         gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)

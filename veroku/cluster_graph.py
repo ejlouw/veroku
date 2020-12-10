@@ -10,14 +10,17 @@ from veroku.factors._factor_utils import get_subset_evidence
 import matplotlib.pyplot as plt
 import collections
 
+"""
+A module for building and performing inference with cluster graphs 
+"""
 
-# TODO: optimise _pass_message
-# TODO: improve sepsets selection for less loopiness
+
+# TODO: Optimise _pass_message.
+# TODO: Improve sepsets selection for less loopiness.
 # TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need
 #  new messages calculated.
 
 
-# TODO: consider removing this
 def _sort_almost_sorted(almost_sorted_deque, key):
     """
     Sort a deque like that where only the first element is potentially unsorted and should probably be last and the rest
@@ -96,6 +99,9 @@ def _absorb_subset_factors(factors):
 
 
 class ClusterGraph(object):
+    """
+    A class for building and performing inference with cluster graphs.
+    """
 
     def __init__(self, factors, evidence=None, special_evidence=dict(),
                  disable_tqdm=False, verbose=False, debug=False):
@@ -214,6 +220,11 @@ class ClusterGraph(object):
         self._conditional_print(f'num graph message paths: {len(self.graph_message_paths)}')
 
     def _conditional_print(self, message):
+        """
+        Print message if verbose is True.
+
+        :param message: The message to print.
+        """
         if self.verbose:
             print(message)
 
@@ -272,6 +283,12 @@ class ClusterGraph(object):
         plt.show()
 
     def _get_unique_vars(self):
+        """
+        Get the set of variables in the graph.
+
+        :return: The variables
+        :rtype: list
+        """
         all_vars = []
         for cluster in self._clusters:
             all_vars += (cluster.var_names)
@@ -279,6 +296,9 @@ class ClusterGraph(object):
         return unique_vars
 
     def _get_vars_min_spanning_trees(self):
+        """
+        Get the minimum spanning trees of all the variables in the graph.
+        """
         all_vars = self._get_unique_vars()
         var_graphs = {var: nx.Graph() for var in all_vars}
         num_clusters = len(self._clusters)
@@ -294,6 +314,10 @@ class ClusterGraph(object):
         return var_spanning_trees
 
     def _get_running_intersection_sepsets(self):
+        """
+        Get a set of sepsets for the graph, such that the graph, with these sepsets satisfies the running intersection
+        property.
+        """
         edge_sepset_dict = {}
         unique_vars = self._get_unique_vars()
         min_span_trees = self._get_vars_min_spanning_trees()
@@ -334,7 +358,7 @@ class ClusterGraph(object):
         """
         for cluster in self._clusters:
             if set(vrs) <= set(cluster.var_names):
-                factor = cluster._factor.copy()
+                factor = cluster.factor
                 evidence_vrs, evidence_values = get_subset_evidence(self.special_evidence, factor.var_names)
                 if len(evidence_vrs) > 0:
                     factor = factor.reduce(evidence_vrs, evidence_values)
@@ -448,12 +472,15 @@ class _GraphMessagePath:
         self.sender_cluster = sender_cluster
         self.receiver_cluster = receiver_cluster
         self.previously_sent_message = None
-        self.next_message = self.sender_cluster.make_message(self.receiver_cluster._cluster_id)
+        self.next_message = self.sender_cluster.make_message(self.receiver_cluster.cluster_id)
         self.next_information_gain = None
         self.information_gains_with_iters = []
         self.update_next_information_gain()
 
     def update_next_information_gain(self):
+        """
+        Calculate the information gain that will be achieved when passing the next message.
+        """
         if self.previously_sent_message is None:
             self.next_information_gain = self.next_message.distance_from_vacuous()
         else:
@@ -471,7 +498,7 @@ class _GraphMessagePath:
         """
         Recompute the next message.
         """
-        new_next_message = self.sender_cluster.make_message(self.receiver_cluster._cluster_id)
+        new_next_message = self.sender_cluster.make_message(self.receiver_cluster.cluster_id)
         self.next_message = new_next_message.copy()
         self.update_next_information_gain()
 

@@ -1,11 +1,9 @@
-"""
-This module contains an abstract parent class, defining the minimum functions that all factors should have
-"""
-
 from abc import ABCMeta, abstractmethod
 import copy
 
-from veroku.factors import _factor_utils
+"""
+This module contains an abstract parent class, defining the minimum functions that all factors should have
+"""
 
 
 class Factor:
@@ -17,8 +15,6 @@ class Factor:
     def __init__(self, var_names):
         """
         A super class constructor that should be called from the base class constructor.
-        Variable sets explanation:
-        #TODO: expand explanation.
         """
         if len(set(var_names)) != len(var_names):
             raise ValueError('duplicate variables in var_names: ', var_names)
@@ -61,6 +57,16 @@ class Factor:
         return list(set(self.var_names) - set(vrs))
 
     @abstractmethod
+    def equals(self, factor):
+        """
+        An abstract function for checking if this factor is equal to another factor.
+
+        :param factor: The factor to be compared to.
+        :return: The result of the check.
+        :rtype: bool
+        """
+
+    @abstractmethod
     def copy(self):
         """
         An abstract function for copying a factor that should be implemented in the base class.
@@ -89,6 +95,13 @@ class Factor:
         """
 
     def absorb(self, factor):
+        """
+        (Alias for multiply) An abstract function for performing factor multiplication that should be implemented in the base class.
+
+        :param factor: The factor to be multiplied with.
+        :return: The resulting product
+        """
+
         return self.multiply(factor)
 
     @abstractmethod
@@ -99,7 +112,16 @@ class Factor:
         :param factor: The factor to be divided by.
         :return: The resulting quotient
         """
+
     def cancel(self, factor):
+        """
+        (Alias for divide by default - but can differ in certain cases) An abstract function for performing factor
+        division (or division-like operarations - see Categorical cancel for example) that can be implemented in the
+        base class.
+
+        :param factor: The factor to be divided by.
+        :return: The resulting factor
+        """
         return self.divide(factor)
 
     @abstractmethod
@@ -115,6 +137,13 @@ class Factor:
         """
     
     def observe(self, vrs, values):
+        """
+        (Alias for reduce) Reduce a factor by observing certain values for certain variables.
+
+        :param vrs: The observed variables.
+        :param values: The values of these variables.
+        :return: The reduced factor.
+        """
         return self.reduce(vrs, values)
 
     @abstractmethod
@@ -124,9 +153,6 @@ class Factor:
 
         :return: The normalized factor.
         """
-    #@property
-    #def is_vacuous(self):
-    #    return False
 
     @abstractmethod
     def show(self):
@@ -136,17 +162,44 @@ class Factor:
 
     @property
     def joint_distribution(self):
+        """
+        The joint distribution.
+        """
         return self.copy()
 
     def __mul__(self, other):
+        """
+        Multiply this factor with another factor.
+
+        :param other: The other factor.
+        :return: The result.
+        """
         return self.multiply(other)
 
     def __div__(self, other):
+        """
+        Divide this factor with another factor.
+
+        :param other: The other factor.
+        :return: The result.
+        """
         return self.divide(other)
 
     def __eq__(self, other):
+        """
+        Compare this factor to another factor.
+
+        :param other: The other factor.
+        :return: The equality result.
+        """
         return self.equals(other)
 
     def __ne__(self, other):
+        """
+        Compare this factor to another factor.
+
+        :param other: The other factor.
+        :return: The inverse equality result.
+        """
         return not self.__eq__(other)
 

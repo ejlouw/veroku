@@ -3,13 +3,20 @@ import unittest
 from mockito import when
 
 from veroku.factors import _sigma_points
-from veroku.factors.gaussian import Gaussian, make_random_gaussian
+from veroku.factors.gaussian import make_random_gaussian
 import numpy as np
+
+"""
+A test module for the _sigma_points module.
+"""
 
 
 class TestSigmaPoints(unittest.TestCase):
 
     def setUp(self):
+        """
+        Run before every test.
+        """
         np.random.seed(1)
         self.sps_a_cov = np.array([[4.0, 1.0, 0.5],
                                    [1.0, 3.3, 0.1],
@@ -39,6 +46,9 @@ class TestSigmaPoints(unittest.TestCase):
         self.assertTrue(np.allclose(expected_mean, actual_mean))
 
     def test_sigma_point_array_to_gaussian_params(self):
+        """
+        Test that the sigma_point_array_to_gaussian_params returns the correct result.
+        """
         expected_cov = self.sps_a_cov
         expected_mean = self.sps_a_mean
         sps_array = self.sps_a_array
@@ -48,6 +58,9 @@ class TestSigmaPoints(unittest.TestCase):
         self.assertTrue(np.allclose(expected_mean, actual_mean))
 
     def test_sigma_points_to_gaussian_params(self):
+        """
+        Test that the sigma_points_to_gaussian_params returns the correct result.
+        """
         expected_cov = self.sps_a_cov
         expected_mean = self.sps_a_mean
         sps = [np.expand_dims(self.sps_a_array[:, i], axis=1) for i in range(self.sps_a_array.shape[1])]

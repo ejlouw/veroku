@@ -1,7 +1,3 @@
-"""
-A module for instantiating and performing operations on Non-linear Gaussian functions.
-"""
-
 # System imports
 import operator
 import copy
@@ -20,6 +16,9 @@ from veroku.factors._factor_utils import make_square_matrix, indexed_square_matr
 from veroku.factors._factor_template import FactorTemplate
 
 # TODO: see that lazy evaluation (recompute joint) is done sensibly and consistently
+"""
+A module for instantiating and performing operations on Non-linear Gaussian functions.
+"""
 
 
 class NonLinearGaussian(Factor):
@@ -33,16 +32,16 @@ class NonLinearGaussian(Factor):
         """
         The initializer.
 
-        :param conditioning_vars: (list) The conditioning vars.
-        :param conditional_vars: (list) The conditioning vars.
+        :param list conditioning_vars: The conditioning vars.
+        :param list conditional_vars: The conditioning vars.
         :param transform: The transformation that links the conditioning to the conditional distribution
         :param noise_cov: The noise covariance matrix of the zero mean Gaussian noise.
-        :param conditional_update_factor: (factor) A factor, with same scope, subset of, the conditional vars, to be
+        :param Gaussian conditional_update_factor: A factor, with same scope, subset of, the conditional vars, to be
             multiplied with the transformed (joint) distribution to form the final joint distribution.
-        :param conditioning_factor: The factor with scope less than or equals to the conditional variables to be
+        :param Gaussian conditioning_factor: The factor with scope less than or equals to the conditional variables to be
             transformed by the transform. If the scope is less than the conditional variables set, observed evidence
             (if available) can be used to still enable the successful transformation and calculation of the joint.
-        :param observed_evidence: (dict) A dictionary mapping variable names ot observed values.
+        :param dict observed_evidence: A dictionary mapping variable names ot observed values.
         """
         if len(set(conditioning_vars).intersection(conditional_vars)) != 0:
             raise ValueError('variable overlap between conditioning_vars and conditional_vars.')
@@ -77,8 +76,10 @@ class NonLinearGaussian(Factor):
 
     def copy(self):
         """
-        Make a copy of this NonLinearGaussian
-        :return: the copied NonLinearGaussian
+        Make a copy of the factor.
+
+        :return: the copy
+        :rtype: NonLinearGaussian
         """
         nlg_copy = NonLinearGaussian(conditioning_vars=copy.deepcopy(self.conditioning_vars),
                                      conditional_vars=copy.deepcopy(self.conditional_vars),
@@ -94,7 +95,8 @@ class NonLinearGaussian(Factor):
     @property
     def joint_distribution(self):
         """
-        Get the joint distribution
+        The joint distribution.
+
         :return: the joint distribution
         """
         self_copy = self.copy()
@@ -105,6 +107,7 @@ class NonLinearGaussian(Factor):
     def get_K(self):
         """
         Get the K matrix (after ensuring that the canonical form is updated.)
+
         :return: The K parameter.
         """
         self._recompute_joint()
@@ -114,6 +117,7 @@ class NonLinearGaussian(Factor):
     def get_h(self):
         """
         Get the log h vector (after ensuring that the canonical form is updated.)
+
         :return: The h parameter.
         """
         self._recompute_joint()
@@ -122,6 +126,7 @@ class NonLinearGaussian(Factor):
     def get_g(self):
         """
         Get the g scalar (after ensuring that the canonical form is updated.)
+
         :return: The g parameter.
         """
         self._recompute_joint()
@@ -133,6 +138,7 @@ class NonLinearGaussian(Factor):
     def get_cov(self):
         """
         Get the covariance matrix (after ensuring that the covariance form is updated.)
+
         :return: The cov parameter.
         """
         self._recompute_joint()
@@ -141,6 +147,7 @@ class NonLinearGaussian(Factor):
     def get_mean(self):
         """
         Get the mean vector (after ensuring that the covariance form is updated.)
+
         :return: The mean parameter.
         """
         self._recompute_joint()
@@ -149,15 +156,24 @@ class NonLinearGaussian(Factor):
     def get_log_weight(self):
         """
         Get the log weight (after ensuring that the covariance form is updated.)
+
         :return: The log_weight parameter.
         """
         self._recompute_joint()
         return self._joint_distribution.get_log_weight()
 
     def add_log_weight(self, log_weight_to_add):
+        """
+        Add a log weight to the factor.
+
+        :param log_weight_to_add: The log weight to add.
+        """
         self.log_weight += log_weight_to_add
 
     def _recompute_joint(self):
+        """
+        Recompute the joint distribution.
+        """
         observed_vars = list(self.observed_evidence.keys())
 
         conditioning_observed_vars = [var for var in observed_vars if var in self.conditioning_vars]
@@ -321,6 +337,7 @@ class NonLinearGaussian(Factor):
     def reduce(self, vrs, values):
         """
         Observe a subset of the variables in the scope of this factor and return the resulting factor.
+
         :param vrs: the names of the observed variable (list)
         :param values: the values of the observed variables (list or vector-like object)
         :return: the resulting factor
@@ -334,6 +351,7 @@ class NonLinearGaussian(Factor):
     def marginalize(self, vrs, keep=False):
         """
         Integrate out variables from this factor.
+
         :param vrs: (list) a subset of variables in the factor's scope
         :param keep: Whether to keep or sum out vrs
         :return: the resulting marginal
@@ -377,6 +395,7 @@ class NonLinearGaussian(Factor):
         """
         Print the parameters of the nonlinear Gaussian distribution.
         """
+        # TODO: add __repr__ function and use here.
         print('Non-linear Gaussian')
         print('conditioning variables:', self.conditioning_vars)
         print('conditional variables:', self.conditional_vars)
@@ -400,6 +419,9 @@ class NonLinearGaussian(Factor):
             print('vacuous')
 
     def plot(self):
+        """
+        Plot the joint distribution.
+        """
         self_copy = self.copy()
         self_copy._recompute_joint()
         self._joint_distribution.plot()
@@ -434,6 +456,9 @@ class NonLinearGaussianMixture(Factor):
         self.split_singles_before_absorb = split_singles_before_absorb
 
     def normalize(self):
+        """
+        Normalise the factor (not yet implemented).
+        """
         raise NotImplementedError()
 
     def copy(self):
@@ -446,10 +471,10 @@ class NonLinearGaussianMixture(Factor):
         return NonLinearGaussianMixture(self.nlgs)
 
     @property
-    def _joint_distribution(self):
+    def joint_distribution(self):
         gaussian_joints = []
         for nlg in self.nlgs:
-            gaussian_joints.append(nlg._joint_distribution)
+            gaussian_joints.append(nlg.joint_distribution)
         return GaussianMixture(gaussian_joints)
 
     def multiply(self, factor):
@@ -561,50 +586,12 @@ class NonLinearGaussianMixture(Factor):
             print(f'######### NLG {i} #############################')
             nlg.show()
 
-    class NonLinearGaussianMixtureTemplate(FactorTemplate):
-
-        def __init__(self, conditioning_var_templates, conditional_var_templates, transition_function, noise_cov):
-            """
-            The initializer.
-
-            :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
-            :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
-            :param conditioning_var_templates:
-            :param conditional_var_templates:
-            :param callable transition_function: The function that specifies the non-linear transform. This function takes
-                2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the
-                variable elements of the value vector (i.e ltransition_function = lamda x, var_names: np.square(x)).
-                The variable names do not need to be used, but can be useful in certain cases where functions need to be
-                applied to specific variables.
-            :param noise_cov: The noise covariance matrix of the additive noise random variable.
-            """
-            super().__init__(conditioning_var_templates=conditioning_var_templates,
-                             conditional_var_templates=conditional_var_templates)
-            self.transition_function = transition_function
-            self.noise_cov = noise_cov
-
-        def make_factor(self, format_dict=None, var_names=None):
-            """
-            Make a factor with var_templates formatted by format_dict to create specific var names.
-
-            :param format_dict: The dictionary to be used to format the var_templates strings.
-            :type format_dict: str dict
-            :return: The instantiated factor.
-            :rtype: NonLinearGaussianMixture
-            """
-            if format_dict is not None:
-                assert var_names is None
-                #  TODO: use format_list_elements
-                conditioning_vars = [vt.format(**format_dict) for vt in self._conditioning_var_templates]
-                conditional_vars = [vt.format(**format_dict) for vt in self._conditional_var_templates]
-
-                return NonLinearGaussianMixture(conditioning_vars, conditional_vars,
-                                                self.transition_function, self.noise_cov,
-                                                log_weight=0.0,
-                                                joint_distribution=None)
-
 
 class NonLinearGaussianTemplate(FactorTemplate):
+
+    """
+    A template class for NonLinearGaussian factors.
+    """
 
     def __init__(self, conditioning_var_templates, conditional_var_templates, transition_function, noise_cov):
         """

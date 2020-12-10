@@ -4,10 +4,14 @@ from unittest import mock
 from veroku._cg_helpers._animation import contains_non_overlapping_substrings, change_graph_node_color,\
     change_graph_edge_color
 
+"""
+A test module for the _animation module.
+"""
+
 
 class TestAnimation(unittest.TestCase):
     """
-    A Test class for the _animation module.
+    A test class for the _animation module.
     """
     def test_contains_non_overlapping_substrings(self):
         """

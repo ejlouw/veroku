@@ -1,7 +1,3 @@
-"""
-A module for instantiating sparse tables with log probabilities.
-"""
-
 # System imports
 import copy
 import operator
@@ -20,6 +16,9 @@ from veroku.factors._factor_template import FactorTemplate
 LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
 LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
 
+"""
+A module for instantiating sparse tables with log probabilities.
+"""
 
 # TODO: consider removing some unused functions
 
@@ -230,7 +229,7 @@ class Categorical(Factor):
         """
         Assert that the variable cardinalities are consistent between two factors.
 
-        :param factor:
+        :param Categorical factor: The factor to compare with.
         """
         for var in self.var_names:
             if var in factor.var_cards:
@@ -428,6 +427,10 @@ class Categorical(Factor):
 
 
 class CategoricalTemplate(FactorTemplate):
+
+    """
+    A class for specifying categorical factor templates and creating categorical factors from these templates.
+    """
 
     def __init__(self, var_templates=None, cardinalities=None, probs_table=None, log_probs_tensor=None):
         """

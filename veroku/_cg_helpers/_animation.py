@@ -3,6 +3,14 @@ import re
 
 
 def make_sepset_node_name(node_a_name, node_b_name):
+    """
+    Make a standard sepset node name using the two neighboring nodes.
+
+    :param str node_a_name: The one node's name.
+    :param str node_b_name: The other node's name.
+    :return: The sepset's name
+    :rtype: str
+    """
     return 'sepset__' + '__'.join(sorted([node_a_name, node_b_name]))
 
 
@@ -13,11 +21,9 @@ def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     edge between node_a and the sepset node and the edge between the sepset node and node_b).
 
     :param graph: The graphviz graph
-    :param node_a_name:
-    :param node_b_name:
-    :param new_color:
-    :return:
-
+    :param node_a_name: The edge's one neighboring node's name.
+    :param node_b_name: The edge's other neighboring node's name.
+    :param new_color: The new color (i.e 'green' or 'red')
     """
 
     sepset_node_name = make_sepset_node_name(node_a_name, node_b_name)
@@ -80,7 +86,6 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     :param node_a_name: The one node
     :param node_b_name: The other node
     :param new_color: The new color of the edge (i.e 'green', 'blue', 'red')
-    :return:
     """
 
     edge_found = False
@@ -120,6 +125,10 @@ def change_graph_node_color(graph, node_name, new_color):
 
 
 def graph_to_pil_image(graph):
+    """
+    Convert the graph to a PIL image.
+    :param graph: The graph to convert.
+    """
     graph.render('/tmp/test.gv', view=False)
     pil_image = PIL_Image.open('/tmp/test.gv.png')
     pil_image_copy = pil_image.copy()
@@ -128,6 +137,13 @@ def graph_to_pil_image(graph):
 
 
 def add_message_pass_animation_frames(graph, frames, node_a_name, node_b_name):
+    """
+    Add frames (as part of the animation) representing a message being passed between two nodes in the graph.
+    :param graph: The graph.
+    :param frames: The frames to add.
+    :param node_a_name: The one node.
+    :param node_b_name: The other node.
+    """
     new_color = 'red'
     change_graph_node_color(graph=graph,
                             node_name=node_a_name,

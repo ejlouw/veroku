@@ -20,6 +20,13 @@ from veroku.factors.sparse_categorical import SparseCategorical, _make_dense, _a
 
 
 def make_abc_factor_1(CatClass):
+    """
+    A helper function to make a standard test factor.
+
+    :param CatClass: The type of factor to make (SparseCategorical or Categorical).
+    :type CatClass: class
+    :return: The standard factor of the specified class
+    """
     vars_a = ['a', 'b', 'c']
     probs_a = {(0, 0, 0): np.exp(0.01),
                (0, 0, 1): np.exp(0.02),
@@ -111,7 +118,7 @@ class TestCategorical(unittest.TestCase):
     # Categorical only
     def test_reorder_fails_var_set(self):
         """
-        Test that the reorder method fails when the set of new order variables do not match the factors variabels.
+        Test that the reorder method fails when the set of new order variables do not match the factors variables.
         of variables.
         """
         if self.CatClass == Categorical:
@@ -311,7 +318,10 @@ class TestCategorical(unittest.TestCase):
         actual_resulting_factor = sp_table_abc.multiply(sp_table_ab)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
-    def test_multiply_partially_overlapping(self):
+    def test_absorb_partially_overlapping(self):
+        """
+        Test that the absorb method returns the correct result when the two factors have partially overlapping scopes.
+        """
         vars_abc = ['a', 'b', 'c']
         probs_abc = {(0, 0, 0): 0.1,
                      (0, 0, 1): 0.2,
@@ -447,6 +457,10 @@ class TestCategorical(unittest.TestCase):
         self.assertTrue(expected_resulting_factor.equals(actual_resulting_factor))
 
     def test_cancel_with_zeros(self):
+        """
+        Test that the cancel method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         vars_a = ['a', 'b']
         probs_a = {(0, 0): 0.0,
                    (0, 1): 0.0,
@@ -656,6 +670,10 @@ class TestCategorical(unittest.TestCase):
         self.assertAlmostEqual(correct_kld, computed_kld)
 
     def test_KLD_with_zeros(self):
+        """
+        Test that the kl_divergence method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         vars_a = ['a', 'b']
         probs_a = {(0, 0): 0.0,
                    (0, 1): 0.0,
@@ -675,6 +693,10 @@ class TestCategorical(unittest.TestCase):
         self.assertEqual(expected_KLD, actual_KLD)
 
     def test_KLD_with_zeros_sparse1(self):
+        """
+        Test that the kl_divergence method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         vars_a = ['a', 'b']
         probs_a = {(0, 1): 0.0,
                    (1, 0): 0.0,
@@ -693,6 +715,10 @@ class TestCategorical(unittest.TestCase):
         self.assertEqual(expected_KLD, actual_KLD)
 
     def test_KLD_with_zeros_sparse2(self):
+        """
+        Test that the kl_divergence method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         vars_a = ['a', 'b']
         probs_a = {(0, 1): 0.0,
                    (1, 0): 0.0,
@@ -709,6 +735,10 @@ class TestCategorical(unittest.TestCase):
         self.assertEqual(expected_KLD, actual_KLD)
 
     def test_KLD_with_zeros_sparse3(self):
+        """
+        Test that the kl_divergence method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         vars_a = ['a', 'b']
         probs_a = {  # (0,0): 0.0 #log: -inf
             (0, 1): 0.0,  # log: -inf
@@ -737,6 +767,10 @@ class TestCategorical(unittest.TestCase):
         self.assertEqual(expected_KLD, actual_KLD)
 
     def test_KLD_with_zeros_sparse4(self):
+        """
+        Test that the kl_divergence method returns the correct result when the two factors have different combinations
+        of zeros for corresponding assignments.
+        """
         p = 0.16666666666666669
         vrs = ['24', '25']
         probs = {(2, 5): p,
@@ -981,8 +1015,7 @@ class TestSparseCategorical(TestCategorical):
 
         probs_a = {(0, 0): 0.01,
                    (0, 1): 1.00}
-        probs_b = {  # (0, 0): 0.0}
-            (0, 1): 1.0}
+        probs_b = {(0, 1): 1.0}
         categorical_a = SparseCategorical(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2],
                                           default_log_prob=default)
         categorical_b = SparseCategorical(var_names=vars_a, probs_table=probs_b, cardinalities=[2, 2],
@@ -1037,14 +1070,14 @@ class TestSparseCategorical(TestCategorical):
         default_log_prob = 0.5
         vars_abc = ['a', 'b', 'c']
         probs_abc = {  # (0, 0, 0): 0.5,
-            # (0, 0, 1): 0.5,
-            (0, 1, 0): 0.3,
-            (0, 1, 1): 0.4}
+                       # (0, 0, 1): 0.5,
+                         (0, 1, 0): 0.3,
+                         (0, 1, 1): 0.4}
         vars_dbc = ['d', 'b', 'c']
         probs_dbc = {  # (0, 0, 0): 0.5,
-            (0, 0, 1): 0.2,
-            # (0, 1, 0): 0.5,
-            (0, 1, 1): 0.4}
+                         (0, 0, 1): 0.2,
+                       # (0, 1, 0): 0.5,
+                         (0, 1, 1): 0.4}
         ld = default_log_prob
 
         vars_dabc = ['d', 'a', 'b', 'c']
@@ -1139,7 +1172,12 @@ class TestSparseCategorical(TestCategorical):
         """
         Test that the _apply_to_probs function results in the correct factor.
         """
-        func = lambda lp, assign: lp if sum(assign) else -np.inf
+        def func(lp, assign):
+            if sum(assign):
+                return lp
+            else:
+                return -np.inf
+
         probs = {(0, 0): 0.1,
                  (0, 1): 0.2}
         factor = SparseCategorical(var_names=['a', 'b'], cardinalities=[2, 2], probs_table=probs)

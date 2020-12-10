@@ -10,25 +10,34 @@ import cmath
 from mockito import when, expect, unstub, spy, verify, verifyNoUnwantedInteractions
 import numpy as np
 from scipy import integrate
-import seaborn
 
 # Local imports
 from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gaussian, GaussianTemplate
 from veroku.factors.categorical import Categorical
 from veroku.factors import _factor_utils
 
+"""
+A tests module for Gaussian class.
+"""
+
 
 # pylint: disable=too-many-public-methods
 def _update_canform():
+    """
+    A dummy _update_canform function.
+    """
     pass
 
 
 class TestGaussian(unittest.TestCase):
     """
-    Tests for Gaussian class.
+    A tests class for the Gaussian class.
     """
 
     def setUp(self):
+        """
+        Run before every test.
+        """
         np.random.seed(0)
 
     def test_random_gaussians_differ(self):
@@ -44,7 +53,6 @@ class TestGaussian(unittest.TestCase):
     def test_random_gaussians_same(self):
         """
         Test that random Gaussians generated sequentially with the same random seed are the same.
-        :return:
         """
         var_names = ['a', 'b']
         np.random.seed(0)
@@ -86,7 +94,7 @@ class TestGaussian(unittest.TestCase):
 
     def test_covariance_form_constructor(self):
         """
-        Test that the constructor constructs an object with the correct covariance parameters
+        Test that the constructor constructs an object with the correct covariance parameters.
         """
         cov_mat_list = [[5.0, 1.0], [1.0, 5.0]]
         cov_mat_array = np.array(cov_mat_list)
@@ -376,7 +384,6 @@ class TestGaussian(unittest.TestCase):
     def test_reorder_parameters(self):
         """
         Test that _reorder_parameters properly reorders the values in the canonical parameters.
-        :return:
         """
         gaussian_a = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[1.0, 2.0], g=1.0, var_names=['a', 'b'])
         gaussian_b = Gaussian(K=[[3.0, 2.0], [2.0, 1.0]], h=[2.0, 1.0], g=1.0, var_names=['b', 'a'])
@@ -395,7 +402,6 @@ class TestGaussian(unittest.TestCase):
     def test_marginalise_2d(self):
         """
         Test that the Gaussian marginalisation function returns the correct result for a two dimensional Gaussians.
-        :return:
         """
         gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
         expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
@@ -405,7 +411,6 @@ class TestGaussian(unittest.TestCase):
     def test_marginalise_2d_canform(self):
         """
         Test that the Gaussian marginalisation function returns the correct result for a two dimensional Gaussians.
-        :return:
         """
         gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
         expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
@@ -577,8 +582,7 @@ class TestGaussian(unittest.TestCase):
 
     def test_form_conversion(self):
         """
-        Test that conversion from one form to the other and back results in the same Gaussian parameters
-        :return:
+        Test that conversion from one form to the other and back results in the same Gaussian parameters.
         """
         gaussian_ab = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
         gaussian_ab_copy = gaussian_ab.copy()
@@ -601,7 +605,6 @@ class TestGaussian(unittest.TestCase):
     def test_invert(self):
         """
         Test that the _invert method returns a Gaussian with the negated parameters.
-        :return:
         """
         gaussian = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[4.0, 5.0], g=6.0, var_names=['a', 'b'])
         expected_inv_gaussian = Gaussian(K=[[-1.0, -2.0], [-2.0, -3.0]], h=[-4.0, -5.0], g=-6.0, var_names=['a', 'b'])
@@ -733,18 +736,6 @@ class TestGaussian(unittest.TestCase):
         error_msg = str(raises_context.exception)
         self.assertTrue('dimensionalities' in error_msg)
 
-    #def test_kl_divergence_0cov(self):
-    #    """
-    #    Test that the KL divergence is infinity when one of the Gaussians has zero covariance and that it is zero when
-    #    both have covariances of zero.
-    #    """
-    #    gaussian_0cov_1 = Gaussian(K=np.inf, h=1.0, g=0.0, var_names=['a'])
-    #    gaussian_0cov_2 = Gaussian(K=np.inf, h=1.0, g=0.0, var_names=['a'])
-    #    gaussian_1cov = Gaussian(K=1, h=1.0, g=0.0, var_names=['a'])
-    #    self.assertTrue(gaussian_0cov_1.kl_divergence(gaussian_0cov_2) == 0.0)
-    #    self.assertTrue(gaussian_1cov.kl_divergence(gaussian_0cov_1) == np.inf)
-    #    self.assertTrue(gaussian_0cov_1.kl_divergence(gaussian_1cov) == np.inf)
-
     def test_vacuous_equals(self):
         g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
         g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
@@ -782,7 +773,6 @@ class TestGaussian(unittest.TestCase):
         Test that the is_vacuous property function identifies a Gaussian as vacuous if the vacuous member variable is
         set to True.
         """
-
         dims = 3
         var_names = [str(i) for i in range(dims)]
         K = np.eye(dims) * 1.0

@@ -1,7 +1,3 @@
-"""
-A module for instantiating sparse tables with log probabilities.
-"""
-
 # System imports
 import copy
 import operator
@@ -16,6 +12,10 @@ import itertools
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
+
+"""
+A module for instantiating sparse tables with log probabilities.
+"""
 
 
 def _make_dense(factor):
@@ -86,23 +86,29 @@ def _get_nested_sorted_probs(new_variables_order_outer,
                              new_variables_order_inner,
                              old_variable_order, old_assign_probs):
     """
-    Reorder variables to a new order and sort assignments.
+    Reorder variables to a new order (and sort assignments) and then convert the probs dictionary to a hierarchical
+    dictionary with certain variables (or rather their corresponding assignments) in the outer dictionary and the rest
+    in the inner dictionaries.
 
-    :params new_variables_order_outer:
-    :params new_variables_order_inner:
-    :params old_variable_order:
-    :params old_assign_probs: A dictionary of assignment and coresponding probabilities.
+    :param new_variables_order_outer: The variables (and their order) for the outer scope.
+    :type new_variables_order_outer: str list
+    :param new_variables_order_inner: The variables (and their order) for the inner scope.
+    :type new_variables_order_inner: str list
+    :param old_variable_order: The initial variable order corresponding to old_assign_probs/
+    :type old_variable_order: str list
+    :param old_assign_probs: A dictionary of assignment and corresponding probabilities.
+    :type old_assign_probs: dict
+
     Example:
-    old_variable_order = [a, b]
-    new_variables_order_outer = [b]
+        old_variable_order = [a, b]
+        new_variables_order_outer = [b]
 
-      a  b  c   P(a,b)     return:       b    a  c  P(b,a)
-    {(0, 0, 0): pa0b0c0                {(0):{(0, 0): pa0b0,
-     (0, 1, 0): pa0b1c0                      (1, 0): pa1b0}
-     (1, 0, 1): pa1b0c1                 (1):{(0, 1): pa0b1,
-     (1, 1, 1): pa1b1c1}                     (1, 1): pa1b1}}
+          a  b  c   P(a,b)     return:       b    a  c  P(b,a)
+        {(0, 0, 0): pa0b0c0                {(0):{(0, 0): pa0b0,
+         (0, 1, 0): pa0b1c0                      (1, 0): pa1b0}
+         (1, 0, 1): pa1b0c1                 (1):{(0, 1): pa0b1,
+         (1, 1, 1): pa1b1c1}                     (1, 1): pa1b1}}
     """
-    # TODO: Complete and improve docstring.
     new_variable_order = new_variables_order_outer + new_variables_order_inner
     new_order_indices = [new_variable_order.index(var) for var in old_variable_order]
     new_assign_probs = dict()
@@ -118,19 +124,21 @@ def _get_nested_sorted_probs(new_variables_order_outer,
     return new_assign_probs, new_variable_order
 
 
-def _same_scope_binary_operation(a, b, func, default):
+def _same_scope_binary_operation(probs_table_a, pribs_table_b, func, default):
     """
-    NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same order.
+    Apply a mathematical operation between the two factors with the same variable scope.
+    NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same
+     order.
 
-    :param a: The dictionary for factor (typically sub factor) A.
-    :param b: The dictionary for factor (typically sub factor) B.
+    :param dict probs_table_a: The probs dictionary for factor (typically sub factor) A.
+    :param dict pribs_table_b: The probs dictionary for factor (typically sub factor) B.
     """
     result_common_sub_dict = dict()
-    all_common_assignments = set([*a.keys()] + [*b.keys()])
+    all_common_assignments = set([*probs_table_a.keys()] + [*pribs_table_b.keys()])
     new_default = func(default, default)
     for assignment in all_common_assignments:
-        a_val = a.get(assignment, default)
-        b_val = b.get(assignment, default)
+        a_val = probs_table_a.get(assignment, default)
+        b_val = pribs_table_b.get(assignment, default)
         r_val = func(a_val, b_val)
         if r_val != new_default:
             result_common_sub_dict[assignment] = r_val
@@ -154,18 +162,19 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     """
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
 
-    :param ntd_a: The nested table dictionary for factor A.
+    :param dict ntd_a: The nested table dictionary for factor A.
     :param list outer_inner_cards_a: The cardinalities for the outer and inner variables for factor A (i.e [[2,2], [3]])
-    :param ntd_b: The nested table dictionary for factor B.
+    :param dict ntd_b: The nested table dictionary for factor B.
     :param list outer_inner_cards_b: The cardinalities for the outer and inner variables for factor B (i.e [[2,2], [3]])
-    :param default: The default value for ntd_a and ntd_b (the values for the missing values).
-    :param default_rules: The rules for when a calculation results will result in a default value (optional).
+    :param float default: The default value for ntd_a and ntd_b (the values for the missing values).
+    :param str default_rules: The rules for when a calculation results will result in a default value (optional).
         This can help speed up this function. The possible values are as follows:
             'any' : If either ntd_a or ntd_b has a default value, the result will be default.
             'both': Only if both ntd_a and ntd_b has a default value, the result will be default.
             'none': No combination of default or non-default values is guaranteed to result in a default value
         If this parameter is not specified, 'none' will be used to ensure correct, albeit slower computation.
     :returns: The nested table dictionary for the resulting factor.
+    :rtype: dict
     """
 
     # TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?).
@@ -283,9 +292,11 @@ class SparseCategorical(Factor):
         :type cardinalities: int list
         :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
             Missing assignments are assumed to have zero probability.
-        :type
-        :param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.
+        :type log_probs_table: dict
+        :param probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.
             Missing assignments are assumed to have -inf log-probability (zero probability).
+        :type probs_table: dict
+
         Example:
             >>> var_names = ['rain','slip']
             >>> probs_table = {(0,0):0.8,
@@ -442,7 +453,7 @@ class SparseCategorical(Factor):
         """
         Assert that the variable cardinalities are consistent between two factors.
 
-        :param factor:
+        :param SparseCategorical factor: The factor to compare with.
         """
         for var in self.var_names:
             if var in factor.var_cards:
@@ -701,6 +712,12 @@ class SparseCategorical(Factor):
         return np.exp(self.log_probs_table[var_names_order_assignments])
 
     def _to_df(self):
+        """
+        Convert the factor to a dataframe representation.
+
+        :return: The dataframe representation.
+        :rtype: pandas.DataFrame
+        """
         log_probs_table = self.log_probs_table
         var_names = self.var_names
         df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: 'assignment', 1: 'log_prob'})
@@ -765,6 +782,10 @@ class SparseCategorical(Factor):
 
 
 class SparseCategoricalTemplate(FactorTemplate):
+
+    """
+    A class for specifying sparse categorical factor templates and creating categorical factors from these templates.
+    """
 
     def __init__(self, probs_table, cardinalities, var_templates=None):
         """
