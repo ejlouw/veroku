@@ -43,7 +43,7 @@ jobs:
       - name: Setup And Test
         run: |
           echo Checking code style
-          pylint ./veroku
+          black --check --line-length=110  veroku/
           echo Running tests with code coverage
           coverage run --rcfile=.coveragerc -m unittest discover -v
           coverage report -m
