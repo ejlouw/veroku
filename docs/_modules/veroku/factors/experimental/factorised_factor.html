@@ -59,7 +59,7 @@
 <span class="sd">        :param factors: The list of factors that will be implicitly multiplied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">FactorizedFactor</span><span class="p">)</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">])</span>
-        <span class="n">factors_var_name_lists</span> <span class="o">=</span> <span class="p">([</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">])</span>
+        <span class="n">factors_var_name_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">]</span>
         <span class="n">factors_var_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">var_name</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">factors_var_name_lists</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]))</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">factors_var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">factors</span> <span class="o">=</span> <span class="p">[]</span>
@@ -72,11 +72,10 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        compute the joint distribution.</span>
-<span class="sd">        :return:</span>
+<span class="sd">        The joint distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;FactorisedFactor has no factors.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;FactorisedFactor has no factors.&quot;</span><span class="p">)</span>
         <span class="n">joint_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="n">joint_distribution</span> <span class="o">=</span> <span class="n">joint_distribution</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
@@ -84,9 +83,10 @@
 
 <div class="viewcode-block" id="FactorizedFactor.copy"><a class="viewcode-back" href="../../../../veroku.factors.experimental.factorised_factor.html#veroku.factors.experimental.factorised_factor.FactorizedFactor.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Copy this factorised factor</span>
+<span class="sd">        Copy this factorised factor.</span>
 
 <span class="sd">        :return: the copied factor</span>
+<span class="sd">        :rtype: FactorizedFactor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">factor_copies</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
@@ -98,7 +98,8 @@
 <span class="sd">        Multiply by another factor.</span>
 
 <span class="sd">        :param factor: any type of factor.</span>
-<span class="sd">        :return: the resulting Factorised Factor</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: FactorizedFactor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: add preference for factors with conditioning scope? Not sure if practically necessary,</span>
         <span class="c1">#  but would be best.</span>
@@ -115,7 +116,8 @@
 <span class="sd">        Divide out a general factor.</span>
 
 <span class="sd">        :param factor: any type of factor.</span>
-<span class="sd">        :return: the resulting Factorised Factor</span>
+<span class="sd">        :return: the resulting factor</span>
+<span class="sd">        :rtype: FactorizedFactor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">factorised_factor_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">factorised_factor_copy</span><span class="o">.</span><span class="n">_first_factor_with_vars_index</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
@@ -129,7 +131,7 @@
         <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">factorised_factor_copy</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">factorised_factor_copy</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error: Cannot divide factor with disjoint scope.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Error: Cannot divide factor with disjoint scope.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">factorised_factor_copy</span></div>
 
     <span class="nd">@property</span>
@@ -150,6 +152,12 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
 <div class="viewcode-block" id="FactorizedFactor.distance_from_vacuous"><a class="viewcode-back" href="../../../../veroku.factors.experimental.factorised_factor.html#veroku.factors.experimental.factorised_factor.FactorizedFactor.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</span>
+
+<span class="sd">        :return: The KL divergence.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: improve this</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_distribution</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span></div>
 
@@ -160,8 +168,6 @@
 
 <span class="sd">        :param factor: The other factor</span>
 <span class="sd">        :type factor: Gaussian</span>
-<span class="sd">        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.</span>
-<span class="sd">        :type normalize_factor: bool</span>
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -173,7 +179,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the number of factors in the factorised factor.</span>
 
-<span class="sd">        :return: (int) The number of factors.</span>
+<span class="sd">        :return: The number of factors.</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
 
@@ -191,11 +198,12 @@
 
 <div class="viewcode-block" id="FactorizedFactor.marginalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.factorised_factor.html#veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Marginalise out a subset of the variables in this factor&#39;s scope.</span>
+<span class="sd">        Marginalize out a subset of the variables in this factor&#39;s scope.</span>
 
-<span class="sd">        :param vrs: (list) the variable names</span>
-<span class="sd">        :param keep: (bool) whether to keep or sum (or integrate) out these variables.</span>
-<span class="sd">        :return: (FactorisedFactor) the resulting marginal</span>
+<span class="sd">        :param list vrs: the variable names</span>
+<span class="sd">        :param bool keep: whether to keep or sum (or integrate) out these variables.</span>
+<span class="sd">        :return: the resulting marginal</span>
+<span class="sd">        :rtype: FactorisedFactor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: resolve this: Non-linear Gaussian factors can cause a problem here when there is enough information</span>
         <span class="c1">#   that they all should be well defined, but the information resides in only one of them for instance. This</span>
@@ -205,7 +213,7 @@
         <span class="n">vars_to_integrate_out_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vars_to_keep</span><span class="p">)</span>
         <span class="n">factors_in_keep_scope_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_intersecting_factors_indices</span><span class="p">(</span><span class="n">vars_to_keep</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">factors_in_keep_scope_indices</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;cannot marginalize out all variables from FactorisedFactor.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;cannot marginalize out all variables from FactorisedFactor.&quot;</span><span class="p">)</span>
 
         <span class="n">factor_marginals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -233,6 +241,7 @@
 <span class="sd">        Get the covariance matrix of the joint distribution (if Gaussian).</span>
 
 <span class="sd">        :return: The cov parameter.</span>
+<span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_distribution</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span></div>
 
@@ -241,6 +250,7 @@
 <span class="sd">        Get the mean vector of the joint distribution (if Gaussian).</span>
 
 <span class="sd">        :return: The mean parameter.</span>
+<span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">joint_distribution</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span></div>
 
@@ -248,14 +258,15 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge all factors (by multiplying) that have overlapping scopes.</span>
 
-<span class="sd">        :return: The reduced set of factors.</span>
+<span class="sd">        :return: The factor containing the reduced set of factors.</span>
+<span class="sd">        :rtype: FactorizedFactor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: Add tests for this function</span>
         <span class="n">merged_factors</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">already_merged_factor_indices</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">):</span>
             <span class="n">factor_i_merged</span> <span class="o">=</span> <span class="n">factor_i</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)):</span>
                 <span class="n">factor_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">already_merged_factor_indices</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_i</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">factor_j</span><span class="o">.</span><span class="n">varnames</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -271,7 +282,8 @@
 <span class="sd">        are merged together into disjoint (in terms of the integrand variables) factors, so that these larger factors</span>
 <span class="sd">        can be marginalised independently.</span>
 
-<span class="sd">        :param vrs_set: (string list) The common scope variables to be considered to determine &#39;dependent&#39; factors.</span>
+<span class="sd">        :param vrs_set: The common scope variables to be considered to determine &#39;dependent&#39; factors.</span>
+<span class="sd">        :type vrs_set: str list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">observed_factor_vars_list</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -312,8 +324,9 @@
             <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">vrs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_var_names</span><span class="p">):</span>
                 <span class="n">additional_log_weight</span> <span class="o">+=</span> <span class="n">factor</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x_val</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">vrs</span><span class="o">=</span><span class="n">vrs</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">vrs</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">factor_var_names</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">subset_vrs</span><span class="p">,</span> <span class="n">subset_values</span> <span class="o">=</span> <span class="n">get_subset_evidence</span><span class="p">(</span><span class="n">all_evidence_dict</span><span class="o">=</span><span class="n">all_evidence_dict</span><span class="p">,</span>
-                                                                <span class="n">subset_vars</span><span class="o">=</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
+                <span class="n">subset_vrs</span><span class="p">,</span> <span class="n">subset_values</span> <span class="o">=</span> <span class="n">get_subset_evidence</span><span class="p">(</span>
+                    <span class="n">all_evidence_dict</span><span class="o">=</span><span class="n">all_evidence_dict</span><span class="p">,</span> <span class="n">subset_vars</span><span class="o">=</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span>
+                <span class="p">)</span>
                 <span class="n">reduced_factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">subset_vrs</span><span class="p">,</span> <span class="n">subset_values</span><span class="p">)</span>
                 <span class="n">reduced_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reduced_factor</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -339,7 +352,12 @@
 
     <span class="k">def</span> <span class="nf">_all_intersecting_factors_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        return indices of factors in self_factors which has overlap with var_names.</span>
+<span class="sd">        Get the indices of factors in self_factors which has overlap with a set of variable names.</span>
+
+<span class="sd">        :param var_names: The variable names</span>
+<span class="sd">        :type var_names: str list</span>
+<span class="sd">        :return: The indices</span>
+<span class="sd">        :rtype: int list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># TODO: add check for equals variable names - will be faster for multiplication</span>
@@ -377,10 +395,10 @@
 
 <div class="viewcode-block" id="FactorizedFactor.show"><a class="viewcode-back" href="../../../../veroku.factors.experimental.factorised_factor.html#veroku.factors.experimental.factorised_factor.FactorizedFactor.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Display this factorised factor.</span>
+<span class="sd">        Print this factorised factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> factor </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> factor </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
             <span class="n">factor</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div></div>
 </pre></div>
 

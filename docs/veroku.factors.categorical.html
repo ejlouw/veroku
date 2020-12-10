@@ -35,7 +35,6 @@
             
   <div class="section" id="module-veroku.factors.categorical">
 <span id="veroku-factors-categorical-module"></span><h1>veroku.factors.categorical module<a class="headerlink" href="#module-veroku.factors.categorical" title="Permalink to this headline">¶</a></h1>
-<p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.categorical.Categorical">
 <em class="property">class </em><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_probs_tensor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
@@ -46,8 +45,12 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
+<li><p><strong>cardinalities</strong> (<em>int list</em>) – The cardinalities of the variables (i.e, for three binrary variables: [2,2,2]). This is
+only required if the probs_table param is supplied instead of the log_probs_tensor.</p></li>
 <li><p><strong>probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and probabilities as values.
-Missing assignments are assumed to have zero probability.</p></li>
+Missing assignments are assumed to have zero probability. This parameter is not required if log_probs_tensor
+is given.</p></li>
+<li><p><strong>log_probs_tensor</strong> (<em>numpy.ndarray</em>) – A dense tensor representation of the log distribution (not required if probs_table is given)</p></li>
 </ul>
 </dd>
 </dl>
@@ -68,7 +71,7 @@ Missing assignments are assumed to have zero probability.</p></li>
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.argmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the Categorical assignment (vector value) that maximises the factor potential.</p>
+<dd><p>Get the first assignment (vector value) that maximises the factor potential.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The argmax assignment.</p>
@@ -313,15 +316,8 @@ new_variable_order = [b, a]</p>
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.show">
-<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exp_log_probs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print the factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>exp_log_probs</strong> – Whether or no to exponentiate the log probabilities (to display probabilities instead of</p>
-</dd>
-</dl>
-<p>log-probabilities)
-:type exp_log_probs: bool</p>
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the factor’s string representation.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -351,14 +347,19 @@ new_variable_order = [b, a]</p>
 
 <dl class="py class">
 <dt id="veroku.factors.categorical.CategoricalTemplate">
-<em class="property">class </em><code class="sig-name descname">CategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs</span></em>, <em class="sig-param"><span class="n">var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#CategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.CategoricalTemplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">CategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cardinalities</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_probs_tensor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#CategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.CategoricalTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<p>A class for specifying categorical factor templates and creating categorical factors from these templates.</p>
 <p>Create a Categorical factor template.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>probs_table</strong> (<em>tuple:float dict</em>) – The log_probs_table that specifies the assignments and values for the template.</p></li>
-<li><p><strong>var_templates</strong> (<em>str list</em>) – A list of formattable strings.</p></li>
+<li><p><strong>cardinalities</strong> (<em>int list</em>) – The cardinalities of the variables (i.e, for three binrary variables: [2,2,2]). This is
+only required if the probs_table param is supplied instead of the log_probs_tensor.</p></li>
+<li><p><strong>probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and probabilities as values.
+Missing assignments are assumed to have zero probability. This parameter is not required if log_probs_tensor
+is given.</p></li>
+<li><p><strong>log_probs_tensor</strong> (<em>numpy.ndarray</em>) – A dense tensor representation of the log distribution (not required if probs_table is given)</p></li>
 </ul>
 </dd>
 </dl>
@@ -386,6 +387,12 @@ new_variable_order = [b, a]</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py data">
+<dt id="veroku.factors.categorical.LOG_SUBTRACT_KL_RULES">
+<code class="sig-name descname">LOG_SUBTRACT_KL_RULES</code><em class="property"> = {(-inf, &lt;built-in function sub&gt;, -inf): 0.0}</em><a class="headerlink" href="#veroku.factors.categorical.LOG_SUBTRACT_KL_RULES" title="Permalink to this definition">¶</a></dt>
+<dd><p>A module for instantiating sparse tables with log probabilities.</p>
 </dd></dl>
 
 </div>

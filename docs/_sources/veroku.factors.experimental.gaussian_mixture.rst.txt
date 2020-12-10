@@ -1,0 +1,7 @@
+veroku.factors.experimental.gaussian\_mixture module
+====================================================
+
+.. automodule:: veroku.factors.experimental.gaussian_mixture
+   :members:
+   :undoc-members:
+   :show-inheritance:

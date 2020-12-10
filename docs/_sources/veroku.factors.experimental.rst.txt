@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 4
 
    veroku.factors.experimental.factorised_factor
+   veroku.factors.experimental.gaussian_mixture
    veroku.factors.experimental.nonlinear_gaussian
 
 Module contents

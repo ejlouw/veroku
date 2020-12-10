@@ -62,14 +62,16 @@ example of a well-known type of PGM is the Kalman filter that can be used to obt
 state of a process or system, given noisy measurements. PGMs can in principle be used for any problem that involves
 uncertainty and is therefore applicable to many problems.</div><p>Veroku currently supports the following distributions:</p>
 <ul class="simple">
-<li><p>Categorical</p></li>
+<li><p>Categorical (sparse and dense implementations)</p></li>
 <li><p>Gaussian</p></li>
-<li><p>Gaussian mixture</p></li>
-<li><p>Linear Gaussian<span class="raw-html-m2r"><sup>1</sup></span></p></li>
-<li><p>Non-linear Gaussian<span class="raw-html-m2r"><sup>2</sup></span></p></li>
+<li><p>Gaussian mixture<span class="raw-html-m2r"><sup>1</sup></span></p></li>
+<li><p>Linear Gaussian<span class="raw-html-m2r"><sup>2</sup></span></p></li>
+<li><p>Non-linear Gaussian<span class="raw-html-m2r"><sup>3</sup></span></p></li>
 </ul>
-<p><span class="raw-html-m2r"><sup>1</sup></span> Using the Gaussian class - see the Kalman filter example notebook.<span class="raw-html-m2r"><br/></span>
-<span class="raw-html-m2r"><sup>2</sup></span>This implementation is still experimental.</p>
+<p><span class="raw-html-m2r"><sup>1</sup></span> This class still has some experimental functionality (specifically the Gaussian mixture division methods)
+and is, therefore, still in the factors.experimental sub-package.<span class="raw-html-m2r"><br></span>
+<span class="raw-html-m2r"><sup>2</sup></span> Using the Gaussian class - see the Kalman filter example notebook.<span class="raw-html-m2r"><br/></span>
+<span class="raw-html-m2r"><sup>3</sup></span>This implementation is still experimental (see the factors.experimental sub-package).</p>
 <div style="text-align: justify">
 These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
 with the `cluster_graph` module to automatically create valid cluster graphs. Inference can be performed in these graphs
@@ -96,9 +98,37 @@ Example notebooks:</p>
 <li><p>Normal-Wishart distribution</p></li>
 </ul>
 </div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>For the python dependencies see the <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/requirements.txt">https://github.com/ejlouw/veroku/blob/master/requirements.txt</a> file.
+The following additional dependencies are also required for some functionality (these are not installed automatically</p>
+<blockquote>
+<div><p>with the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>):</p>
+</div></blockquote>
+<div class="section" id="graphviz">
+<h3>Graphviz<a class="headerlink" href="#graphviz" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference external" href="https://graphviz.org/download/">https://graphviz.org/download/</a> for installation instructions.</p>
+</div>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<div style="text-align: justify">
+If you would like to contribute to veroku, the TODO's in the code are a good place to start.
+There are a few very simple ones, but some are more complex. Another area where
+contributions will be valuable is in getting the experimental modules rounded off
+and writing tests for these modules. Another potential area for contribution would
+be the items on the roadmap, although it would be best if the experimental modules
+are first rounded off.  In general, please remember to ensure that  the following
+guidelines are followed when contributing:
+</div><ul class="simple">
+<li><p>Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)</p></li>
+<li><p>Run the <code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">check</span> <span class="pre">&lt;params&gt;</span> <span class="pre">&lt;dir&gt;</span></code> command from the terminal (from the project root directory) to ensure that the code style is correct (see the <em>Setup And Test</em> section in  <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml">main.yml</a> for the exact command)</p></li>
+<li><p>If necessary, run the same command, but without the <code class="docutils literal notranslate"><span class="pre">check</span></code> flag in order to refactor the code. NB: please ensure that you have committed all changes prior to this, as black will automatically refactor the files.</p></li>
+</ul>
+</div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>Veroku is released under 3-Clause BSD license. You can view the license at <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
+<p>Veroku is released under 3-Clause BSD license. You can view the license <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
 </div>
 </div>
 <div class="section" id="documentation">

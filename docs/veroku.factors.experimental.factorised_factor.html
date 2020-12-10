@@ -15,7 +15,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="veroku.factors.experimental.nonlinear_gaussian module" href="veroku.factors.experimental.nonlinear_gaussian.html" />
+    <link rel="next" title="veroku.factors.experimental.gaussian_mixture module" href="veroku.factors.experimental.gaussian_mixture.html" />
     <link rel="prev" title="veroku.factors.experimental package" href="veroku.factors.experimental.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -52,10 +52,13 @@ for a efficient and intuitive representation of independent factors (especially 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Copy this factorised factor</p>
+<dd><p>Copy this factorised factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>the copied factor</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor">FactorizedFactor</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -63,7 +66,16 @@ for a efficient and intuitive representation of independent factors (especially 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.distance_from_vacuous">
 <code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The KL divergence.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.divide">
@@ -74,7 +86,10 @@ for a efficient and intuitive representation of independent factors (especially 
 <dd class="field-odd"><p><strong>factor</strong> – any type of factor.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the resulting Factorised Factor</p>
+<dd class="field-even"><p>the resulting factor</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor">FactorizedFactor</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -104,6 +119,9 @@ for a efficient and intuitive representation of independent factors (especially 
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The cov parameter.</p>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -114,6 +132,9 @@ for a efficient and intuitive representation of independent factors (especially 
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The mean parameter.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -135,8 +156,7 @@ for a efficient and intuitive representation of independent factors (especially 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.joint_distribution">
 <em class="property">property </em><code class="sig-name descname">joint_distribution</code><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.joint_distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>compute the joint distribution.
-:return:</p>
+<dd><p>The joint distribution.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -146,10 +166,7 @@ for a efficient and intuitive representation of independent factors (especially 
 Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>factor</strong> (<a class="reference internal" href="veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p></li>
-<li><p><strong>normalize_factor</strong> (<em>bool</em>) – Whether or not to normalize the other factor before computing the KL-divergence.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The Kullback-Leibler divergence</p>
@@ -163,16 +180,19 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize">
 <code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Marginalise out a subset of the variables in this factor’s scope.</p>
+<dd><p>Marginalize out a subset of the variables in this factor’s scope.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vrs</strong> – (list) the variable names</p></li>
-<li><p><strong>keep</strong> – (bool) whether to keep or sum (or integrate) out these variables.</p></li>
+<li><p><strong>vrs</strong> (<em>list</em>) – the variable names</p></li>
+<li><p><strong>keep</strong> (<em>bool</em>) – whether to keep or sum (or integrate) out these variables.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(FactorisedFactor) the resulting marginal</p>
+<dd class="field-even"><p>the resulting marginal</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>FactorisedFactor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -186,7 +206,10 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dd class="field-odd"><p><strong>factor</strong> – any type of factor.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the resulting Factorised Factor</p>
+<dd class="field-even"><p>the resulting factor</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor">FactorizedFactor</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -208,7 +231,10 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dd><p>Get the number of factors in the factorised factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(int) The number of factors.</p>
+<dd class="field-odd"><p>The number of factors.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
@@ -236,7 +262,7 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.show">
 <code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Display this factorised factor.</p>
+<dd><p>Print this factorised factor.</p>
 </dd></dl>
 
 </dd></dl>
@@ -290,7 +316,7 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
   <li><a href="veroku.factors.html">veroku.factors package</a><ul>
   <li><a href="veroku.factors.experimental.html">veroku.factors.experimental package</a><ul>
       <li>Previous: <a href="veroku.factors.experimental.html" title="previous chapter">veroku.factors.experimental package</a></li>
-      <li>Next: <a href="veroku.factors.experimental.nonlinear_gaussian.html" title="next chapter">veroku.factors.experimental.nonlinear_gaussian module</a></li>
+      <li>Next: <a href="veroku.factors.experimental.gaussian_mixture.html" title="next chapter">veroku.factors.experimental.gaussian_mixture module</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -35,7 +35,6 @@
             
   <div class="section" id="module-veroku.factors.sparse_categorical">
 <span id="veroku-factors-sparse-categorical-module"></span><h1>veroku.factors.sparse_categorical module<a class="headerlink" href="#module-veroku.factors.sparse_categorical" title="Permalink to this headline">¶</a></h1>
-<p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical">
 <em class="property">class </em><code class="sig-name descname">SparseCategorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_log_prob</span><span class="o">=</span><span class="default_value">- inf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical" title="Permalink to this definition">¶</a></dt>
@@ -46,16 +45,14 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
-<li><p><strong>log_probs_table</strong> – A dictionary with assignments (tuples) as keys and probabilities as values.
+<li><p><strong>cardinalities</strong> (<em>int list</em>) – The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])</p></li>
+<li><p><strong>log_probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and probabilities as values.
 Missing assignments are assumed to have zero probability.</p></li>
+<li><p><strong>probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and log probabilities as values.
+Missing assignments are assumed to have -inf log-probability (zero probability).</p></li>
 </ul>
 </dd>
 </dl>
-<p>:type
-:param log_probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</p>
-<blockquote>
-<div><p>Missing assignments are assumed to have -inf log-probability (zero probability).</p>
-</div></blockquote>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rain&#39;</span><span class="p">,</span><span class="s1">&#39;slip&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
@@ -104,9 +101,15 @@ Missing assignments are assumed to have zero probability.</p></li>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a copy of this factor.
-:return: The copy of this factor.
-:rtype: SparseCategorical</p>
+<dd><p>Make a copy of this factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The copy of this factor.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#veroku.factors.sparse_categorical.SparseCategorical" title="veroku.factors.sparse_categorical.SparseCategorical">SparseCategorical</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -304,28 +307,23 @@ new_variable_order = [b, a]</p>
 
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategorical.show">
-<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exp_log_probs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print the factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>exp_log_probs</strong> – Whether or no to exponentiate the log probabilities (to display probabilities instead of</p>
-</dd>
-</dl>
-<p>log-probabilities)
-:type exp_log_probs: bool</p>
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the factor’s string representation.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="veroku.factors.sparse_categorical.SparseCategoricalTemplate">
-<em class="property">class </em><code class="sig-name descname">SparseCategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">SparseCategoricalTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">probs_table</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">var_templates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor_template.FactorTemplate</span></code></p>
+<p>A class for specifying sparse categorical factor templates and creating categorical factors from these templates.</p>
 <p>Create a Categorical factor template.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_probs_table</strong> (<em>tuple:float dict</em>) – The log_probs_table that specifies the assignments and values for the template.</p></li>
+<li><p><strong>probs_table</strong> (<em>tuple:float dict</em>) – The log_probs_table that specifies the assignments and values for the template.</p></li>
+<li><p><strong>cardinalities</strong> (<em>int list</em>) – The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])</p></li>
 <li><p><strong>var_templates</strong> (<em>str list</em>) – A list of formattable strings.</p></li>
 </ul>
 </dd>

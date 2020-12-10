@@ -32,11 +32,7 @@
           <div class="body" role="main">
             
   <h1>Source code for veroku.factors.experimental.nonlinear_gaussian</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A module for instantiating and performing operations on Non-linear Gaussian functions.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="c1"># System imports</span>
+<span></span><span class="c1"># System imports</span>
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 
@@ -47,12 +43,19 @@
 <span class="kn">from</span> <span class="nn">veroku.factors</span> <span class="kn">import</span> <span class="n">_factor_utils</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._sigma_points</span> <span class="kn">import</span> <span class="n">get_sigma_points_array</span><span class="p">,</span> <span class="n">sigma_points_array_to_joint_params</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
-<span class="kn">from</span> <span class="nn">veroku.factors.gaussian</span> <span class="kn">import</span> <span class="n">Gaussian</span><span class="p">,</span> <span class="n">GaussianMixture</span>
-<span class="kn">from</span> <span class="nn">veroku.factors._factor_utils</span> <span class="kn">import</span> <span class="n">make_square_matrix</span><span class="p">,</span> <span class="n">indexed_square_matrix_operation</span><span class="p">,</span> \
-    <span class="n">format_list_elements</span>
+<span class="kn">from</span> <span class="nn">veroku.factors.gaussian</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span> <span class="nn">veroku.factors.experimental.gaussian_mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span>
+<span class="kn">from</span> <span class="nn">veroku.factors._factor_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">make_square_matrix</span><span class="p">,</span>
+    <span class="n">indexed_square_matrix_operation</span><span class="p">,</span>
+    <span class="n">format_list_elements</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
 
 <span class="c1"># TODO: see that lazy evaluation (recompute joint) is done sensibly and consistently</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for instantiating and performing operations on Non-linear Gaussian functions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="NonLinearGaussian"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian">[docs]</a><span class="k">class</span> <span class="nc">NonLinearGaussian</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
@@ -60,31 +63,42 @@
 <span class="sd">    A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditioning_vars</span><span class="p">,</span> <span class="n">conditional_vars</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">noise_cov</span><span class="p">,</span> <span class="n">log_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                 <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conditional_update_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conditioning_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">observed_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">conditioning_vars</span><span class="p">,</span>
+        <span class="n">conditional_vars</span><span class="p">,</span>
+        <span class="n">transform</span><span class="p">,</span>
+        <span class="n">noise_cov</span><span class="p">,</span>
+        <span class="n">log_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">conditional_update_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">conditioning_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">observed_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The initializer.</span>
 
-<span class="sd">        :param conditioning_vars: (list) The conditioning vars.</span>
-<span class="sd">        :param conditional_vars: (list) The conditioning vars.</span>
+<span class="sd">        :param list conditioning_vars: The conditioning vars.</span>
+<span class="sd">        :param list conditional_vars: The conditioning vars.</span>
 <span class="sd">        :param transform: The transformation that links the conditioning to the conditional distribution</span>
 <span class="sd">        :param noise_cov: The noise covariance matrix of the zero mean Gaussian noise.</span>
-<span class="sd">        :param conditional_update_factor: (factor) A factor, with same scope, subset of, the conditional vars, to be</span>
+<span class="sd">        :param Gaussian conditional_update_factor: A factor, with same scope, subset of, the conditional vars, to be</span>
 <span class="sd">            multiplied with the transformed (joint) distribution to form the final joint distribution.</span>
-<span class="sd">        :param conditioning_factor: The factor with scope less than or equals to the conditional variables to be</span>
+<span class="sd">        :param Gaussian conditioning_factor: The factor with scope less than or equals to the conditional variables to be</span>
 <span class="sd">            transformed by the transform. If the scope is less than the conditional variables set, observed evidence</span>
 <span class="sd">            (if available) can be used to still enable the successful transformation and calculation of the joint.</span>
-<span class="sd">        :param observed_evidence: (dict) A dictionary mapping variable names ot observed values.</span>
+<span class="sd">        :param dict observed_evidence: A dictionary mapping variable names ot observed values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">conditioning_vars</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">conditional_vars</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variable overlap between conditioning_vars and conditional_vars.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;variable overlap between conditioning_vars and conditional_vars.&quot;</span><span class="p">)</span>
         <span class="n">var_names</span> <span class="o">=</span> <span class="n">conditioning_vars</span> <span class="o">+</span> <span class="n">conditional_vars</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
         <span class="k">if</span> <span class="n">noise_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditional_vars</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;noise_cov rows and columns should correspond to the number of conditional variables&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;noise_cov rows and columns should correspond to the number of conditional variables&quot;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span> <span class="o">=</span> <span class="n">make_square_matrix</span><span class="p">(</span><span class="n">noise_cov</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">=</span> <span class="n">log_weight</span>
@@ -110,55 +124,60 @@
 
 <div class="viewcode-block" id="NonLinearGaussian.copy"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Make a copy of this NonLinearGaussian</span>
-<span class="sd">        :return: the copied NonLinearGaussian</span>
+<span class="sd">        Make a copy of the factor.</span>
+
+<span class="sd">        :return: the copy</span>
+<span class="sd">        :rtype: NonLinearGaussian</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nlg_copy</span> <span class="o">=</span> <span class="n">NonLinearGaussian</span><span class="p">(</span><span class="n">conditioning_vars</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">),</span>
-                                     <span class="n">conditional_vars</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">),</span>
-                                     <span class="n">transform</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">),</span>
-                                     <span class="n">noise_cov</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">),</span>
-                                     <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
-                                     <span class="n">joint_distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="p">,</span>
-                                     <span class="n">conditional_update_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span><span class="p">,</span>
-                                     <span class="n">conditioning_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="p">,</span>
-                                     <span class="n">observed_evidence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">)</span>
+        <span class="n">nlg_copy</span> <span class="o">=</span> <span class="n">NonLinearGaussian</span><span class="p">(</span>
+            <span class="n">conditioning_vars</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">),</span>
+            <span class="n">conditional_vars</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">),</span>
+            <span class="n">noise_cov</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">),</span>
+            <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
+            <span class="n">joint_distribution</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="p">,</span>
+            <span class="n">conditional_update_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span><span class="p">,</span>
+            <span class="n">conditioning_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="p">,</span>
+            <span class="n">observed_evidence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">nlg_copy</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the joint distribution</span>
+<span class="sd">        The joint distribution.</span>
+
 <span class="sd">        :return: the joint distribution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">_joint_distribution</span>
 
+    <span class="c1"># pylint: disable=invalid-name</span>
 <div class="viewcode-block" id="NonLinearGaussian.get_K"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_K">[docs]</a>    <span class="k">def</span> <span class="nf">get_K</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the K matrix (after ensuring that the canonical form is updated.)</span>
+
 <span class="sd">        :return: The K parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">get_K</span><span class="p">()</span></div>
-        <span class="c1"># pylint: enable=invalid-name</span>
 
-        <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="c1"># pylint: enable=invalid-name</span>
 
 <div class="viewcode-block" id="NonLinearGaussian.get_h"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_h">[docs]</a>    <span class="k">def</span> <span class="nf">get_h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log h vector (after ensuring that the canonical form is updated.)</span>
+
 <span class="sd">        :return: The h parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">get_h</span><span class="p">()</span></div>
-        <span class="c1"># pylint: enable=invalid-name</span>
-
-        <span class="c1"># pylint: disable=invalid-name</span>
 
 <div class="viewcode-block" id="NonLinearGaussian.get_g"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_g">[docs]</a>    <span class="k">def</span> <span class="nf">get_g</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the g scalar (after ensuring that the canonical form is updated.)</span>
+
 <span class="sd">        :return: The g parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
@@ -170,15 +189,16 @@
 <div class="viewcode-block" id="NonLinearGaussian.get_cov"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_cov">[docs]</a>    <span class="k">def</span> <span class="nf">get_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the covariance matrix (after ensuring that the covariance form is updated.)</span>
+
 <span class="sd">        :return: The cov parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span></div>
-        <span class="c1"># pylint: enable=invalid-name</span>
 
 <div class="viewcode-block" id="NonLinearGaussian.get_mean"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_mean">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the mean vector (after ensuring that the covariance form is updated.)</span>
+
 <span class="sd">        :return: The mean parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
@@ -187,24 +207,35 @@
 <div class="viewcode-block" id="NonLinearGaussian.get_log_weight"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.get_log_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log weight (after ensuring that the covariance form is updated.)</span>
+
 <span class="sd">        :return: The log_weight parameter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.add_log_weight"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.add_log_weight">[docs]</a>    <span class="k">def</span> <span class="nf">add_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_weight_to_add</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a log weight to the factor.</span>
+
+<span class="sd">        :param log_weight_to_add: The log weight to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">+=</span> <span class="n">log_weight_to_add</span></div>
 
     <span class="k">def</span> <span class="nf">_recompute_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recompute the joint distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">observed_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
         <span class="n">conditioning_observed_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">]</span>
-        <span class="n">conditioning_observed_values</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span>
-                                        <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">]</span>
+        <span class="n">conditioning_observed_values</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span>
+        <span class="p">]</span>
 
         <span class="n">conditional_observed_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">]</span>
-        <span class="n">conditional_observed_values</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span>
-                                       <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">]</span>
+        <span class="n">conditional_observed_values</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">observed_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span>
+        <span class="p">]</span>
 
         <span class="c1"># under 3 conditions we can successfully perform the transformation:</span>
         <span class="c1"># 1. We have a well defined conditional distribution with the full scope of the conditional variables.</span>
@@ -217,22 +248,26 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conditioning_factor_var_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">var_names</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">conditioning_factor_var_names</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">conditioning_observed_vars</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span>
+        <span class="p">):</span>
             <span class="c1"># The conditioning_factor variables and observed conditional variables combined do not make up a</span>
             <span class="c1"># complete set - so we cannot calculate the transform.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="o">.</span><span class="n">make_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># If we are still here, there we can calculate the transformation.</span>
-        <span class="n">conditioning_factor_sigma_points_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># empty dummy for generalisation</span>
+        <span class="n">conditioning_factor_sigma_points_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># empty dummy for generalisation</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conditioning_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">cond_factor_observed_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">observed_vars</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">))</span>
             <span class="n">cond_factor_observed_values</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_evidence</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cond_factor_observed_vars</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cond_factor_observed_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">conditioning_factor</span> <span class="o">=</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="o">=</span><span class="n">cond_factor_observed_vars</span><span class="p">,</span>
-                                                                 <span class="n">values</span><span class="o">=</span><span class="n">cond_factor_observed_values</span><span class="p">)</span>
+                <span class="n">conditioning_factor</span> <span class="o">=</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                    <span class="n">vrs</span><span class="o">=</span><span class="n">cond_factor_observed_vars</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">cond_factor_observed_values</span>
+                <span class="p">)</span>
 
             <span class="n">conditioning_factor_sigma_points_array</span> <span class="o">=</span> <span class="n">get_sigma_points_array</span><span class="p">(</span><span class="n">conditioning_factor</span><span class="p">)</span>
 
@@ -240,8 +275,9 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_observed_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">observed_vec</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">make_column_vector</span><span class="p">(</span><span class="n">conditioning_observed_values</span><span class="p">)</span>
             <span class="n">tiled_observed_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">observed_vec</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">conditioning_factor_sigma_points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
-            <span class="n">extended_sigma_points_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">tiled_observed_vec</span><span class="p">,</span>
-                                                          <span class="n">conditioning_factor_sigma_points_array</span><span class="p">])</span>
+            <span class="n">extended_sigma_points_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">tiled_observed_vec</span><span class="p">,</span> <span class="n">conditioning_factor_sigma_points_array</span><span class="p">]</span>
+            <span class="p">)</span>
             <span class="n">extended_sigma_point_vars</span> <span class="o">=</span> <span class="n">conditioning_observed_vars</span> <span class="o">+</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">var_names</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">extended_sigma_points_array</span> <span class="o">=</span> <span class="n">conditioning_factor_sigma_points_array</span>
@@ -250,11 +286,13 @@
         <span class="c1"># TODO: Add conditional var_names here somehow. We need to ensure that the correct variables are used</span>
         <span class="c1"># in the correct place in the transformation. In the past, we have simply done this by standardising</span>
         <span class="c1"># on the variable indices in different place, but this is probably not very safe.</span>
-        <span class="n">joint_cov</span><span class="p">,</span> <span class="n">joint_mean</span> <span class="o">=</span> <span class="n">sigma_points_array_to_joint_params</span><span class="p">(</span><span class="n">sigma_points_array</span><span class="o">=</span><span class="n">extended_sigma_points_array</span><span class="p">,</span>
-                                                                   <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
-                                                                   <span class="n">var_names</span><span class="o">=</span><span class="n">extended_sigma_point_vars</span><span class="p">)</span>
+        <span class="n">joint_cov</span><span class="p">,</span> <span class="n">joint_mean</span> <span class="o">=</span> <span class="n">sigma_points_array_to_joint_params</span><span class="p">(</span>
+            <span class="n">sigma_points_array</span><span class="o">=</span><span class="n">extended_sigma_points_array</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+            <span class="n">var_names</span><span class="o">=</span><span class="n">extended_sigma_point_vars</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">joint_mean</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">joint_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;Transform resulted in incorrect number of variables.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Transform resulted in incorrect number of variables.&quot;</span><span class="p">)</span>
 
         <span class="c1"># remove the observed vars again after transformation</span>
         <span class="n">nov</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditioning_observed_vars</span><span class="p">)</span>  <span class="c1"># number of observed vars</span>
@@ -262,19 +300,21 @@
         <span class="n">joint_mean</span> <span class="o">=</span> <span class="n">joint_mean</span><span class="p">[</span><span class="n">nov</span><span class="p">:,</span> <span class="p">:]</span>
         <span class="n">joint_var_names</span> <span class="o">=</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">var_names</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span>
 
-        <span class="n">joint_cov_plus_noise</span><span class="p">,</span> <span class="n">joint_vars</span> <span class="o">=</span> <span class="n">indexed_square_matrix_operation</span><span class="p">(</span><span class="n">joint_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">,</span>
-                                                                           <span class="n">joint_var_names</span><span class="p">,</span>
-                                                                           <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">,</span>
-                                                                           <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">cov</span><span class="o">=</span><span class="n">joint_cov_plus_noise</span><span class="p">,</span>
-                                            <span class="n">mean</span><span class="o">=</span><span class="n">joint_mean</span><span class="p">,</span>
-                                            <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">+</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
-                                            <span class="n">var_names</span><span class="o">=</span><span class="n">joint_vars</span><span class="p">)</span>
+        <span class="n">joint_cov_plus_noise</span><span class="p">,</span> <span class="n">joint_vars</span> <span class="o">=</span> <span class="n">indexed_square_matrix_operation</span><span class="p">(</span>
+            <span class="n">joint_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">,</span> <span class="n">joint_var_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span>
+            <span class="n">cov</span><span class="o">=</span><span class="n">joint_cov_plus_noise</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">joint_mean</span><span class="p">,</span>
+            <span class="n">log_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_weight</span> <span class="o">+</span> <span class="n">conditioning_factor</span><span class="o">.</span><span class="n">log_weight</span><span class="p">,</span>
+            <span class="n">var_names</span><span class="o">=</span><span class="n">joint_vars</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditional_observed_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">conditional_observed_vars</span><span class="p">,</span>
-                                                                       <span class="n">conditional_observed_values</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                <span class="n">conditional_observed_vars</span><span class="p">,</span> <span class="n">conditional_observed_values</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="NonLinearGaussian.normalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -303,13 +343,15 @@
 
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">NonLinearGaussian</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Multiplication of two nonlinear-Gaussian factors has not been implemented.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Multiplication of two nonlinear-Gaussian factors has not been implemented.&quot;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">factor</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="c1"># TODO: check this (esp to see what to do with)</span>
             <span class="k">return</span> <span class="n">self_copy</span>
         <span class="c1"># TODO: change to &#39;update conditional model and re-transform model&#39; (if correct)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;factor must be Gaussian, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;factor must be Gaussian, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_update_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -322,9 +364,11 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_factor</span> <span class="o">=</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot absorb factor with scope (</span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">) </span><span class="se">\n</span><span class="s1"> &#39;</span>
-                             <span class="sa">f</span><span class="s1">&#39;           which has neither conditional (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="si">}</span><span class="s1">) </span><span class="se">\n</span><span class="s1"> &#39;</span>
-                             <span class="sa">f</span><span class="s1">&#39;           nor conditioning (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="si">}</span><span class="s1">) scope.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;cannot absorb factor with scope (</span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s2">) </span><span class="se">\n</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;           which has neither conditional (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="si">}</span><span class="s2">) </span><span class="se">\n</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;           nor conditioning (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="si">}</span><span class="s2">) scope.&quot;</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">self_copy</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.divide"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
@@ -341,7 +385,7 @@
             <span class="k">return</span> <span class="n">self_copy</span>
         <span class="c1"># TODO: change to &#39;update conditional model and re-transform model&#39; (if correct)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;factor must be Gaussian.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;factor must be Gaussian.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">):</span>
             <span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_update_factor</span> <span class="o">=</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_update_factor</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
@@ -350,15 +394,18 @@
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
             <span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_factor</span> <span class="o">=</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot cancel factor with scope (</span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">) </span><span class="se">\n</span><span class="s1"> &#39;</span>
-                             <span class="sa">f</span><span class="s1">&#39;           which has neither conditional (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="si">}</span><span class="s1">) </span><span class="se">\n</span><span class="s1"> &#39;</span>
-                             <span class="sa">f</span><span class="s1">&#39;           nor conditioning (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="si">}</span><span class="s1">) scope.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;cannot cancel factor with scope (</span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s2">) </span><span class="se">\n</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;           which has neither conditional (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="si">}</span><span class="s2">) </span><span class="se">\n</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;           nor conditioning (</span><span class="si">{</span><span class="n">self_copy</span><span class="o">.</span><span class="n">conditional_vars</span><span class="si">}</span><span class="s2">) scope.&quot;</span>
+            <span class="p">)</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">self_copy</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.reduce"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observe a subset of the variables in the scope of this factor and return the resulting factor.</span>
+
 <span class="sd">        :param vrs: the names of the observed variable (list)</span>
 <span class="sd">        :param values: the values of the observed variables (list or vector-like object)</span>
 <span class="sd">        :return: the resulting factor</span>
@@ -372,6 +419,7 @@
 <div class="viewcode-block" id="NonLinearGaussian.marginalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this factor.</span>
+
 <span class="sd">        :param vrs: (list) a subset of variables in the factor&#39;s scope</span>
 <span class="sd">        :param keep: Whether to keep or sum out vrs</span>
 <span class="sd">        :return: the resulting marginal</span>
@@ -379,7 +427,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">vrs_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">vrs_to_keep</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">),</span> <span class="s1">&#39;Error: asked to keep vars not in factor.&#39;</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">vrs_to_keep</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">),</span> <span class="s2">&quot;Error: asked to keep vars not in factor.&quot;</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">self_copy</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
@@ -415,29 +463,33 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print the parameters of the nonlinear Gaussian distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Non-linear Gaussian&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conditioning variables:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conditional variables:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;transform: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;noise covariance = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;joint_distribution = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># TODO: add __repr__ function and use here.</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Non-linear Gaussian&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;conditioning variables:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_vars</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;conditional variables:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_vars</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;transform: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;noise covariance = </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;joint_distribution = </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conditional update distribution = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;conditional update distribution = </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">conditional_update_factor</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vacuous&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;vacuous&quot;</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conditioning distribution = </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;conditioning distribution = </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">conditioning_factor</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;vacuous&#39;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;vacuous&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussian.plot"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussian.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the joint distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">self_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">self_copy</span><span class="o">.</span><span class="n">_recompute_joint</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div></div>
@@ -448,26 +500,35 @@
 <span class="sd">    A Class for instantiating and performing operations on multivariate Gaussian mixture functions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">split_singles_before_absorb</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The initializer.</span>
 
 <span class="sd">        :param factors: The list of factors.</span>
 <span class="sd">        :type factors: NonLinearGaussian factor list</span>
+<span class="sd">        :param bool split_singles_before_absorb: Whether or not to split a Gaussian (or single component</span>
+<span class="sd">            GaussianMixture) before it is multiplied in. This can result in a better approximation of non-linear</span>
+<span class="sd">            Gaussian transformations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">factors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;received empty list of factors.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;received empty list of factors.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span> <span class="o">=</span> <span class="n">factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span>
         <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">NonLinearGaussian</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected NonLinearGaussian type, received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;expected NonLinearGaussian type, received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Inconsistent variable names. First factor has var_names = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">,&#39;</span>
-                                 <span class="sa">f</span><span class="s1">&#39; another has var_names = </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Inconsistent variable names. First factor has var_names = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s2">,&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; another has var_names = </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_singles_before_absorb</span> <span class="o">=</span> <span class="n">split_singles_before_absorb</span>
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.normalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalise the factor (not yet implemented).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.copy"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -480,10 +541,10 @@
         <span class="k">return</span> <span class="n">NonLinearGaussianMixture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">joint_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">gaussian_joints</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
-            <span class="n">gaussian_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nlg</span><span class="o">.</span><span class="n">_joint_distribution</span><span class="p">)</span>
+            <span class="n">gaussian_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nlg</span><span class="o">.</span><span class="n">joint_distribution</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">gaussian_joints</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.multiply"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
@@ -500,6 +561,13 @@
             <span class="n">gm_factor</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">([</span><span class="n">Gaussian</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+        <span class="c1"># TODO: Generalise the Gaussian.split_gaussian function to more than one dimensional cases and remove the</span>
+        <span class="c1">#  limitation here</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_singles_before_absorb</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">gm_factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gm_factor</span><span class="o">.</span><span class="n">components</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">gm_factor</span> <span class="o">=</span> <span class="n">gm_factor</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_split_gaussian</span><span class="p">()</span>
+
         <span class="n">new_nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="n">gm_factor</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
@@ -520,7 +588,7 @@
             <span class="c1"># TODO: Add better Gaussian mixture division approximation</span>
             <span class="n">gaussian_factor</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">moment_match_to_single_gaussian</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;cannot divide NonLinearGaussianMixture by {type(factor)}.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;cannot divide NonLinearGaussianMixture by {type(factor)}.&quot;</span><span class="p">)</span>
         <span class="n">new_nlgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
             <span class="n">new_nlgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nlg</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">gaussian_factor</span><span class="p">))</span>
@@ -565,7 +633,7 @@
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1">#TODO: fix incorrect num samples issue</span>
+        <span class="c1"># TODO: fix incorrect num samples issue</span>
         <span class="n">sample_sets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">:</span>
             <span class="n">samples</span> <span class="o">=</span> <span class="n">nlg</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span>
@@ -574,8 +642,7 @@
 
 <div class="viewcode-block" id="NonLinearGaussianMixture.plot"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plot the joint Gaussian Mixture distributio</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Plot the joint Gaussian Mixture distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">gaussian_components</span> <span class="o">=</span> <span class="p">[</span><span class="n">nlg</span><span class="o">.</span><span class="n">joint_distribution</span> <span class="k">for</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">]</span>
         <span class="n">gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">gaussian_components</span><span class="p">)</span>
@@ -586,53 +653,15 @@
 <span class="sd">        Print the parameters of the nonlinear Gaussian distribution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">nlg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlgs</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;######### NLG </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> #############################&#39;</span><span class="p">)</span>
-            <span class="n">nlg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate">[docs]</a>    <span class="k">class</span> <span class="nc">NonLinearGaussianMixtureTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
-
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">,</span> <span class="n">transition_function</span><span class="p">,</span> <span class="n">noise_cov</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            The initializer.</span>
-
-<span class="sd">            :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: [&#39;var_a{i}_{t}&#39;, &#39;var_b{i}_{t}&#39;])</span>
-<span class="sd">            :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: [&#39;var_c{i}_{t}&#39;, &#39;var_d{i}_{t}&#39;])</span>
-<span class="sd">            :param conditioning_var_templates:</span>
-<span class="sd">            :param conditional_var_templates:</span>
-<span class="sd">            :param callable transition_function: The function that specifies the non-linear transform. This function takes</span>
-<span class="sd">                2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the</span>
-<span class="sd">                variable elements of the value vector (i.e ltransition_function = lamda x, var_names: np.square(x)).</span>
-<span class="sd">                The variable names do not need to be used, but can be useful in certain cases where functions need to be</span>
-<span class="sd">                applied to specific variables.</span>
-<span class="sd">            :param noise_cov: The noise covariance matrix of the additive noise random variable.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="o">=</span><span class="n">conditioning_var_templates</span><span class="p">,</span>
-                             <span class="n">conditional_var_templates</span><span class="o">=</span><span class="n">conditional_var_templates</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span> <span class="o">=</span> <span class="n">transition_function</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span> <span class="o">=</span> <span class="n">noise_cov</span>
-
-<div class="viewcode-block" id="NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianMixture.NonLinearGaussianMixtureTemplate.make_factor">[docs]</a>        <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Make a factor with var_templates formatted by format_dict to create specific var names.</span>
-
-<span class="sd">            :param format_dict: The dictionary to be used to format the var_templates strings.</span>
-<span class="sd">            :type format_dict: str dict</span>
-<span class="sd">            :return: The instantiated factor.</span>
-<span class="sd">            :rtype: NonLinearGaussianMixture</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
-                <span class="c1">#  TODO: use format_list_elements</span>
-                <span class="n">conditioning_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conditioning_var_templates</span><span class="p">]</span>
-                <span class="n">conditional_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conditional_var_templates</span><span class="p">]</span>
-
-                <span class="k">return</span> <span class="n">NonLinearGaussianMixture</span><span class="p">(</span><span class="n">conditioning_vars</span><span class="p">,</span> <span class="n">conditional_vars</span><span class="p">,</span>
-                                                <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">,</span>
-                                                <span class="n">log_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                                                <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div></div></div>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;######### NLG </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> #############################&quot;</span><span class="p">)</span>
+            <span class="n">nlg</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="NonLinearGaussianTemplate"><a class="viewcode-back" href="../../../../veroku.factors.experimental.nonlinear_gaussian.html#veroku.factors.experimental.nonlinear_gaussian.NonLinearGaussianTemplate">[docs]</a><span class="k">class</span> <span class="nc">NonLinearGaussianTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A template class for NonLinearGaussian factors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conditioning_var_templates</span><span class="p">,</span> <span class="n">conditional_var_templates</span><span class="p">,</span> <span class="n">transition_function</span><span class="p">,</span> <span class="n">noise_cov</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -650,8 +679,10 @@
 <span class="sd">        :param noise_cov: The noise covariance matrix of the additive noise random variable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conditioning_var_templates</span><span class="o">=</span><span class="n">conditioning_var_templates</span><span class="p">,</span>
-                         <span class="n">conditional_var_templates</span><span class="o">=</span><span class="n">conditional_var_templates</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">conditioning_var_templates</span><span class="o">=</span><span class="n">conditioning_var_templates</span><span class="p">,</span>
+            <span class="n">conditional_var_templates</span><span class="o">=</span><span class="n">conditional_var_templates</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span> <span class="o">=</span> <span class="n">transition_function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span> <span class="o">=</span> <span class="n">noise_cov</span>
 
@@ -670,10 +701,14 @@
             <span class="n">conditioning_vars</span> <span class="o">=</span> <span class="n">format_list_elements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conditioning_var_templates</span><span class="p">,</span> <span class="n">format_dict</span><span class="p">)</span>
             <span class="n">conditional_vars</span> <span class="o">=</span> <span class="n">format_list_elements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conditional_var_templates</span><span class="p">,</span> <span class="n">format_dict</span><span class="p">)</span>
 
-            <span class="k">return</span> <span class="n">NonLinearGaussian</span><span class="p">(</span><span class="n">conditioning_vars</span><span class="p">,</span> <span class="n">conditional_vars</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">,</span>
-                                     <span class="n">log_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                                     <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div></div>
+            <span class="k">return</span> <span class="n">NonLinearGaussian</span><span class="p">(</span>
+                <span class="n">conditioning_vars</span><span class="p">,</span>
+                <span class="n">conditional_vars</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transition_function</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">noise_cov</span><span class="p">,</span>
+                <span class="n">log_weight</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">joint_distribution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
           </div>

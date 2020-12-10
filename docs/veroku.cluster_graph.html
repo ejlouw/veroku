@@ -36,33 +36,58 @@
 <span id="veroku-cluster-graph-module"></span><h1>veroku.cluster_graph module<a class="headerlink" href="#module-veroku.cluster_graph" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="veroku.cluster_graph.ClusterGraph">
-<em class="property">class </em><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Construct a Cluster graph from a list of factors
-:param factors: (list of factors) The factors to construct the graph from
-:param evidence: (dict) evidence dictionary (mapping variable names to values) that should be used to reduce</p>
-<blockquote>
-<div><p>factors before building the cluster graph.</p>
-</div></blockquote>
+<p>A class for building and performing inference with cluster graphs.</p>
+<p>Construct a Cluster graph from a list of factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>special_evidence</strong> – (dict) evidence dictionary (mapping variable names to values) that should be used in
-the calculation of messages, and not to reduce factors. This allows factor approximations - such as the
-non-linear Gaussian to be iteratively refined.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factors</strong> (<em>factor list</em>) – The factors to construct the graph from</p></li>
+<li><p><strong>evidence</strong> (<em>dict</em>) – evidence dictionary (mapping variable names to values) that should be used to reduce
+factors before building the cluster graph.  Example: {‘a’: 2, ‘b’:1}</p></li>
+<li><p><strong>special_evidence</strong> (<em>dict</em>) – evidence dictionary (mapping variable names to values) that should be used in the
+calculation of messages, and not to reduce factors. This allows factor approximations - such as the
+non-linear Gaussian to be iteratively refined. Example: {‘a’: 2, ‘b’:1}</p></li>
+<li><p><strong>disable_tqdm</strong> (<em>bool</em>) – Disable the tqdm progress bars used in graph construction and processing.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether or not to output additional information messages during graph construction and</p></li>
+</ul>
 </dd>
 </dl>
+<p>processing.
+:param debug:</p>
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_marginal">
 <code class="sig-name descname">get_marginal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_marginal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_marginal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search the graph for a specific variable and get that variables marginal (posterior marginal if process_graph
-has been run previously).
-:return: The marginal</p>
+has been run previously).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The marginal</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Factor child</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.get_posterior_joint">
 <code class="sig-name descname">get_posterior_joint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_posterior_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_posterior_joint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the posterior joint distribution.</p>
+<dd><p>Get the posterior joint distribution. This function is only intended to be used as a research / debugging tool
+for small networks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif">
+<code class="sig-name descname">make_message_passing_animation_gif</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">'graph_animation.gif'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.make_message_passing_animation_gif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make message passing animation and save a GIF of the animation to file. Note that this function will only work
+if the make_animation_gif variable was set to True when the process_graph method was called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The name of the file.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -70,6 +95,14 @@ has been run previously).
 <code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[15, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
 convergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> (<em>bool</em>) – If True, plot the log of the KL-divergence.</p></li>
+<li><p><strong>figsize</strong> (<em>list</em>) – The matplotlib [width, height] of the figure.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -92,16 +125,19 @@ plot legend.</p></li>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.process_graph">
-<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform synchronous message passing until convergence (or maximum iterations).
-:param tol: The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs</p>
-<blockquote>
-<div><p>to be reached (for all messages) before stopping message passing (before max_iter is reached).</p>
-</div></blockquote>
+<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform synchronous message passing until convergence (or maximum iterations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>max_iter</strong> – The maximum number of iterations of message passing. The maximum number of messages that can be
-passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tol</strong> – The minimum tolerance value for the KL divergence D_KL(previous_message || next_message) that needs
+to be reached (for all messages) before stopping message passing (before max_iter is reached).</p></li>
+<li><p><strong>max_iter</strong> – The maximum number of iterations of message passing. The maximum number of messages that can be
+passed is max_iter * n, where n is the number of message paths (2x the number of edges) in the graph.</p></li>
+<li><p><strong>make_animation_gif</strong> (<em>bool</em>) – Whether or not to create an animation of the message passing process when. Note:
+This can cause slow processing and high memory consumption for large graphs and is therefore recommended to
+be used only with very small (&gt;50 cluster) graphs.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -109,8 +145,12 @@ passed is max_iter * n, where n is the number of message paths (2x the number of
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.save_graph_image">
 <code class="sig-name descname">save_graph_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.save_graph_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.save_graph_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save image of the graph.
-:param filename: The filename of the file.</p>
+<dd><p>Save image of the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – The filename of the file.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
