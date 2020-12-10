@@ -32,12 +32,14 @@ uncertainty and is therefore applicable to many problems.</div>
 Veroku currently supports the following distributions:
 * Categorical (sparse and dense implementations)
 * Gaussian
-* Gaussian mixture
-* Linear Gaussian<sup>1</sup>
-* Non-linear Gaussian<sup>2</sup>
+* Gaussian mixture<sup>1</sup>
+* Linear Gaussian<sup>2</sup>
+* Non-linear Gaussian<sup>3</sup>
 
-<sup>1</sup> Using the Gaussian class - see the Kalman filter example notebook.<br/>
-<sup>2</sup>This implementation is still experimental.
+<sup>1</sup> This class still has some experimental functionality (specifically the Gaussian mixture division methods)
+and is, therefore, still in the factors.experimental sub-package.  
+<sup>2</sup> Using the Gaussian class - see the Kalman filter example notebook.<br/>
+<sup>3</sup>This implementation is still experimental (see the factors.experimental sub-package).
 
 
 <div style="text-align: justify">
@@ -63,6 +65,32 @@ On the roadmap:
 * Dirichlet distribution
 * Wishart distribution
 * Normal-Wishart distribution
+
+### Dependencies
+For the python dependencies see the https://github.com/ejlouw/veroku/blob/master/requirements.txt file.
+The following additional dependencies are also required for some functionality (these are not installed automatically
+ with the `pip install`):
+
+##### Graphviz
+See https://graphviz.org/download/ for installation instructions. 
+
+
+### Contributing
+<div style="text-align: justify">
+If you would like to contribute to veroku, the TODO's in the code are a good place to start.
+There are a few very simple ones, but some are more complex. Another area where
+contributions will be valuable is in getting the experimental modules rounded off
+and writing tests for these modules. Another potential area for contribution would
+be the items on the roadmap, although it would be best if the experimental modules
+are first rounded off.  In general, please remember to ensure that  the following
+guidelines are followed when contributing:
+</div>
+
+* Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)	
+* Run the `black check <params> <dir>` command from the terminal (from the project root directory) to ensure that the code style is correct (see the *Setup And Test* section in  [main.yml](https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml) for the exact command)
+* If necessary, run the same command, but without the `check` flag in order to refactor the code. NB: please ensure that you have committed all changes prior to this, as black will automatically refactor the files.
+
+
 
 ### License
 Veroku is released under 3-Clause BSD license. You can view the license [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).

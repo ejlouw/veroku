@@ -44,6 +44,10 @@ jobs:
         run: |
           echo Checking code style
           black --check --line-length=110  veroku/
+
+          echo Installing Additional Dependencies
+          sudo apt-get install graphviz
+
           echo Running tests with code coverage
           coverage run --rcfile=.coveragerc -m unittest discover -v
           coverage report -m
