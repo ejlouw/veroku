@@ -82,9 +82,9 @@ def _make_inner_dense(sparse_nested_table, outer_inner_cards, default_value):
     return sparse_nested_inner_dense_table
 
 
-def _get_nested_sorted_probs(new_variables_order_outer,
-                             new_variables_order_inner,
-                             old_variable_order, old_assign_probs):
+def _get_nested_sorted_probs(
+    new_variables_order_outer, new_variables_order_inner, old_variable_order, old_assign_probs
+):
     """
     Reorder variables to a new order (and sort assignments) and then convert the probs dictionary to a hierarchical
     dictionary with certain variables (or rather their corresponding assignments) in the outer dictionary and the rest
@@ -116,10 +116,10 @@ def _get_nested_sorted_probs(new_variables_order_outer,
         new_row_assignment = [None] * len(old_assign_i)
         for old_i, new_i in enumerate(new_order_indices):
             new_row_assignment[new_i] = old_assign_i[old_i]
-        l1_assign = tuple(new_row_assignment[:len(new_variables_order_outer)])
+        l1_assign = tuple(new_row_assignment[: len(new_variables_order_outer)])
         if l1_assign not in new_assign_probs:
             new_assign_probs[l1_assign] = dict()
-        assign_l2 = tuple(new_row_assignment[len(new_variables_order_outer):])
+        assign_l2 = tuple(new_row_assignment[len(new_variables_order_outer) :])
         new_assign_probs[l1_assign][assign_l2] = old_prob_i
     return new_assign_probs, new_variable_order
 
@@ -156,9 +156,9 @@ def _flatten_ntd(ntd):
     return flattened_ntd
 
 
-def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
-                                ntd_b, outer_inner_cards_b,
-                                func, default, default_rules='none'):
+def _any_scope_binary_operation(
+    ntd_a, outer_inner_cards_a, ntd_b, outer_inner_cards_b, func, default, default_rules="none"
+):
     """
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
 
@@ -194,7 +194,7 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
     # assignments could only include assignments actually specified in the nested table
     # dictionaries, or some or all of the missing assignments (if default values in either)
     # table does not necessarily guarantee default results.
-    if default_rules == 'none':
+    if default_rules == "none":
 
         # we have to check everything - any combination of {value, default_value} could result in non-default value.
         ntd_a_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_a[0]]))
@@ -209,7 +209,7 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         ntd_a = _make_inner_dense(ntd_a, outer_inner_cards_a, default)
         ntd_b = _make_inner_dense(ntd_b, outer_inner_cards_b, default)
 
-    elif default_rules == 'both':
+    elif default_rules == "both":
         # The result will only be default if the values in both ntd_a are default. This means
         # that we have to extend the assignments in the symmetric_difference_combinations to
         # those the full set of all possible assignments where either ntd_a is not default or
@@ -246,7 +246,7 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
 
     # TODO: This is strange - improve.
     # TODO: See if any performance gains are possible with 'left' and 'right' flags and add them if so.
-    elif default_rules == 'any':
+    elif default_rules == "any":
         pass  # no further processing necessary
     symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
 
@@ -258,9 +258,9 @@ def _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
         common_vars_subtable_b = ntd_b.get(sd_assign_b, full_sd_b_default_sub_table)
 
         # TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.
-        subtable_result = _same_scope_binary_operation(common_vars_subtable_a,
-                                                       common_vars_subtable_b,
-                                                       func, default)
+        subtable_result = _same_scope_binary_operation(
+            common_vars_subtable_a, common_vars_subtable_b, func, default
+        )
         if subtable_result:
             resulting_factor_table[joined_sd_assignment] = subtable_result
     return resulting_factor_table
@@ -282,7 +282,9 @@ class SparseCategorical(Factor):
     A class for instantiating sparse tables with log probabilities.
     """
 
-    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf):
+    def __init__(
+        self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf
+    ):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -312,9 +314,9 @@ class SparseCategorical(Factor):
         # TODO: add check that cardinalities are consistent with assignments
         super().__init__(var_names=var_names)
         if len(cardinalities) != len(var_names):
-            raise ValueError('The cardinalities and var_names lists should be the same length.')
+            raise ValueError("The cardinalities and var_names lists should be the same length.")
         if (log_probs_table is None) and (probs_table is None):
-            raise ValueError('Either log_probs_table or probs_table must be specified')
+            raise ValueError("Either log_probs_table or probs_table must be specified")
         if log_probs_table is None:
             log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
         self.log_probs_table = _fast_copy_probs_table(log_probs_table)
@@ -359,7 +361,7 @@ class SparseCategorical(Factor):
         """
         factor_ = factor
         if not isinstance(factor_, SparseCategorical):
-            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
+            raise TypeError(f"factor must be of SparseCategorical type but has type {type(factor)}")
 
         if set(self.var_names) != set(factor_.var_names):
             return False
@@ -391,10 +393,12 @@ class SparseCategorical(Factor):
         :return: The copy of this factor.
         :rtype: SparseCategorical
         """
-        return SparseCategorical(var_names=self.var_names.copy(),
-                                 log_probs_table=_fast_copy_probs_table(self.log_probs_table),
-                                 cardinalities=copy.deepcopy(self.cardinalities),
-                                 default_log_prob=self.default_log_prob)
+        return SparseCategorical(
+            var_names=self.var_names.copy(),
+            log_probs_table=_fast_copy_probs_table(self.log_probs_table),
+            cardinalities=copy.deepcopy(self.cardinalities),
+            default_log_prob=self.default_log_prob,
+        )
 
     # TODO: change back to log form
     def marginalize(self, vrs, keep=False):
@@ -409,10 +413,12 @@ class SparseCategorical(Factor):
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
-        nested_table, nested_table_vars = _get_nested_sorted_probs(new_variables_order_outer=vars_to_keep,
-                                                                   new_variables_order_inner=vars_to_sum_out,
-                                                                   old_variable_order=self.var_names,
-                                                                   old_assign_probs=self.log_probs_table)
+        nested_table, nested_table_vars = _get_nested_sorted_probs(
+            new_variables_order_outer=vars_to_keep,
+            new_variables_order_inner=vars_to_sum_out,
+            old_variable_order=self.var_names,
+            old_assign_probs=self.log_probs_table,
+        )
         result_table = dict()
         for l1_assign, log_probs_table in nested_table.items():
             prob = special.logsumexp(list(log_probs_table.values()))
@@ -422,8 +428,9 @@ class SparseCategorical(Factor):
         for v in vars_to_sum_out:
             del result_var_cards[v]
         cardinalities = list(result_var_cards.values())
-        return SparseCategorical(var_names=vars_to_keep, log_probs_table=result_table,
-                                 cardinalities=cardinalities)
+        return SparseCategorical(
+            var_names=vars_to_keep, log_probs_table=result_table, cardinalities=cardinalities
+        )
 
     def reduce(self, vrs, values):
         """
@@ -436,18 +443,21 @@ class SparseCategorical(Factor):
         """
 
         vars_unobserved = [v for v in self.var_names if v not in vrs]
-        nested_table, nested_table_vars = _get_nested_sorted_probs(new_variables_order_outer=vrs,
-                                                                   new_variables_order_inner=vars_unobserved,
-                                                                   old_variable_order=self.var_names,
-                                                                   old_assign_probs=self.log_probs_table)
+        nested_table, nested_table_vars = _get_nested_sorted_probs(
+            new_variables_order_outer=vrs,
+            new_variables_order_inner=vars_unobserved,
+            old_variable_order=self.var_names,
+            old_assign_probs=self.log_probs_table,
+        )
         result_table = nested_table[tuple(values)]
         result_var_cards = copy.deepcopy(self.var_cards)
         for v in vrs:
             del result_var_cards[v]
 
         cardinalities = list(result_var_cards.values())
-        return SparseCategorical(var_names=vars_unobserved, log_probs_table=result_table,
-                                 cardinalities=cardinalities)
+        return SparseCategorical(
+            var_names=vars_unobserved, log_probs_table=result_table, cardinalities=cardinalities
+        )
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -457,7 +467,9 @@ class SparseCategorical(Factor):
         """
         for var in self.var_names:
             if var in factor.var_cards:
-                error_msg = f'Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}'
+                error_msg = (
+                    f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
+                )
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
     def multiply(self, factor):
@@ -470,8 +482,8 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
         if not isinstance(factor, SparseCategorical):
-            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
-        return self._apply_binary_operator(factor, operator.add, default_rules='any')
+            raise TypeError(f"factor must be of SparseCategorical type but has type {type(factor)}")
+        return self._apply_binary_operator(factor, operator.add, default_rules="any")
 
     def cancel(self, factor):
         """
@@ -489,7 +501,7 @@ class SparseCategorical(Factor):
             else:
                 return a - b
 
-        return self._apply_binary_operator(factor, special_divide, default_rules='any')
+        return self._apply_binary_operator(factor, special_divide, default_rules="any")
 
     def divide(self, factor):
         """
@@ -500,7 +512,7 @@ class SparseCategorical(Factor):
         :return: The factor quotient.
         :rtype: SparseCategorical
         """
-        return self._apply_binary_operator(factor, operator.sub, default_rules='none')
+        return self._apply_binary_operator(factor, operator.sub, default_rules="none")
 
     def argmax(self):
         """
@@ -525,7 +537,7 @@ class SparseCategorical(Factor):
             else:
                 self.log_probs_table[assign] = func(prob)
 
-    def _apply_binary_operator(self, factor, operator_function, default_rules='none'):
+    def _apply_binary_operator(self, factor, operator_function, default_rules="none"):
         """
         Apply a binary operator function f(self.factor, factor) and return the result
 
@@ -543,48 +555,64 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
         if not isinstance(factor, SparseCategorical):
-            raise TypeError(f'factor must be of SparseCategorical type but has type {type(factor)}')
+            raise TypeError(f"factor must be of SparseCategorical type but has type {type(factor)}")
         self._assert_consistent_cardinalities(factor)
         intersection_vars = list(set(self.var_names).intersection(set(factor.var_names)))
         intersection_vars = sorted(intersection_vars)
 
         remaining_a_vars = list(set(self.var_names) - set(intersection_vars))
-        ntd_a, _ = _get_nested_sorted_probs(new_variables_order_outer=remaining_a_vars,
-                                            new_variables_order_inner=intersection_vars,
-                                            old_variable_order=self.var_names,
-                                            old_assign_probs=self.log_probs_table)
+        ntd_a, _ = _get_nested_sorted_probs(
+            new_variables_order_outer=remaining_a_vars,
+            new_variables_order_inner=intersection_vars,
+            old_variable_order=self.var_names,
+            old_assign_probs=self.log_probs_table,
+        )
 
         remaining_b_vars = list(set(factor.var_names) - set(intersection_vars))
-        ntd_b, _ = _get_nested_sorted_probs(new_variables_order_outer=remaining_b_vars,
-                                            new_variables_order_inner=intersection_vars,
-                                            old_variable_order=factor.var_names,
-                                            old_assign_probs=factor.log_probs_table)
+        ntd_b, _ = _get_nested_sorted_probs(
+            new_variables_order_outer=remaining_b_vars,
+            new_variables_order_inner=intersection_vars,
+            old_variable_order=factor.var_names,
+            old_assign_probs=factor.log_probs_table,
+        )
 
         # TODO: Add this functionality
         if self.default_log_prob != factor.default_log_prob:
-            error_msg = 'Cases where self.default_value and factor.default_value differ are not yet supported.'
+            error_msg = (
+                "Cases where self.default_value and factor.default_value differ are not yet supported."
+            )
             raise NotImplementedError(error_msg)
         default_log_prob = self.default_log_prob
 
         def vars_to_cards(factor, var_names):
             return [factor.var_cards[v] for v in var_names]
 
-        outer_inner_cards_a = [vars_to_cards(self, remaining_a_vars),
-                               vars_to_cards(self, intersection_vars)]
-        outer_inner_cards_b = [vars_to_cards(factor, remaining_b_vars),
-                               vars_to_cards(factor, intersection_vars)]
+        outer_inner_cards_a = [vars_to_cards(self, remaining_a_vars), vars_to_cards(self, intersection_vars)]
+        outer_inner_cards_b = [
+            vars_to_cards(factor, remaining_b_vars),
+            vars_to_cards(factor, intersection_vars),
+        ]
 
-        result_ntd = _any_scope_binary_operation(ntd_a, outer_inner_cards_a,
-                                                 ntd_b, outer_inner_cards_b,
-                                                 operator_function, default_log_prob,
-                                                 default_rules=default_rules)
+        result_ntd = _any_scope_binary_operation(
+            ntd_a,
+            outer_inner_cards_a,
+            ntd_b,
+            outer_inner_cards_b,
+            operator_function,
+            default_log_prob,
+            default_rules=default_rules,
+        )
         flattened_result_table = _flatten_ntd(result_ntd)
         result_var_names = remaining_a_vars + remaining_b_vars + intersection_vars
         result_var_cards = {**self.var_cards, **factor.var_cards}
         result_cardinalities = [result_var_cards[v] for v in result_var_names]
         result_default_log_prob = operator_function(default_log_prob, default_log_prob)
-        return SparseCategorical(var_names=result_var_names, log_probs_table=flattened_result_table,
-                                 cardinalities=result_cardinalities, default_log_prob=result_default_log_prob)
+        return SparseCategorical(
+            var_names=result_var_names,
+            log_probs_table=flattened_result_table,
+            cardinalities=result_cardinalities,
+            default_log_prob=result_default_log_prob,
+        )
 
     def normalize(self):
         """
@@ -635,6 +663,7 @@ class SparseCategorical(Factor):
         :return: The KL-divergence
         :rtype: float
         """
+
         def kld_from_log_elements(log_pi, log_qi):
             if log_pi == -np.inf:
                 # lim_{p->0} p*log(p/q) = 0
@@ -645,10 +674,9 @@ class SparseCategorical(Factor):
                 kld_i = np.exp(log_pi) * (log_pi - log_qi)
                 return kld_i
 
-        kld_factor = SparseCategorical._apply_binary_operator(log_p,
-                                                              log_q,
-                                                              kld_from_log_elements,
-                                                              default_rules='none')  # TODO: check this
+        kld_factor = SparseCategorical._apply_binary_operator(
+            log_p, log_q, kld_from_log_elements, default_rules="none"
+        )  # TODO: check this
 
         klds = list(kld_factor.log_probs_table.values())
         kld = np.sum(klds)
@@ -677,11 +705,8 @@ class SparseCategorical(Factor):
             if np.isclose(kld, 0.0, atol=1e-4):
                 #  this is fine (numerical error)
                 return 0.0
-            kld_msg_details = 'Categorical:\n' + \
-                              log_P.__repr__() + \
-                              '\nfactor:' + \
-                              log_Q.__repr__()
-            raise ValueError(f'Negative KLD: {kld}. Details:\n{kld_msg_details}')
+            kld_msg_details = "Categorical:\n" + log_P.__repr__() + "\nfactor:" + log_Q.__repr__()
+            raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}")
         return kld
 
     def distance_from_vacuous(self):
@@ -706,7 +731,7 @@ class SparseCategorical(Factor):
         :param assignment: The assignment
         :return: The value
         """
-        assert set(vrs) == set(self.var_names), 'variables (vrs) do not match factor variables.'
+        assert set(vrs) == set(self.var_names), "variables (vrs) do not match factor variables."
         vrs_to_var_names_indices = [self.var_names.index(v) for v in vrs]
         var_names_order_assignments = tuple([assignment[i] for i in vrs_to_var_names_indices])
         return np.exp(self.log_probs_table[var_names_order_assignments])
@@ -720,12 +745,12 @@ class SparseCategorical(Factor):
         """
         log_probs_table = self.log_probs_table
         var_names = self.var_names
-        df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: 'assignment', 1: 'log_prob'})
-        df[var_names] = pd.DataFrame(df['assignment'].to_list())
-        df.drop(columns=['assignment'], inplace=True)
+        df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: "assignment", 1: "log_prob"})
+        df[var_names] = pd.DataFrame(df["assignment"].to_list())
+        df.drop(columns=["assignment"], inplace=True)
         # Correct column order
-        var_cols = [c for c in df.columns if c != 'log_prob']
-        return df[var_cols + ['log_prob']]
+        var_cols = [c for c in df.columns if c != "log_prob"]
+        return df[var_cols + ["log_prob"]]
 
     def show(self):
         """
@@ -741,19 +766,19 @@ class SparseCategorical(Factor):
         :rtype: str
         """
         # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
-        tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
+        tabbed_spaced_var_names = "\t".join(self.var_names) + "\tprob\n"
         repr_str = tabbed_spaced_var_names
         for assignment, log_prob in self.log_probs_table.items():
             prob = log_prob
             prob = np.exp(prob)
-            repr_str += '\t'.join(map(str, assignment)) + f'\t{prob:.4f}\n'
+            repr_str += "\t".join(map(str, assignment)) + f"\t{prob:.4f}\n"
         return repr_str
 
     def reorder(self, new_var_names_order):
         """
         Reorder categorical table variables to a new order and reorder the associated probabilities
         accordingly.
-        
+
         :param new_var_names_order: The new variable order.
         :type new_var_names_order: str list
         :return: The factor with new order.
@@ -776,9 +801,11 @@ class SparseCategorical(Factor):
             new_log_probs_table[reordered_assignment] = value
         reordered_cardinalities = [self.cardinalities[i] for i in new_order_indices]
 
-        return SparseCategorical(var_names=new_var_names_order,
-                                 log_probs_table=new_log_probs_table,
-                                 cardinalities=reordered_cardinalities)
+        return SparseCategorical(
+            var_names=new_var_names_order,
+            log_probs_table=new_log_probs_table,
+            cardinalities=reordered_cardinalities,
+        )
 
 
 class SparseCategoricalTemplate(FactorTemplate):
@@ -820,11 +847,13 @@ class SparseCategoricalTemplate(FactorTemplate):
         """
         if (self._var_templates is None) and (var_names is None):
             raise ValueError(
-                'var_names need to be supplied to make a factor from SparseCategoricalTemplate without var_templates')
+                "var_names need to be supplied to make a factor from SparseCategoricalTemplate without var_templates"
+            )
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
         cardinalities = list(self.cardinalities)
-        factor = SparseCategorical(probs_table=self.probs_table,
-                                   var_names=var_names, cardinalities=cardinalities)
+        factor = SparseCategorical(
+            probs_table=self.probs_table, var_names=var_names, cardinalities=cardinalities
+        )
         return factor

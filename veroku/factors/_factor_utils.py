@@ -80,15 +80,15 @@ def make_scalar(scalar_like_object):
     """
     if isinstance(scalar_like_object, np.ndarray):
         if len(scalar_like_object) != 1:
-            raise ValueError('array must have length of one to be convertible to a scalar.')
+            raise ValueError("array must have length of one to be convertible to a scalar.")
         return scalar_like_object.min()
     if isinstance(scalar_like_object, list):
         if len(scalar_like_object) != 1:
-            raise ValueError('list must have length of one to be convertible to a scalar.')
+            raise ValueError("list must have length of one to be convertible to a scalar.")
         return scalar_like_object[0]
     if isinstance(scalar_like_object, (int, float)):
         return scalar_like_object
-    raise TypeError(f'{type(scalar_like_object)} is not supported')
+    raise TypeError(f"{type(scalar_like_object)} is not supported")
 
 
 def make_column_vector(vector_like_object):
@@ -102,7 +102,7 @@ def make_column_vector(vector_like_object):
     array = copy.deepcopy(vector_like_object)
     if isinstance(array, np.ndarray):
         array = array.ravel()
-        error_msg = f'Error: array of shape {vector_like_object.shape} cannot be convertes to column vector'
+        error_msg = f"Error: array of shape {vector_like_object.shape} cannot be convertes to column vector"
         if len(vector_like_object.shape) > 1:
             assert not all([s > 1 for s in vector_like_object.shape]), error_msg
     else:
@@ -120,13 +120,13 @@ def list_to_square_matrix(matrix_like_object):
     """
     len_list = len(matrix_like_object)
     if len_list == 0:
-        raise ValueError('cannot make matrix from empty list.')
+        raise ValueError("cannot make matrix from empty list.")
     if len_list > 1:
         for element in matrix_like_object:
             if not isinstance(element, list):
-                raise ValueError('cannot make square matrix from one dimensional list.')
+                raise ValueError("cannot make square matrix from one dimensional list.")
             if len(element) != len_list:
-                raise ValueError('cannot make square matrix from different length lists.')
+                raise ValueError("cannot make square matrix from different length lists.")
             # if isinstance(element[0], list):
             #    raise ValueError('cannot make square matrix from 3d list')
         matrix = np.array(matrix_like_object)
@@ -139,10 +139,12 @@ def list_to_square_matrix(matrix_like_object):
             # matrix_like_object = [[float or int]]
             matrix = np.array(matrix_like_object)
     else:
-        raise ValueError(f'cannot convert matrix_like_object {matrix_like_object} to square matrix')
+        raise ValueError(f"cannot convert matrix_like_object {matrix_like_object} to square matrix")
     if (matrix.shape[0] != matrix.shape[1]) or len(matrix.shape) > 2:
-        raise ValueError(f'cannot convert {matrix_like_object} to a square matrix')
+        raise ValueError(f"cannot convert {matrix_like_object} to a square matrix")
     return matrix
+
+
 # pylint: enable=inconsistent-return-statements
 
 
@@ -161,10 +163,12 @@ def make_square_matrix(matrix_like_object):
 
     if isinstance(matrix_like_object, np.ndarray):
         if len(matrix_like_object.shape) != 2:
-            raise ValueError('cannot convert non 2-dimensional array to matrix')
+            raise ValueError("cannot convert non 2-dimensional array to matrix")
         assert matrix_like_object.shape[0] == matrix_like_object.shape[1]
         return matrix_like_object.copy()
-    raise ValueError(f'cannot convert matrix_like_object {matrix_like_object} to square matrix.')
+    raise ValueError(f"cannot convert matrix_like_object {matrix_like_object} to square matrix.")
+
+
 # pylint: enable=inconsistent-return-statements
 
 
@@ -199,13 +203,15 @@ def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, oper
          [0,  32, 0]]
     """
 
-    assert len(mat_a.shape) == 2, 'Error: matrix needs to be 2 dimensional'
-    assert len(mat_b.shape) == 2, 'Error: matrix needs to be 2 dimensional'
-    assert mat_a.shape[0] == mat_a.shape[1], 'Error: matrix needs to be square'
-    assert mat_b.shape[0] == mat_b.shape[1], 'Error: matrix needs to be square'
-    var_names_len_error_msg = 'The number of variables in var_names_{aorb} does not match the dimensions of mat_{aorb}.'
-    assert len(var_names_a) == mat_a.shape[0], var_names_len_error_msg.format(aorb='a')
-    assert len(var_names_b) == mat_b.shape[0], var_names_len_error_msg.format(aorb='b')
+    assert len(mat_a.shape) == 2, "Error: matrix needs to be 2 dimensional"
+    assert len(mat_b.shape) == 2, "Error: matrix needs to be 2 dimensional"
+    assert mat_a.shape[0] == mat_a.shape[1], "Error: matrix needs to be square"
+    assert mat_b.shape[0] == mat_b.shape[1], "Error: matrix needs to be square"
+    var_names_len_error_msg = (
+        "The number of variables in var_names_{aorb} does not match the dimensions of mat_{aorb}."
+    )
+    assert len(var_names_a) == mat_a.shape[0], var_names_len_error_msg.format(aorb="a")
+    assert len(var_names_b) == mat_b.shape[0], var_names_len_error_msg.format(aorb="b")
 
     # TODO: clean this up (also see todo in indexed_column_vector_operation)
     if set(var_names_b) <= set(var_names_a):
@@ -262,14 +268,16 @@ def indexed_column_vector_operation(colvec_a, colvec_b, var_names_a, var_names_b
          [0]]
     """
 
-    assert len(colvec_a.shape) == 2, 'Error: column vector needs to be 2 dimensional'
-    assert len(colvec_b.shape) == 2, 'Error: column vector needs to be 2 dimensional'
-    assert colvec_a.shape[1] == 1, 'Error: column vector array cannot have more than one column'
-    assert colvec_b.shape[1] == 1, 'Error: column vector array cannot have more than one column'
-    assert len(var_names_a) == colvec_a.shape[0], \
-        'Error: number of variables in var_names_a does not match the dimension of colvec_a.'
-    assert len(var_names_b) == colvec_b.shape[0], \
-        'Error: number of variables in var_names_a does not match the dimension of colvec_b.'
+    assert len(colvec_a.shape) == 2, "Error: column vector needs to be 2 dimensional"
+    assert len(colvec_b.shape) == 2, "Error: column vector needs to be 2 dimensional"
+    assert colvec_a.shape[1] == 1, "Error: column vector array cannot have more than one column"
+    assert colvec_b.shape[1] == 1, "Error: column vector array cannot have more than one column"
+    assert (
+        len(var_names_a) == colvec_a.shape[0]
+    ), "Error: number of variables in var_names_a does not match the dimension of colvec_a."
+    assert (
+        len(var_names_b) == colvec_b.shape[0]
+    ), "Error: number of variables in var_names_a does not match the dimension of colvec_b."
     # TODO: clean this up (also see todo in indexed_square_matrix_operation)
     if set(var_names_b) <= set(var_names_a):
         new_vars = var_names_a
@@ -318,7 +326,7 @@ def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
     if figsize is not None:
         plt.figure(figsize=figsize)
     color_scale = plt.contourf(x_mesh, y_mesh, z_mesh, levels=30, cmap=plt.cm.viridis)
-    plt.colorbar(color_scale, shrink=0.8, extend='both')
+    plt.colorbar(color_scale, shrink=0.8, extend="both")
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -335,12 +343,12 @@ def inv_matrix(m):
     try:
         m_inv = np.linalg.inv(m)
     except np.linalg.LinAlgError as e:
-        raise type(e)(e.args[0] + f':\n{m}')
+        raise type(e)(e.args[0] + f":\n{m}")
     return m_inv
 
 
 def log(x):
-    """"
+    """ "
     Get the log of a value using the numpy.log function and output the input value if invalid.
 
     :param numerical x: The value to compute the log of.

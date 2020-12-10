@@ -19,9 +19,9 @@ class TestFactorUtils(unittest.TestCase):
         """
         Test that the format_list_elements returns a correctly formatted list.
         """
-        f_list = ['a_{i}', 'b_{i}', 'c_{i}']
-        expected_list = ['a_0', 'b_0', 'c_0']
-        actual_list = _factor_utils.format_list_elements(f_list, {'i': 0})
+        f_list = ["a_{i}", "b_{i}", "c_{i}"]
+        expected_list = ["a_0", "b_0", "c_0"]
+        actual_list = _factor_utils.format_list_elements(f_list, {"i": 0})
         self.assertEqual(expected_list, actual_list)
 
     def test_make_column_vector(self):
@@ -153,16 +153,15 @@ class TestFactorUtils(unittest.TestCase):
         #          np.array([[38, 27, 55], [80, 64, 22], [72, 30, 21]])  (matrix_b_same_order_as_a)
         expected = np.array([[48, 38, 67], [93, 78, 37], [88, 47, 39]])
         expected_result_matrix = expected
-        matrix_a_vars = ['a', 'b', 'c']
+        matrix_a_vars = ["a", "b", "c"]
 
         matrix_b = np.array([[21, 30, 72], [22, 64, 80], [55, 27, 38]])
-        matrix_b_vars = ['c', 'b', 'a']
+        matrix_b_vars = ["c", "b", "a"]
 
-        expected_result_vars = ['a', 'b', 'c']
-        actual_result_matrix, actual_result_vars = _factor_utils.indexed_square_matrix_operation(matrix_a, matrix_b,
-                                                                                                 matrix_a_vars,
-                                                                                                 matrix_b_vars,
-                                                                                                 lambda a, b: a + b)
+        expected_result_vars = ["a", "b", "c"]
+        actual_result_matrix, actual_result_vars = _factor_utils.indexed_square_matrix_operation(
+            matrix_a, matrix_b, matrix_a_vars, matrix_b_vars, lambda a, b: a + b
+        )
         self.assertTrue(np.array_equal(expected_result_matrix, actual_result_matrix))
         self.assertEqual(expected_result_vars, actual_result_vars)
 
@@ -243,5 +242,3 @@ class TestFactorUtils(unittest.TestCase):
         """
         with self.assertRaises(Warning):
             _factor_utils.log(-1.0)
-
-

@@ -44,7 +44,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that random Gaussians generated sequentially are different.
         """
-        var_names = ['a', 'b']
+        var_names = ["a", "b"]
         random_gaussian_0 = make_random_gaussian(var_names)
         random_gaussian_1 = make_random_gaussian(var_names)
         self.assertEqual(random_gaussian_0.var_names, var_names)
@@ -54,7 +54,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that random Gaussians generated sequentially with the same random seed are the same.
         """
-        var_names = ['a', 'b']
+        var_names = ["a", "b"]
         np.random.seed(0)
         random_gaussian_0 = make_random_gaussian(var_names)
         np.random.seed(0)
@@ -65,7 +65,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the make_std_gaussian function returns a standard Gaussian.
         """
-        var_names = ['a', 'b']
+        var_names = ["a", "b"]
         std_gaussian = make_std_gaussian(var_names=var_names)
         self.assertTrue(np.array_equal(std_gaussian.get_cov(), np.eye(len(var_names))))
         self.assertTrue(np.array_equal(std_gaussian.get_mean(), np.zeros([len(var_names), 1])))
@@ -80,17 +80,17 @@ class TestGaussian(unittest.TestCase):
             Gaussian()
         # incomplete covariance form parameters
         with self.assertRaises(ValueError):
-            Gaussian(cov=5, var_names=['a'])
+            Gaussian(cov=5, var_names=["a"])
         # incomplete canonical form parameters
         with self.assertRaises(ValueError):
-            Gaussian(K=5, var_names=['a'])
+            Gaussian(K=5, var_names=["a"])
 
     def test_constructor_variable_fail(self):
         """
         Test that the constructor raises a value error when the variables are not unique.
         """
         with self.assertRaises(ValueError):
-            Gaussian(cov=[[1, 0], [0, 1]], mean=[1, 1], log_weight=0.0, var_names=['a', 'a'])
+            Gaussian(cov=[[1, 0], [0, 1]], mean=[1, 1], log_weight=0.0, var_names=["a", "a"])
 
     def test_covariance_form_constructor(self):
         """
@@ -103,8 +103,8 @@ class TestGaussian(unittest.TestCase):
         when(_factor_utils).make_square_matrix(cov_mat_list).thenReturn(cov_mat_array)
         when(_factor_utils).make_column_vector(mean_vec_list).thenReturn(mean_vec_array)
 
-        gaussian_a = Gaussian(cov=cov_mat_list, mean=mean_vec_list, log_weight=0.0, var_names=['a', 'b'])
-        self.assertEqual(gaussian_a.var_names, ['a', 'b'])
+        gaussian_a = Gaussian(cov=cov_mat_list, mean=mean_vec_list, log_weight=0.0, var_names=["a", "b"])
+        self.assertEqual(gaussian_a.var_names, ["a", "b"])
         self.assertTrue(np.array_equal(gaussian_a.cov, cov_mat_array))
         self.assertTrue(np.array_equal(gaussian_a.mean, mean_vec_array))
         self.assertEqual(gaussian_a.log_weight, 0.0)
@@ -125,9 +125,9 @@ class TestGaussian(unittest.TestCase):
         when(_factor_utils).make_square_matrix(K_mat_list).thenReturn(K_mat_array)
         when(_factor_utils).make_column_vector(h_vec_list).thenReturn(h_vec_array)
 
-        gaussian_a = Gaussian(K=K_mat_list, h=h_vec_list, g=0.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=K_mat_list, h=h_vec_list, g=0.0, var_names=["a", "b"])
         # pylint: enable=invalid-name
-        self.assertEqual(gaussian_a.var_names, ['a', 'b'])
+        self.assertEqual(gaussian_a.var_names, ["a", "b"])
         self.assertTrue(np.array_equal(gaussian_a.K, K_mat_array))
         self.assertTrue(np.array_equal(gaussian_a.h, h_vec_array))
         self.assertEqual(gaussian_a.g, 0.0)
@@ -140,7 +140,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct covariance is returned.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         self.assertTrue(np.array_equal(gaussian_a.get_cov(), np.array([[2.0]])))
 
     @staticmethod
@@ -148,7 +148,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_covform function is called before returning the covariance parameter.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         # pylint: disable=protected-access
         expect(Gaussian, times=1)._update_covform()
         # pylint: enable=protected-access
@@ -160,7 +160,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct mean is returned.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         self.assertTrue(np.array_equal(gaussian_a.get_mean(), np.array([[1.0]])))
 
     @staticmethod
@@ -168,7 +168,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_covform function is called before returning the mean parameter.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         # pylint: disable=protected-access
         expect(Gaussian, times=1)._update_covform()
         # pylint: enable=protected-access
@@ -181,7 +181,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct log-weight is returned.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         self.assertEqual(gaussian_a.get_log_weight(), 0.0)
 
     @staticmethod
@@ -189,7 +189,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_covform function is called before returning the log-weight parameter.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         expect(Gaussian, times=1)._update_covform()
         gaussian_a.get_log_weight()
         verifyNoUnwantedInteractions()
@@ -200,7 +200,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct K is returned.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         self.assertTrue(np.array_equal(gaussian_a.get_K(), np.array([[2.0]])))
 
     # pylint: enable=invalid-name
@@ -211,7 +211,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_canform function is called before returning the K parameter.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         # pylint: disable=protected-access
         expect(Gaussian, times=1)._update_canform()
         # pylint: enable=protected-access
@@ -225,7 +225,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_canform raises a LinAlgError when the covariance matrix is not invertible.
         """
-        gaussian = Gaussian(cov=np.zeros([2, 2]), mean=[0.0, 0.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(cov=np.zeros([2, 2]), mean=[0.0, 0.0], log_weight=0.0, var_names=["a", "b"])
         with self.assertRaises(np.linalg.LinAlgError):
             # pylint: disable=protected-access
             gaussian._update_canform()
@@ -235,7 +235,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_covform raises a LinAlgError when the precision matrix is not invertible.
         """
-        gaussian = Gaussian(K=np.zeros([2, 2]), h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(K=np.zeros([2, 2]), h=[0.0, 0.0], g=0.0, var_names=["a", "b"])
         with self.assertRaises(Exception):
             # pylint: disable=protected-access
             gaussian._update_covform()
@@ -245,7 +245,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct h is returned.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         self.assertTrue(np.array_equal(gaussian_a.get_h(), np.array([[1.0]])))
 
     @staticmethod
@@ -253,7 +253,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_canform function is called before returning the h parameter.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         # pylint: disable=protected-access
         expect(Gaussian, times=1)._update_canform()
         # pylint: enable=protected-access
@@ -265,7 +265,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the correct g is returned.
         """
-        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=['a'])
+        gaussian_a = Gaussian(K=2.0, h=1.0, g=0.0, var_names=["a"])
         self.assertEqual(gaussian_a.get_g(), 0.0)
 
     # pylint: disable=protected-access
@@ -274,7 +274,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _update_canform function is called before returning the g parameter.
         """
-        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=['a'])
+        gaussian_a = Gaussian(cov=2.0, mean=1.0, log_weight=0.0, var_names=["a"])
         expect(Gaussian, times=1)._update_canform()
         gaussian_a.get_g()
         verifyNoUnwantedInteractions()
@@ -286,9 +286,9 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the Gaussian multiplication function returns the correct result for one dimensional Gaussians.
         """
-        gaussian_a = Gaussian(K=5.0, h=4.0, g=3.0, var_names=['a'])
-        gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
-        expected_product = Gaussian(K=8.0, h=6.0, g=4.0, var_names=['a'])
+        gaussian_a = Gaussian(K=5.0, h=4.0, g=3.0, var_names=["a"])
+        gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=["a"])
+        expected_product = Gaussian(K=8.0, h=6.0, g=4.0, var_names=["a"])
         actual_product = gaussian_a.multiply(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
@@ -296,9 +296,9 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the Gaussian division function returns the correct result for one dimensional Gaussians.
         """
-        gaussian_a = Gaussian(K=6.0, h=4.0, g=2.0, var_names=['a'])
-        gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
-        expected_quotient = Gaussian(K=3.0, h=2.0, g=1.0, var_names=['a'])
+        gaussian_a = Gaussian(K=6.0, h=4.0, g=2.0, var_names=["a"])
+        gaussian_b = Gaussian(K=3.0, h=2.0, g=1.0, var_names=["a"])
+        expected_quotient = Gaussian(K=3.0, h=2.0, g=1.0, var_names=["a"])
         actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
@@ -306,9 +306,9 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the Gaussian multiplication function returns the correct result for two dimensional Gaussians.
         """
-        gaussian_a = Gaussian(K=[[5.0, 2.0], [2.0, 6.0]], h=[1.0, 2.0], g=3.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[2.0, 3.0], g=2.0, var_names=['a', 'b'])
-        expected_product = Gaussian(K=[[9.0, 3.0], [3.0, 10.0]], h=[3.0, 5.0], g=5.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=[[5.0, 2.0], [2.0, 6.0]], h=[1.0, 2.0], g=3.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[2.0, 3.0], g=2.0, var_names=["a", "b"])
+        expected_product = Gaussian(K=[[9.0, 3.0], [3.0, 10.0]], h=[3.0, 5.0], g=5.0, var_names=["a", "b"])
         actual_product = gaussian_a.multiply(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
@@ -316,17 +316,17 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the Gaussian division function returns the correct result for two dimensional Gaussians.
         """
-        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=3.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[1.0, 2.0], g=2.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=3.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[4.0, 1.0], [1.0, 4.0]], h=[1.0, 2.0], g=2.0, var_names=["a", "b"])
 
-        expected_quotient = Gaussian(K=[[3.0, 1.0], [1.0, 2.0]], h=[3.0, 1.0], g=1.0, var_names=['a', 'b'])
+        expected_quotient = Gaussian(K=[[3.0, 1.0], [1.0, 2.0]], h=[3.0, 1.0], g=1.0, var_names=["a", "b"])
         actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
-        gaussian_a_reordered = Gaussian(K=[[6.0, 2.0], [2.0, 7.0]], h=[3.0, 4.0], g=3.0, var_names=['b', 'a'])
+        gaussian_a_reordered = Gaussian(K=[[6.0, 2.0], [2.0, 7.0]], h=[3.0, 4.0], g=3.0, var_names=["b", "a"])
         actual_quotient = gaussian_a_reordered.divide(gaussian_b)
         # pylint: disable=protected-access
-        actual_quotient._reorder_parameters(['a', 'b'])
+        actual_quotient._reorder_parameters(["a", "b"])
         # pylint: enable=protected-access
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
@@ -340,32 +340,27 @@ class TestGaussian(unittest.TestCase):
         # TODO: consider extending this test and hard-coding the expected parmeters
         # TODO: Fix this test - it passes sometimes and sometimes not - something to do with the parameter order.
 
-        Kmat = np.array([[6, 2, 1],
-                         [2, 8, 3],
-                         [1, 3, 9]])
-        hvec = np.array([[1],
-                         [2],
-                         [3]])
+        Kmat = np.array([[6, 2, 1], [2, 8, 3], [1, 3, 9]])
+        hvec = np.array([[1], [2], [3]])
         g_val = 1.5
 
         # The block-matrix sub-parameters
-        K_xx = np.array([[6, 2],
-                         [2, 8]])
-        K_xy = np.array([[1],
-                         [3]])
+        K_xx = np.array([[6, 2], [2, 8]])
+        K_xy = np.array([[1], [3]])
         K_yy = np.array([[9]])
 
-        h_x = np.array([[1],
-                        [2]])
+        h_x = np.array([[1], [2]])
         h_y = np.array([[3]])
         z_observed = np.array([[6]])
 
         expected_K = K_xx
         expeted_h = h_x - K_xy.dot(z_observed)
-        expected_g = g_val + h_y.transpose().dot(z_observed) - 0.5 * z_observed.transpose().dot(K_yy).dot(z_observed)
-        expected_gaussian = Gaussian(K=expected_K, h=expeted_h, g=expected_g, var_names=['x', 'y'])
-        gaussian = Gaussian(K=Kmat, h=hvec, g=g_val, var_names=['x', 'y', 'z'])
-        actual_gaussian = gaussian.reduce(vrs=['z'], values=z_observed)
+        expected_g = (
+            g_val + h_y.transpose().dot(z_observed) - 0.5 * z_observed.transpose().dot(K_yy).dot(z_observed)
+        )
+        expected_gaussian = Gaussian(K=expected_K, h=expeted_h, g=expected_g, var_names=["x", "y"])
+        gaussian = Gaussian(K=Kmat, h=hvec, g=g_val, var_names=["x", "y", "z"])
+        actual_gaussian = gaussian.reduce(vrs=["z"], values=z_observed)
         expected_gaussian.show()
         actual_gaussian.show()
         self.assertTrue(actual_gaussian.equals(expected_gaussian))
@@ -373,9 +368,9 @@ class TestGaussian(unittest.TestCase):
         # Test that the result is still correct with a different parameter order.
         # pylint: disable=protected-access
         gaussian_copy = gaussian.copy()
-        gaussian_copy._reorder_parameters(['x', 'z', 'y'])
+        gaussian_copy._reorder_parameters(["x", "z", "y"])
         # pylint: enable=protected-access
-        actual_gaussian = gaussian_copy.reduce(vrs=['z'], values=z_observed)
+        actual_gaussian = gaussian_copy.reduce(vrs=["z"], values=z_observed)
         self.assertTrue(actual_gaussian.equals(expected_gaussian))
 
     # pylint: enable=too-many-locals
@@ -385,17 +380,21 @@ class TestGaussian(unittest.TestCase):
         """
         Test that _reorder_parameters properly reorders the values in the canonical parameters.
         """
-        gaussian_a = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[1.0, 2.0], g=1.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[3.0, 2.0], [2.0, 1.0]], h=[2.0, 1.0], g=1.0, var_names=['b', 'a'])
+        gaussian_a = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[1.0, 2.0], g=1.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[3.0, 2.0], [2.0, 1.0]], h=[2.0, 1.0], g=1.0, var_names=["b", "a"])
         # pylint: disable=protected-access
-        gaussian_b._reorder_parameters(['a', 'b'])
+        gaussian_b._reorder_parameters(["a", "b"])
         # pylint: enable=protected-access
         self.assertTrue(gaussian_a.equals(gaussian_b))
 
-        gaussian_a = Gaussian(cov=[[1.0, 2.0], [2.0, 3.0]], mean=[1.0, 2.0], log_weight=1.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(cov=[[3.0, 2.0], [2.0, 1.0]], mean=[2.0, 1.0], log_weight=1.0, var_names=['b', 'a'])
+        gaussian_a = Gaussian(
+            cov=[[1.0, 2.0], [2.0, 3.0]], mean=[1.0, 2.0], log_weight=1.0, var_names=["a", "b"]
+        )
+        gaussian_b = Gaussian(
+            cov=[[3.0, 2.0], [2.0, 1.0]], mean=[2.0, 1.0], log_weight=1.0, var_names=["b", "a"]
+        )
         # pylint: disable=protected-access
-        gaussian_b._reorder_parameters(['a', 'b'])
+        gaussian_b._reorder_parameters(["a", "b"])
         # pylint: enable=protected-access
         self.assertTrue(gaussian_a.equals(gaussian_b))
 
@@ -403,36 +402,42 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the Gaussian marginalisation function returns the correct result for a two dimensional Gaussians.
         """
-        gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
-        actual_result = gaussian.marginalize(vrs=['a'], keep=True)
+        gaussian = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=["a"])
+        actual_result = gaussian.marginalize(vrs=["a"], keep=True)
         self.assertTrue(expected_result.equals(actual_result))
 
     def test_marginalise_2d_canform(self):
         """
         Test that the Gaussian marginalisation function returns the correct result for a two dimensional Gaussians.
         """
-        gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
+        gaussian = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        expected_result = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=["a"])
         expected_result._update_canform()
         gaussian._update_canform()
-        actual_result = gaussian.marginalize(vrs=['a'], keep=True)
+        actual_result = gaussian.marginalize(vrs=["a"], keep=True)
         self.assertTrue(expected_result.equals(actual_result))
 
     def test_equals(self):
         """
         Test that the equals function can identify Gaussians that differ only in their variables.
         """
-        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=['a'])
-        gaussian_2 = Gaussian(cov=0, mean=1, log_weight=1.0, var_names=['b'])
+        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=["a"])
+        gaussian_2 = Gaussian(cov=0, mean=1, log_weight=1.0, var_names=["b"])
         self.assertFalse(gaussian_1.equals(gaussian_2))
 
     def test_equals_different_factor(self):
         """
         Test that the equals function raises a value error when compared to a different type of factor.
         """
-        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=['a'])
-        categorical_factor = Categorical(var_names=['a', 'b'], probs_table={(0, 0): 0.1}, cardinalities=[2, 2])
+        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=["a"])
+        categorical_factor = Categorical(
+            var_names=["a", "b"], probs_table={(0, 0): 0.1}, cardinalities=[2, 2]
+        )
         with self.assertRaises(ValueError):
             gaussian_1.equals(categorical_factor)
 
@@ -440,8 +445,8 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the equals function can identify identical Gaussians with different order variables.
         """
-        gaussian_1 = Gaussian(cov=[[1, 0], [0, 2]], mean=[1, 2], log_weight=1.0, var_names=['a', 'b'])
-        gaussian_2 = Gaussian(cov=[[2, 0], [0, 1]], mean=[2, 1], log_weight=1.0, var_names=['b', 'a'])
+        gaussian_1 = Gaussian(cov=[[1, 0], [0, 2]], mean=[1, 2], log_weight=1.0, var_names=["a", "b"])
+        gaussian_2 = Gaussian(cov=[[2, 0], [0, 1]], mean=[2, 1], log_weight=1.0, var_names=["b", "a"])
 
         self.assertTrue(gaussian_1.equals(gaussian_2))
 
@@ -449,16 +454,16 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _covform_equals function returns false if any of the covariance form parameters differ.
         """
-        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=['a'])
-        gaussian_2 = Gaussian(cov=0, mean=1, log_weight=1.0, var_names=['a'])
+        gaussian_1 = Gaussian(cov=1, mean=1, log_weight=1.0, var_names=["a"])
+        gaussian_2 = Gaussian(cov=0, mean=1, log_weight=1.0, var_names=["a"])
         # pylint: disable=protected-access
         # with different covariances
         self.assertFalse(gaussian_1._covform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # with different means
-        gaussian_2 = Gaussian(cov=1, mean=0, log_weight=1.0, var_names=['a'])
+        gaussian_2 = Gaussian(cov=1, mean=0, log_weight=1.0, var_names=["a"])
         self.assertFalse(gaussian_1._covform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # with different log_weights
-        gaussian_2 = Gaussian(cov=1, mean=1, log_weight=0.0, var_names=['a'])
+        gaussian_2 = Gaussian(cov=1, mean=1, log_weight=0.0, var_names=["a"])
         self.assertFalse(gaussian_1._covform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # pylint: enable=protected-access
 
@@ -466,16 +471,16 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _canform_equals function returns false if any of the canonical form parameters differ.
         """
-        gaussian_1 = Gaussian(K=1, h=1, g=1.0, var_names=['a'])
-        gaussian_2 = Gaussian(K=0, h=1, g=1.0, var_names=['a'])
+        gaussian_1 = Gaussian(K=1, h=1, g=1.0, var_names=["a"])
+        gaussian_2 = Gaussian(K=0, h=1, g=1.0, var_names=["a"])
         # pylint: disable=protected-access
         # with different Ks
         self.assertFalse(gaussian_1._canform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # with different hs
-        gaussian_2 = Gaussian(K=1, h=0, g=1.0, var_names=['a'])
+        gaussian_2 = Gaussian(K=1, h=0, g=1.0, var_names=["a"])
         self.assertFalse(gaussian_1._canform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # with different gs
-        gaussian_2 = Gaussian(K=1, h=1, g=0.0, var_names=['a'])
+        gaussian_2 = Gaussian(K=1, h=1, g=0.0, var_names=["a"])
         self.assertFalse(gaussian_1._canform_equals(gaussian_2, rtol=0.0, atol=0.0))
         # pylint: enable=protected-access
 
@@ -483,30 +488,40 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the equals function can identify identical and effectively identical Gaussians in covariance form.
         """
-        gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        same_gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        same_gaussian = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
         self.assertTrue(gaussian.equals(same_gaussian))
 
         # Test approximately equals
         error = 1e-7
-        effectively_same_gaussian = Gaussian(cov=[[7.0 + error, 2.0 + error], [2.0 + error, 1.0 + error]],
-                                             mean=[4.0 + error, 1.0 + error],
-                                             log_weight=0.0 + error, var_names=['a', 'b'])
+        effectively_same_gaussian = Gaussian(
+            cov=[[7.0 + error, 2.0 + error], [2.0 + error, 1.0 + error]],
+            mean=[4.0 + error, 1.0 + error],
+            log_weight=0.0 + error,
+            var_names=["a", "b"],
+        )
         self.assertTrue(gaussian.equals(effectively_same_gaussian))
 
     def test_equals_canform_true(self):
         """
         Test that the equals function can identify identical and effectively identical Gaussians in covariance form.
         """
-        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
-        same_gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
+        same_gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
         self.assertTrue(gaussian.equals(same_gaussian))
 
         # Test approximately equals
         error = 1e-7
-        effectively_same_gaussian = Gaussian(K=[[7.0 + error, 2.0 + error], [2.0 + error, 1.0 + error]],
-                                             h=[4.0 + error, 1.0 + error], g=0.0 + error,
-                                             var_names=['a', 'b'])
+        effectively_same_gaussian = Gaussian(
+            K=[[7.0 + error, 2.0 + error], [2.0 + error, 1.0 + error]],
+            h=[4.0 + error, 1.0 + error],
+            g=0.0 + error,
+            var_names=["a", "b"],
+        )
         self.assertTrue(gaussian.equals(effectively_same_gaussian))
 
     def test_equals_false_covform(self):
@@ -514,16 +529,28 @@ class TestGaussian(unittest.TestCase):
         Test that the equals function can identify different Gaussians (with differences in the
         various covariance form parameters).
         """
-        gaussian_a = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(cov=[[2.0, 1.0], [1.0, 2.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        gaussian_b = Gaussian(
+            cov=[[2.0, 1.0], [1.0, 2.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
-        gaussian_a = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[0.0, 0.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        gaussian_b = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[0.0, 0.0], log_weight=0.0, var_names=["a", "b"]
+        )
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
-        gaussian_a = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=1.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
+        gaussian_b = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=1.0, var_names=["a", "b"]
+        )
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
     def test_equals_false_canform(self):
@@ -531,23 +558,23 @@ class TestGaussian(unittest.TestCase):
         Test that the equals function can identify different Gaussians (with differences in the
         various canonical form parameters).
         """
-        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[2.0, 1.0], [1.0, 2.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[2.0, 1.0], [1.0, 2.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
-        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=["a", "b"])
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
-        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
-        gaussian_b = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=1.0, var_names=['a', 'b'])
+        gaussian_a = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
+        gaussian_b = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=1.0, var_names=["a", "b"])
         self.assertFalse(gaussian_a.equals(gaussian_b))
 
     def test_copy_no_form(self):
         """
         Test that the copy function raises an exception when a Gaussian does not have either of its form updated.
         """
-        gaussian_no_form = Gaussian(cov=1.0, mean=0.0, log_weight=0.0, var_names=['a'])
+        gaussian_no_form = Gaussian(cov=1.0, mean=0.0, log_weight=0.0, var_names=["a"])
         gaussian_no_form.COVFORM = False
         with self.assertRaises(Exception):
             gaussian_no_form.copy()
@@ -556,35 +583,39 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the copy function returns a identical copy of a one dimensional Gaussian in covariance form.
         """
-        gaussian = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=['a'])
+        gaussian = Gaussian(cov=7.0, mean=4.0, log_weight=0.0, var_names=["a"])
         self.assertTrue(gaussian.equals(gaussian.copy()))
 
     def test_copy_2d_covform(self):
         """
         Test that the copy function returns a identical copy of a two dimensional Gaussian in covariance form.
         """
-        gaussian = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
         self.assertTrue(gaussian.equals(gaussian.copy()))
 
     def test_copy_1d_canform(self):
         """
         Test that the copy function returns a identical copy of a Gaussian in canonical form.
         """
-        gaussian = Gaussian(K=7.0, h=4.0, g=0.0, var_names=['a'])
+        gaussian = Gaussian(K=7.0, h=4.0, g=0.0, var_names=["a"])
         self.assertTrue(gaussian.equals(gaussian.copy()))
 
     def test_copy_2d_canform(self):
         """
         Test that the copy function returns a identical copy of a Gaussian in canonical form.
         """
-        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 1.0]], h=[4.0, 1.0], g=0.0, var_names=["a", "b"])
         self.assertTrue(gaussian.equals(gaussian.copy()))
 
     def test_form_conversion(self):
         """
         Test that conversion from one form to the other and back results in the same Gaussian parameters.
         """
-        gaussian_ab = Gaussian(cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=['a', 'b'])
+        gaussian_ab = Gaussian(
+            cov=[[7.0, 2.0], [2.0, 1.0]], mean=[4.0, 1.0], log_weight=0.0, var_names=["a", "b"]
+        )
         gaussian_ab_copy = gaussian_ab.copy()
         # pylint: disable=protected-access
         gaussian_ab_copy._update_canform()
@@ -597,17 +628,19 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the _get_complex_log_weight returns the correct value.
         """
-        gaussian_ab = Gaussian(K=[[-1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
+        gaussian_ab = Gaussian(K=[[-1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=["a", "b"])
         actual_complex_weight = gaussian_ab.get_complex_weight()
-        expected_complex_weight = cmath.exp(.5 * cmath.log((-1.0) * (2.0 * np.pi) ** 2))
+        expected_complex_weight = cmath.exp(0.5 * cmath.log((-1.0) * (2.0 * np.pi) ** 2))
         self.assertAlmostEqual(actual_complex_weight, expected_complex_weight)
 
     def test_invert(self):
         """
         Test that the _invert method returns a Gaussian with the negated parameters.
         """
-        gaussian = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[4.0, 5.0], g=6.0, var_names=['a', 'b'])
-        expected_inv_gaussian = Gaussian(K=[[-1.0, -2.0], [-2.0, -3.0]], h=[-4.0, -5.0], g=-6.0, var_names=['a', 'b'])
+        gaussian = Gaussian(K=[[1.0, 2.0], [2.0, 3.0]], h=[4.0, 5.0], g=6.0, var_names=["a", "b"])
+        expected_inv_gaussian = Gaussian(
+            K=[[-1.0, -2.0], [-2.0, -3.0]], h=[-4.0, -5.0], g=-6.0, var_names=["a", "b"]
+        )
         actual_inv_gaussian = gaussian._invert()
         self.assertTrue(actual_inv_gaussian.equals(expected_inv_gaussian))
 
@@ -616,13 +649,13 @@ class TestGaussian(unittest.TestCase):
         Test that the Gaussian distribution intagrates to the weight.
         """
         weight = 1.0
-        gaussian = Gaussian(cov=2.0, mean=4.0, log_weight=np.log(weight), var_names=['a'])
+        gaussian = Gaussian(cov=2.0, mean=4.0, log_weight=np.log(weight), var_names=["a"])
         definite_integral, _ = integrate.quad(gaussian.potential, -100.0, 100.0)
         self.assertAlmostEqual(definite_integral, weight)
 
         # test another weight and with canonical form
         weight = 2.0
-        gaussian = Gaussian(cov=2.0, mean=4.0, log_weight=np.log(weight), var_names=['a'])
+        gaussian = Gaussian(cov=2.0, mean=4.0, log_weight=np.log(weight), var_names=["a"])
         # pylint: disable=protected-access
         gaussian._update_canform()
         # pylint: enable=protected-access
@@ -634,7 +667,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the log_potential function raises an exception if the Gaussian has no form.
         """
-        gaussian = Gaussian(cov=1.0, mean=1.0, log_weight=np.log(1.0), var_names=['a'])
+        gaussian = Gaussian(cov=1.0, mean=1.0, log_weight=np.log(1.0), var_names=["a"])
         gaussian.COVFORM = False
         with self.assertRaises(Exception):
             gaussian.log_potential(x_val=0)
@@ -645,19 +678,19 @@ class TestGaussian(unittest.TestCase):
         """
         cov = np.array([[2.0, 1.0], [1.0, 2.0]])
         mean = np.array([[4.0], [5.0]])
-        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=['a', 'b'])
+        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=["a", "b"])
         actual_max_potential = gaussian.potential(x_val=mean)
-        expected_max_potential = 1.0/np.sqrt(np.linalg.det(2*np.pi*cov))
+        expected_max_potential = 1.0 / np.sqrt(np.linalg.det(2 * np.pi * cov))
         self.assertEqual(actual_max_potential, expected_max_potential)
 
     def test_log_potential_different_forms(self):
         """
         Test that the log_potential function returns the same value, regardless of the parameter form.
         """
-        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=0.0, var_names=['a', 'b'])
+        gaussian = Gaussian(K=[[7.0, 2.0], [2.0, 6.0]], h=[4.0, 3.0], g=0.0, var_names=["a", "b"])
 
         x_val = [7, 3]
-        vrs = ['a', 'b']
+        vrs = ["a", "b"]
         log_pot_canform = gaussian.log_potential(x_val=x_val, vrs=vrs)
         gaussian._update_covform()
         gaussian.CANFORM = False
@@ -671,13 +704,13 @@ class TestGaussian(unittest.TestCase):
         """
         cov = np.array([[2.0, 1.0], [1.0, 2.0]])
         mean = np.array([[4.0], [5.0]])
-        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=['a', 'b'])
+        gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(1.0), var_names=["a", "b"])
         # test switched variable order
-        actual_max_log_potential = gaussian.log_potential(x_val=[5.0, 4.0], vrs=['b', 'a'])
+        actual_max_log_potential = gaussian.log_potential(x_val=[5.0, 4.0], vrs=["b", "a"])
         expected_max_log_potential = np.log(1.0 / np.sqrt(np.linalg.det(2 * np.pi * cov)))
         self.assertEqual(actual_max_log_potential, expected_max_log_potential)
 
-        actual_max_log_potential = gaussian.log_potential(x_val=np.array([[5.0], [4.0]]), vrs=['b', 'a'])
+        actual_max_log_potential = gaussian.log_potential(x_val=np.array([[5.0], [4.0]]), vrs=["b", "a"])
         self.assertEqual(actual_max_log_potential, expected_max_log_potential)
 
     def test_weight_and_integration_2d(self):
@@ -685,32 +718,36 @@ class TestGaussian(unittest.TestCase):
         Test that the Gaussian distribution integrates to the weight.
         """
         weight = 1.0
-        gaussian = Gaussian(cov=[[2.0, 1.0], [1.0, 2.0]], mean=[4.0, 5.0], log_weight=np.log(weight),
-                            var_names=['a', 'b'])
-        definite_integral, _ = integrate.dblquad(lambda x1, x2: gaussian.potential([x1, x2]), -20.0, 20.0,
-                                                 lambda x: -20.0, lambda x: 20.0)
+        gaussian = Gaussian(
+            cov=[[2.0, 1.0], [1.0, 2.0]], mean=[4.0, 5.0], log_weight=np.log(weight), var_names=["a", "b"]
+        )
+        definite_integral, _ = integrate.dblquad(
+            lambda x1, x2: gaussian.potential([x1, x2]), -20.0, 20.0, lambda x: -20.0, lambda x: 20.0
+        )
         self.assertAlmostEqual(definite_integral, weight)
         weight = 2.0
-        gaussian = Gaussian(cov=[[3.0, 2.0], [2.0, 6.0]], mean=[-4.0, 5.0], log_weight=np.log(weight),
-                            var_names=['a', 'b'])
-        definite_integral, _ = integrate.dblquad(lambda x1, x2: gaussian.potential([x1, x2]), -20.0, 20.0,
-                                                 lambda x: -20.0, lambda x: 20.0)
+        gaussian = Gaussian(
+            cov=[[3.0, 2.0], [2.0, 6.0]], mean=[-4.0, 5.0], log_weight=np.log(weight), var_names=["a", "b"]
+        )
+        definite_integral, _ = integrate.dblquad(
+            lambda x1, x2: gaussian.potential([x1, x2]), -20.0, 20.0, lambda x: -20.0, lambda x: 20.0
+        )
         self.assertAlmostEqual(definite_integral, weight)
 
     def test_kl_divergence_between_vacuous_factors(self):
         """
         Test that the distance between two vacuous factors is zero.
         """
-        g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
-        g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
+        g1 = Gaussian.make_vacuous(var_names=["a", "b"])
+        g2 = Gaussian.make_vacuous(var_names=["a", "b"])
         self.assertTrue(g1.kl_divergence(g2) == 0.0)
 
     def test_kl_divergence_vac_novac(self):
         """
         Test that the distance between a vacuous and a non-vacuous factor is infinite.
         """
-        g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
-        g2 = make_random_gaussian(var_names=['a', 'b'])
+        g1 = Gaussian.make_vacuous(var_names=["a", "b"])
+        g2 = make_random_gaussian(var_names=["a", "b"])
         self.assertTrue(g1.kl_divergence(g2) == np.inf)
         self.assertTrue(g2.kl_divergence(g1) == np.inf)
 
@@ -719,7 +756,7 @@ class TestGaussian(unittest.TestCase):
         Test that the distance between two identical factors is zero.
         """
         np.random.seed(0)
-        g1 = make_random_gaussian(var_names=['a', 'b'])
+        g1 = make_random_gaussian(var_names=["a", "b"])
         g2 = g1.copy()
         self.assertTrue(g1.kl_divergence(g2) == 0.0)
 
@@ -728,17 +765,17 @@ class TestGaussian(unittest.TestCase):
         Test that the kl_divergence function fails with a value error when trying to calculate the KL-divergence between
         Gaussians with different dimensionality.
         """
-        g1 = make_random_gaussian(var_names=['a', 'b', 'c'])
-        g2 = make_random_gaussian(var_names=['a', 'b'])
+        g1 = make_random_gaussian(var_names=["a", "b", "c"])
+        g2 = make_random_gaussian(var_names=["a", "b"])
 
         with self.assertRaises(ValueError) as raises_context:
             g1.kl_divergence(g2)
         error_msg = str(raises_context.exception)
-        self.assertTrue('dimensionalities' in error_msg)
+        self.assertTrue("dimensionalities" in error_msg)
 
     def test_vacuous_equals(self):
-        g1 = Gaussian.make_vacuous(var_names=['a', 'b'])
-        g2 = Gaussian.make_vacuous(var_names=['a', 'b'])
+        g1 = Gaussian.make_vacuous(var_names=["a", "b"])
+        g2 = Gaussian.make_vacuous(var_names=["a", "b"])
         self.assertTrue(g1.equals(g2))
 
     def test_is_vacuous_flat_gaussian(self):
@@ -786,14 +823,14 @@ class TestGaussian(unittest.TestCase):
         """
         Check that the _cov_exists function returns False for a Gaussian that has an undefined covariance.
         """
-        gaussian = Gaussian(K=0.0, h=0.0, g=0.0, var_names=['a'])
+        gaussian = Gaussian(K=0.0, h=0.0, g=0.0, var_names=["a"])
         self.assertFalse(gaussian._cov_exists())
 
     def test_cov_exists(self):
         """
         Check that the _cov_exists function returns True for a Gaussian that has a well defined covariance.
         """
-        gaussian = Gaussian(cov=1.0, mean=0.0, log_weight=0.0, var_names=['a'])
+        gaussian = Gaussian(cov=1.0, mean=0.0, log_weight=0.0, var_names=["a"])
         self.assertTrue(gaussian._cov_exists())
 
     def test_cov_exists_precision(self):
@@ -801,17 +838,19 @@ class TestGaussian(unittest.TestCase):
         Check that the _cov_exists function returns True for a Gaussian that has a covariance that is well defined
         through the precision.
         """
-        gaussian = Gaussian(K=1.0, h=0.0, g=0.0, var_names=['a'])
+        gaussian = Gaussian(K=1.0, h=0.0, g=0.0, var_names=["a"])
         self.assertTrue(gaussian._cov_exists())
 
     def test__repr__(self):
         """
         Test that the __repr__ method returns the correct result.
         """
-        gaussian = Gaussian(K=[[1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=['a', 'b'])
-        expected_repr_string = "vars = ['a', 'b']\nK = \n[[1. 0.]\n [0. 1.]]\nh = \n[[0.]\n [0.]]\ng = \n0.0\n" + \
-                               "is_vacuous: False\nCov        = \n[[1. 0.]\n [0. 1.]]" + \
-                               "\nmean       = \n[[0.]\n [0.]]\nlog_weight = \n1.8378770664093453\n"
+        gaussian = Gaussian(K=[[1.0, 0.0], [0.0, 1.0]], h=[0.0, 0.0], g=0.0, var_names=["a", "b"])
+        expected_repr_string = (
+            "vars = ['a', 'b']\nK = \n[[1. 0.]\n [0. 1.]]\nh = \n[[0.]\n [0.]]\ng = \n0.0\n"
+            + "is_vacuous: False\nCov        = \n[[1. 0.]\n [0. 1.]]"
+            + "\nmean       = \n[[0.]\n [0.]]\nlog_weight = \n1.8378770664093453\n"
+        )
         actual_repr_string = gaussian.__repr__()
         self.assertEqual(actual_repr_string, expected_repr_string)
 
@@ -820,7 +859,7 @@ class TestGaussian(unittest.TestCase):
         Test that the show_vis method does not break.
         """
         # TODO: improve this test.
-        g1 = make_random_gaussian(var_names=['a', 'b'])
+        g1 = make_random_gaussian(var_names=["a", "b"])
         g1.show_vis()
 
     def test_plot(self):
@@ -828,10 +867,10 @@ class TestGaussian(unittest.TestCase):
         Test that the plot method does not break.
         """
         # TODO: improve this test.
-        g1 = make_random_gaussian(var_names=['a'])
+        g1 = make_random_gaussian(var_names=["a"])
         g1.plot()
         g1.plot(log=True)
-        g2 = make_random_gaussian(var_names=['a', 'b'])
+        g2 = make_random_gaussian(var_names=["a", "b"])
         g2.plot()
 
     def test_gaussian_template(self):
@@ -840,17 +879,15 @@ class TestGaussian(unittest.TestCase):
         """
         K = np.array([[1.2, 0.0], [0.1, 1.2]])
         h = np.array([[0.6], [1.0]])
-        parameters = {'K': K,
-                      'h': h,
-                      'g': 0.0}
-        gaussian_template = GaussianTemplate(parameters, var_templates=['a_{i}', 'b_{i}'])
+        parameters = {"K": K, "h": h, "g": 0.0}
+        gaussian_template = GaussianTemplate(parameters, var_templates=["a_{i}", "b_{i}"])
 
-        actual_factor = gaussian_template.make_factor(var_names=['a', 'b'])
-        expected_factor = Gaussian(var_names=['a', 'b'], K=K, h=h, g=0.0)
+        actual_factor = gaussian_template.make_factor(var_names=["a", "b"])
+        expected_factor = Gaussian(var_names=["a", "b"], K=K, h=h, g=0.0)
         self.assertTrue(actual_factor.equals(expected_factor))
 
-        actual_factor = gaussian_template.make_factor(format_dict={'i': 2})
-        expected_factor = Gaussian(var_names=['a_2', 'b_2'], K=K, h=h, g=0.0)
+        actual_factor = gaussian_template.make_factor(format_dict={"i": 2})
+        expected_factor = Gaussian(var_names=["a_2", "b_2"], K=K, h=h, g=0.0)
         self.assertTrue(actual_factor.equals(expected_factor))
 
     def test_split_gaussian(self):
@@ -858,7 +895,7 @@ class TestGaussian(unittest.TestCase):
         Test that the _split_gaussian function splits a gaussian into a mixture with three different components that has
         the same mean an variance.
         """
-        g1 = make_random_gaussian(var_names=['a'])
+        g1 = make_random_gaussian(var_names=["a"])
         gm1 = g1._split_gaussian()
         self.assertTrue(len(gm1.components) == 3)
         g1_m_projection = gm1.moment_match_to_single_gaussian()
@@ -869,7 +906,7 @@ class TestGaussian(unittest.TestCase):
         """
         Test that the samples drawn from a Gaussian distribution have the correct statistics.
         """
-        g1 = make_random_gaussian(var_names=['a', 'b', 'c'])
+        g1 = make_random_gaussian(var_names=["a", "b", "c"])
         expected_cov = g1.get_cov()
         expected_mean = g1.get_mean()
 
@@ -877,6 +914,8 @@ class TestGaussian(unittest.TestCase):
         actual_mean = np.expand_dims(np.mean(samples, axis=1), axis=1)
         actual_cov = np.cov(samples)
 
-        self.assertTrue(np.allclose(expected_cov, actual_cov, rtol=1.e-3, atol=1.e-2))
-        self.assertTrue(np.allclose(expected_mean, actual_mean, rtol=1.e-3, atol=1.e-2))
+        self.assertTrue(np.allclose(expected_cov, actual_cov, rtol=1.0e-3, atol=1.0e-2))
+        self.assertTrue(np.allclose(expected_mean, actual_mean, rtol=1.0e-3, atol=1.0e-2))
+
+
 # pylint: enable=too-many-public-methods

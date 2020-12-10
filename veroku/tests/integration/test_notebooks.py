@@ -1,4 +1,3 @@
-
 import unittest
 import sys
 import os
@@ -23,17 +22,18 @@ class TestNotebooks(unittest.TestCase):
     """
     A test class for example notebooks
     """
+
     def setUp(self):
         """
         Run before every test.
         """
-        matplotlib.pyplot.switch_backend('Agg')
+        matplotlib.pyplot.switch_backend("Agg")
         when(ClusterGraph).show().thenReturn()
-        print('                 pwd: ', os.getcwd())
-        sys.path.append('./examples')
-        sys.path.append('../examples')
-        sys.path.append('../../examples')
-        sys.path.append('../../../examples')
+        print("                 pwd: ", os.getcwd())
+        sys.path.append("./examples")
+        sys.path.append("../examples")
+        sys.path.append("../../examples")
+        sys.path.append("../../../examples")
 
     def tearDown(self):
         """
@@ -48,6 +48,7 @@ class TestNotebooks(unittest.TestCase):
         """
         with Notebook():
             import examples.sudoku
+
             infered_solution_array = examples.sudoku.infered_solution_array
             correct_solution_array = examples.sudoku.correct_solution_array
             self.assertTrue(np.array_equal(infered_solution_array, correct_solution_array))
@@ -77,8 +78,7 @@ class TestNotebooks(unittest.TestCase):
             for f in factors[1:]:
                 joint = joint.absorb(f)
 
-            joint = joint.reduce(vrs=list(evidence_dict.keys()),
-                                 values=list(evidence_dict.values()))
+            joint = joint.reduce(vrs=list(evidence_dict.keys()), values=list(evidence_dict.values()))
             correct_marginals = []
             for vrs in marginal_vars:
                 correct_marginal = joint.marginalize(vrs, keep=True)
@@ -90,4 +90,4 @@ class TestNotebooks(unittest.TestCase):
                 expected_h = expected_marginal.get_h()
                 # TODO: see why log_weight (and g) parameters are so different between the actual and expected factors.
                 self.assertTrue(np.allclose(actual_K, expected_K))
-                self.assertTrue(np.allclose(actual_h, expected_h, rtol=1.e-5, atol=1.e-5))
+                self.assertTrue(np.allclose(actual_h, expected_h, rtol=1.0e-5, atol=1.0e-5))

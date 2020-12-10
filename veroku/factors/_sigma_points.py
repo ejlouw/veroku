@@ -13,7 +13,7 @@ def get_sigma_points_array(gaussian_factor):
     :param gaussian_factor: The factor
     :return: (numpy array) An array with sigma points as column vectors.
     """
-    assert isinstance(gaussian_factor, Gaussian), 'Error: gaussian_factor is not a Gaussian factor.'
+    assert isinstance(gaussian_factor, Gaussian), "Error: gaussian_factor is not a Gaussian factor."
     cov = gaussian_factor.get_cov()
     mean = gaussian_factor.get_mean()
     L = np.linalg.cholesky(cov)
@@ -59,8 +59,6 @@ def sigma_points_array_to_joint_params(sigma_points_array, transform, var_names=
     :return: The joint mean (numpy array) and joint covariance (numpy array) of the sigma points.
     """
     transformed_sigma_points_array = transform(sigma_points_array, var_names)
-    joint_sigma_point_array = np.concatenate([sigma_points_array,
-                                              transformed_sigma_points_array],
-                                             axis=0)
+    joint_sigma_point_array = np.concatenate([sigma_points_array, transformed_sigma_points_array], axis=0)
     joint_cov, joint_mean = sigma_point_array_to_gaussian_params(joint_sigma_point_array)
     return joint_cov, joint_mean

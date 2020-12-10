@@ -27,7 +27,7 @@ def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
     cov = np.random.rand() * cov_coeff
     mean = np.random.rand() * mean_coeff
     weight = np.random.rand()
-    random_gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(weight), var_names=['a'])
+    random_gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(weight), var_names=["a"])
     return random_gaussian
 
 
@@ -43,7 +43,7 @@ def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3,
     assert seed >= 0
     random_gaussians = []
     for i in range(num_components):
-        comp_seed = (seed+1)*i
+        comp_seed = (seed + 1) * i
         random_gaussians.append(get_random_gaussian(cov_coeff, mean_coeff, seed=comp_seed))
     return GaussianMixture(random_gaussians)
 
@@ -57,19 +57,19 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Run before every test.
         """
-        self.gaussian_ab_1 = Gaussian(cov=np.eye(2), mean=[1, 1], log_weight=1.0, var_names=['a', 'b'])
-        self.gaussian_ab_2 = Gaussian(cov=np.eye(2), mean=[2, 2], log_weight=2.0, var_names=['a', 'b'])
-        self.gaussian_ab_3 = Gaussian(cov=np.eye(2), mean=[3, 3], log_weight=3.0, var_names=['a', 'b'])
-        self.gaussian_ab_4 = Gaussian(cov=np.eye(2), mean=[3, 3], log_weight=3.0, var_names=['a', 'b'])
+        self.gaussian_ab_1 = Gaussian(cov=np.eye(2), mean=[1, 1], log_weight=1.0, var_names=["a", "b"])
+        self.gaussian_ab_2 = Gaussian(cov=np.eye(2), mean=[2, 2], log_weight=2.0, var_names=["a", "b"])
+        self.gaussian_ab_3 = Gaussian(cov=np.eye(2), mean=[3, 3], log_weight=3.0, var_names=["a", "b"])
+        self.gaussian_ab_4 = Gaussian(cov=np.eye(2), mean=[3, 3], log_weight=3.0, var_names=["a", "b"])
 
-        self.gaussian_cd_1 = Gaussian(cov=np.eye(2), mean=[1, 1], log_weight=1.0, var_names=['c', 'd'])
+        self.gaussian_cd_1 = Gaussian(cov=np.eye(2), mean=[1, 1], log_weight=1.0, var_names=["c", "d"])
 
         self.gaussian_mixture_ab_34 = GaussianMixture(factors=[self.gaussian_ab_3, self.gaussian_ab_4])
 
         self.gaussian_mixture_ab_12 = GaussianMixture(factors=[self.gaussian_ab_1, self.gaussian_ab_2])
-        self.gaussian_mixture_ab_123 = GaussianMixture(factors=[self.gaussian_ab_1,
-                                                                self.gaussian_ab_2,
-                                                                self.gaussian_ab_3])
+        self.gaussian_mixture_ab_123 = GaussianMixture(
+            factors=[self.gaussian_ab_1, self.gaussian_ab_2, self.gaussian_ab_3]
+        )
 
         self.gaussian_mixture_ab_1_copy = GaussianMixture(factors=[self.gaussian_ab_1, self.gaussian_ab_2])
 
@@ -114,10 +114,12 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Test that the multiply function results in the correct components.
         """
-        expected_product_components = [self.gaussian_ab_1.multiply(self.gaussian_ab_3),
-                                       self.gaussian_ab_1.multiply(self.gaussian_ab_4),
-                                       self.gaussian_ab_2.multiply(self.gaussian_ab_3),
-                                       self.gaussian_ab_2.multiply(self.gaussian_ab_4)]
+        expected_product_components = [
+            self.gaussian_ab_1.multiply(self.gaussian_ab_3),
+            self.gaussian_ab_1.multiply(self.gaussian_ab_4),
+            self.gaussian_ab_2.multiply(self.gaussian_ab_3),
+            self.gaussian_ab_2.multiply(self.gaussian_ab_4),
+        ]
         expected_gm = GaussianMixture(expected_product_components)
 
         actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_mixture_ab_34)
@@ -127,8 +129,10 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Test that the multiply function results in the correct components.
         """
-        expected_product_components = [self.gaussian_ab_1.multiply(self.gaussian_ab_3),
-                                       self.gaussian_ab_2.multiply(self.gaussian_ab_3)]
+        expected_product_components = [
+            self.gaussian_ab_1.multiply(self.gaussian_ab_3),
+            self.gaussian_ab_2.multiply(self.gaussian_ab_3),
+        ]
         expected_gm = GaussianMixture(expected_product_components)
 
         actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_ab_3)
@@ -147,10 +151,12 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Test that the marginalize function results in the correct marginal components.
         """
-        expected_marginal_components = [self.gaussian_ab_1.marginalize(vrs='a'),
-                                        self.gaussian_ab_2.marginalize(vrs='a')]
+        expected_marginal_components = [
+            self.gaussian_ab_1.marginalize(vrs="a"),
+            self.gaussian_ab_2.marginalize(vrs="a"),
+        ]
         expected_gm = GaussianMixture(expected_marginal_components)
-        actual_gm = self.gaussian_mixture_ab_12.marginalize(vrs='a')
+        actual_gm = self.gaussian_mixture_ab_12.marginalize(vrs="a")
         self.assertTrue(actual_gm.equals(expected_gm))
 
     def test_normalize(self):
@@ -167,11 +173,17 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the moment matching function returns a single Gaussian with the correct parameters.
         """
         # TODO: add better test, with different means, here.
-        gaussian_ab_5 = Gaussian(cov=[[2, 1], [1, 2]], mean=[0, 0], log_weight=np.log(0.5), var_names=['a', 'b'])
-        gaussian_ab_6 = Gaussian(cov=[[6, 3], [3, 6]], mean=[0, 0], log_weight=np.log(0.5), var_names=['a', 'b'])
+        gaussian_ab_5 = Gaussian(
+            cov=[[2, 1], [1, 2]], mean=[0, 0], log_weight=np.log(0.5), var_names=["a", "b"]
+        )
+        gaussian_ab_6 = Gaussian(
+            cov=[[6, 3], [3, 6]], mean=[0, 0], log_weight=np.log(0.5), var_names=["a", "b"]
+        )
         gaussian_mixture = GaussianMixture([gaussian_ab_5, gaussian_ab_6])
         actual_gaussian = gaussian_mixture.moment_match_to_single_gaussian()
-        expected_gaussian = Gaussian(cov=[[4, 2], [2, 4]], mean=[0, 0], log_weight=np.log(1.0), var_names=['a', 'b'])
+        expected_gaussian = Gaussian(
+            cov=[[4, 2], [2, 4]], mean=[0, 0], log_weight=np.log(1.0), var_names=["a", "b"]
+        )
         self.assertTrue(actual_gaussian.equals(expected_gaussian))
 
     def test_cancel_method_1(self):

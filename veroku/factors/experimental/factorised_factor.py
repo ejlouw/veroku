@@ -25,7 +25,7 @@ class FactorizedFactor(Factor):
         :param factors: The list of factors that will be implicitly multiplied.
         """
         assert all([not isinstance(factor, FactorizedFactor) for factor in factors])
-        factors_var_name_lists = ([factor.var_names for factor in factors])
+        factors_var_name_lists = [factor.var_names for factor in factors]
         factors_var_name = list(set([var_name for sublist in factors_var_name_lists for var_name in sublist]))
         super().__init__(var_names=factors_var_name)
         self.factors = []
@@ -41,7 +41,7 @@ class FactorizedFactor(Factor):
         The joint distribution.
         """
         if len(self.factors) == 0:
-            raise ValueError('FactorisedFactor has no factors.')
+            raise ValueError("FactorisedFactor has no factors.")
         joint_distribution = self.factors[0].copy()
         for factor in self.factors[1:]:
             joint_distribution = joint_distribution.multiply(factor)
@@ -97,7 +97,7 @@ class FactorizedFactor(Factor):
         if index is not None:
             factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].divide(factor)
         else:
-            raise Exception('Error: Cannot divide factor with disjoint scope.')
+            raise Exception("Error: Cannot divide factor with disjoint scope.")
         return factorised_factor_copy
 
     @property
@@ -179,7 +179,7 @@ class FactorizedFactor(Factor):
         vars_to_integrate_out_set = set(self.var_names) - set(vars_to_keep)
         factors_in_keep_scope_indices = self._all_intersecting_factors_indices(vars_to_keep)
         if not factors_in_keep_scope_indices:
-            raise Exception('cannot marginalize out all variables from FactorisedFactor.')
+            raise Exception("cannot marginalize out all variables from FactorisedFactor.")
 
         factor_marginals = []
         self_copy = self.copy()
@@ -232,7 +232,7 @@ class FactorizedFactor(Factor):
         already_merged_factor_indices = []
         for i, factor_i in enumerate(self.factors):
             factor_i_merged = factor_i.copy()
-            for j in range(i+1,len(self.factors)):
+            for j in range(i + 1, len(self.factors)):
                 factor_j = self.factors[j]
                 if j not in already_merged_factor_indices:
                     if set(factor_i.var_names).intersection(set(factor_j.varnames)) > 0:
@@ -290,8 +290,9 @@ class FactorizedFactor(Factor):
             if set(vrs) == set(factor_var_names):
                 additional_log_weight += factor.log_potential(x_val=values, vrs=vrs)
             elif len(set(vrs).intersection(set(factor_var_names))) > 0:
-                subset_vrs, subset_values = get_subset_evidence(all_evidence_dict=all_evidence_dict,
-                                                                subset_vars=factor.var_names)
+                subset_vrs, subset_values = get_subset_evidence(
+                    all_evidence_dict=all_evidence_dict, subset_vars=factor.var_names
+                )
                 reduced_factor = factor.reduce(subset_vrs, subset_values)
                 reduced_factors.append(reduced_factor)
             else:
@@ -363,5 +364,5 @@ class FactorizedFactor(Factor):
         Print this factorised factor.
         """
         for i, factor in self.factors:
-            print(f'\n factor {i}/{len(self.factors)}:')
+            print(f"\n factor {i}/{len(self.factors)}:")
             factor.show()

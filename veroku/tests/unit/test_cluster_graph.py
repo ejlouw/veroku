@@ -21,10 +21,10 @@ def get_cg1_and_factors():
     """
     Helper function for making a cluster graph.
     """
-    fa = Gaussian(var_names=['a'], cov=[[0.5]], mean=[0.0], log_weight=3.0)
-    fab = Gaussian(var_names=['a', 'b'], cov=[[10, 9], [9, 10]], mean=[0, 0], log_weight=0.0)
-    fac = Gaussian(var_names=['a', 'c'], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
-    fbd = Gaussian(var_names=['b', 'd'], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
+    fa = Gaussian(var_names=["a"], cov=[[0.5]], mean=[0.0], log_weight=3.0)
+    fab = Gaussian(var_names=["a", "b"], cov=[[10, 9], [9, 10]], mean=[0, 0], log_weight=0.0)
+    fac = Gaussian(var_names=["a", "c"], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
+    fbd = Gaussian(var_names=["b", "d"], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
     factors = [fa, fab, fac, fbd]
     cg_factors = [f.copy() for f in factors]
     cg = ClusterGraph(factors)
@@ -36,11 +36,13 @@ def get_cg2(seed=0, process=False):
     Helper function for making a cluster graph.
     """
     np.random.seed(seed)
-    factors = [make_random_gaussian(['a', 'b']),
-               make_random_gaussian(['c', 'b']),
-               make_random_gaussian(['c', 'd']),
-               make_random_gaussian(['e', 'd']),
-               make_random_gaussian(['e', 'f'])]
+    factors = [
+        make_random_gaussian(["a", "b"]),
+        make_random_gaussian(["c", "b"]),
+        make_random_gaussian(["c", "d"]),
+        make_random_gaussian(["e", "d"]),
+        make_random_gaussian(["e", "f"]),
+    ]
     cg = ClusterGraph(factors)
     if process:
         cg.process_graph()
@@ -60,35 +62,27 @@ class TestClusterGraph(unittest.TestCase):
         self.processed_cg1, _ = get_cg1_and_factors()
         self.processed_cg1.process_graph()
 
-        vrs = ['a']
+        vrs = ["a"]
         cov = [[10]]
         mean = [[0]]
         log_weight = 0.0
         self.p_a = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
 
-        vrs = ['a', 'b']
-        K = [[0.4263, -0.4737],
-             [-0.4737, 0.5263]]
-        h = [[0.],
-             [0.]]
+        vrs = ["a", "b"]
+        K = [[0.4263, -0.4737], [-0.4737, 0.5263]]
+        h = [[0.0], [0.0]]
         g = -1.2398654762908699
         self.p_b_g_a = Gaussian(var_names=vrs, K=K, h=h, g=g)
 
-        vrs = ['a', 'c']
-        K = [[0.0099, -0.0330],
-             [-0.0330, 0.1099]]
-        h = [[0.],
-             [0.]]
+        vrs = ["a", "c"]
+        K = [[0.0099, -0.0330], [-0.0330, 0.1099]]
+        h = [[0.0], [0.0]]
         g = -2.0230757399660746
         self.p_c_g_a = Gaussian(var_names=vrs, K=K, h=h, g=g)
 
-        vrs = ['a', 'b', 'c']
-        cov = [[10.0066, 9.0065, 3.0047],
-               [9.0065, 10.0064, 2.7044],
-               [3.0047, 2.7044, 10.0014]]
-        mean = [[0.],
-                [0.],
-                [0.]]
+        vrs = ["a", "b", "c"]
+        cov = [[10.0066, 9.0065, 3.0047], [9.0065, 10.0064, 2.7044], [3.0047, 2.7044, 10.0014]]
+        mean = [[0.0], [0.0], [0.0]]
         log_weight = 7.069106988666363e-08
         self.p_a_b_c = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
 
@@ -129,33 +123,33 @@ class TestClusterGraph(unittest.TestCase):
         """
         Check that the correct messages are passed in the correct order.
         """
-        fa = Gaussian(var_names=['a'], cov=[[0.5]], mean=[0.0], log_weight=3.0)
+        fa = Gaussian(var_names=["a"], cov=[[0.5]], mean=[0.0], log_weight=3.0)
 
-        fab = Gaussian(var_names=['a', 'b'], cov=[[10, 9], [9, 10]], mean=[0, 0], log_weight=0.0)
+        fab = Gaussian(var_names=["a", "b"], cov=[[10, 9], [9, 10]], mean=[0, 0], log_weight=0.0)
         fabfa = fab.absorb(fa)
 
-        fac = Gaussian(var_names=['a', 'c'], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
-        fbd = Gaussian(var_names=['b', 'd'], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
+        fac = Gaussian(var_names=["a", "c"], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
+        fbd = Gaussian(var_names=["b", "d"], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
 
         cg = ClusterGraph([fa, fab, fac, fbd], debug=True)
 
         # expected messages
 
         # from cluster 0 (fabfa) to cluster 1 (fac)
-        msg_1_factor = fabfa.marginalize(vrs=['a'], keep=True)
-        msg_1 = Message(msg_1_factor, 'c0#a,b', 'c1#a,c')
+        msg_1_factor = fabfa.marginalize(vrs=["a"], keep=True)
+        msg_1 = Message(msg_1_factor, "c0#a,b", "c1#a,c")
 
         # from cluster 0 (fabfa) to cluster 2 (fbd)
-        msg_2_factor = fabfa.marginalize(vrs=['b'], keep=True)
-        msg_2 = Message(msg_2_factor, 'c0#a,b', 'c2#b,d')
+        msg_2_factor = fabfa.marginalize(vrs=["b"], keep=True)
+        msg_2 = Message(msg_2_factor, "c0#a,b", "c2#b,d")
 
         # from cluster 1 (fac) to cluster 0 (fabfa)
-        msg_3_factor = fac.marginalize(vrs=['a'], keep=True)
-        msg_3 = Message(msg_3_factor, 'c1#a,c', 'c0#a,b')
+        msg_3_factor = fac.marginalize(vrs=["a"], keep=True)
+        msg_3 = Message(msg_3_factor, "c1#a,c", "c0#a,b")
 
         # from cluster 2 (fbd) to cluster 0 (fabfa)
-        msg_4_factor = fbd.marginalize(vrs=['b'], keep=True)
-        msg_4 = Message(msg_4_factor, 'c2#b,d', 'c0#a,b')
+        msg_4_factor = fbd.marginalize(vrs=["b"], keep=True)
+        msg_4 = Message(msg_4_factor, "c2#b,d", "c0#a,b")
 
         expected_messages = [msg_1, msg_2, msg_3, msg_4]
 
@@ -164,7 +158,7 @@ class TestClusterGraph(unittest.TestCase):
         actual_cluster_factors = [c._factor for c in cg._clusters]
 
         def key_func(f):
-            return ''.join(f.var_names)
+            return "".join(f.var_names)
 
         actual_cluster_factors = sorted(actual_cluster_factors, key=key_func)
         expected_cluster_factors = sorted(expected_cluster_factors, key=key_func)
@@ -178,10 +172,12 @@ class TestClusterGraph(unittest.TestCase):
             sender_cluster_id = gmp.sender_cluster._cluster_id
             message_vars = gmp.sender_cluster.get_sepset(receiver_cluster_id)
             dim = len(message_vars)
-            almost_vacuous = Gaussian(var_names=message_vars,
-                                      cov=np.eye(dim) * 1e10, mean=np.zeros([dim, 1]), log_weight=0.0)
-            gmp.previously_sent_message = Message(sender_id=sender_cluster_id,
-                                                  receiver_id=receiver_cluster_id, factor=almost_vacuous)
+            almost_vacuous = Gaussian(
+                var_names=message_vars, cov=np.eye(dim) * 1e10, mean=np.zeros([dim, 1]), log_weight=0.0
+            )
+            gmp.previously_sent_message = Message(
+                sender_id=sender_cluster_id, receiver_id=receiver_cluster_id, factor=almost_vacuous
+            )
             gmp.update_next_information_gain()
 
         cg.process_graph(tol=0, max_iter=1)
@@ -230,19 +226,24 @@ class TestClusterGraph(unittest.TestCase):
         """
         Test that the initializer fails when clusters have duplicate cluster_ids and returns the correct error message.
         """
-        with mock.patch('veroku.cluster_graph.Cluster.cluster_id',
-                        new_callable=unittest.mock.PropertyMock) as mock_cluster_id:
-            mock_cluster_id.return_value = 'same_id'
+        with mock.patch(
+            "veroku.cluster_graph.Cluster.cluster_id", new_callable=unittest.mock.PropertyMock
+        ) as mock_cluster_id:
+            mock_cluster_id.return_value = "same_id"
             with self.assertRaises(ValueError) as error_context:
-                ClusterGraph([make_random_gaussian(['a', 'b']),
-                              make_random_gaussian(['b', 'c']),
-                              make_random_gaussian(['c', 'd'])])
+                ClusterGraph(
+                    [
+                        make_random_gaussian(["a", "b"]),
+                        make_random_gaussian(["b", "c"]),
+                        make_random_gaussian(["c", "d"]),
+                    ]
+                )
             exception_msg = error_context.exception.args[0]
 
-            self.assertTrue('non-unique' in exception_msg.lower())
+            self.assertTrue("non-unique" in exception_msg.lower())
 
             expected_num_same_id_cluster = 3
-            actual_same_id_clusters = exception_msg.count('same_id')
+            actual_same_id_clusters = exception_msg.count("same_id")
             self.assertTrue(expected_num_same_id_cluster, actual_same_id_clusters)
 
     @mock.patch.object(plt, "plot")
@@ -255,16 +256,16 @@ class TestClusterGraph(unittest.TestCase):
         cg2_processed.plot_message_convergence(log=True)
         mock_plot.assert_called()
 
-    @patch('builtins.print')
+    @patch("builtins.print")
     def test__conditional_print_called(self, print_mock):
         """
         Test that the _conditional_print function is called when verbose=True.
         """
         self.cg1.verbose = True
-        self.cg1._conditional_print('dummy')
+        self.cg1._conditional_print("dummy")
         print_mock.assert_called()
 
-    @patch('builtins.print')
+    @patch("builtins.print")
     def test__conditional_print_not_called(self, print_mock):
         """
         Test that the _conditional_print function is not called when verbose=False.
@@ -273,17 +274,17 @@ class TestClusterGraph(unittest.TestCase):
         self.cg1._conditional_print("dummy")
         print_mock.assert_not_called()
 
-    @patch('IPython.core.display.display')
+    @patch("IPython.core.display.display")
     def test_show(self, display_mock):
         self.cg1.show()
         display_mock.assert_called()
 
-    @patch('graphviz.Source')
+    @patch("graphviz.Source")
     def test_save_graph_image(self, source_mock):
         """
         Test that save_graph_image saves a graph to the correct file.
         """
-        filename = 'dummy_file'
+        filename = "dummy_file"
         self.cg1.save_graph_image(filename=filename)
         source_mock.assert_called_with(self.cg1._graph, filename=filename, format="png")
 
@@ -293,15 +294,15 @@ class TestClusterGraph(unittest.TestCase):
         processed.
         """
         factors = [self.p_a, self.p_b_g_a, self.p_c_g_a]
-        cg = ClusterGraph(factors, special_evidence={'a': 3.0})
+        cg = ClusterGraph(factors, special_evidence={"a": 3.0})
         cg.process_graph(max_iter=1)
 
-        vrs = ['b']
+        vrs = ["b"]
         cov = [[1.9]]
         mean = [[2.7002]]
         log_weight = -2.5202640960492313
         expected_posterior_marginal = Gaussian(var_names=vrs, cov=cov, mean=mean, log_weight=log_weight)
-        actual_posterior_marginal = cg.get_marginal(vrs=['b'])
+        actual_posterior_marginal = cg.get_marginal(vrs=["b"])
         actual_posterior_marginal._update_covform()
         self.assertTrue(expected_posterior_marginal.equals(actual_posterior_marginal))
 
@@ -309,12 +310,12 @@ class TestClusterGraph(unittest.TestCase):
         """
         Test that the get_marginal function fails when there is no factor containing the variables to keep.
         """
-        g1 = make_random_gaussian(['a', 'b'])
-        g2 = make_random_gaussian(['b', 'c'])
+        g1 = make_random_gaussian(["a", "b"])
+        g2 = make_random_gaussian(["b", "c"])
         cg = ClusterGraph([g1, g2])
         cg.process_graph()
         with self.assertRaises(ValueError):
-            cg.get_marginal(['a', 'c'])
+            cg.get_marginal(["a", "c"])
 
     def test_get_posterior_joint(self):
         """
@@ -346,10 +347,10 @@ class TestClusterGraph(unittest.TestCase):
         for a graph constructed with a single factor and special evidence.
         """
         factors = [self.p_a_b_c]
-        cg = ClusterGraph(factors, special_evidence={'a': 0.3})
+        cg = ClusterGraph(factors, special_evidence={"a": 0.3})
         cg.process_graph()
         actual_posterior_joint = cg.get_posterior_joint()
-        expected_posterior_joint = self.p_a_b_c.observe(['a'], [0.3])
+        expected_posterior_joint = self.p_a_b_c.observe(["a"], [0.3])
         self.assertTrue(actual_posterior_joint.equals(expected_posterior_joint))
 
     def test_make_animation_gif(self):
@@ -361,10 +362,8 @@ class TestClusterGraph(unittest.TestCase):
         cg = ClusterGraph(factors)
         cg.process_graph(make_animation_gif=True)
 
-        filename = 'my_graph_animation_now.gif'
+        filename = "my_graph_animation_now.gif"
         self.assertFalse(filename in os.listdir())
         cg.make_message_passing_animation_gif(filename=filename)
         self.assertTrue(filename in os.listdir())
         os.remove(filename)
-
-

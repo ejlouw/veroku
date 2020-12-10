@@ -1,4 +1,3 @@
-
 from abc import ABC
 
 
@@ -22,7 +21,9 @@ class FactorTemplate(ABC):
         if (conditioning_var_templates is None) and (conditional_var_templates is None):
             self._var_templates = var_templates
         elif (conditioning_var_templates is None) or (conditional_var_templates is None):
-            error_msg = 'neither or both of conditioning_var_templates and conditional_var_templates should be None'
+            error_msg = (
+                "neither or both of conditioning_var_templates and conditional_var_templates should be None"
+            )
             raise ValueError(error_msg)
         else:
             self._conditioning_var_templates = conditioning_var_templates

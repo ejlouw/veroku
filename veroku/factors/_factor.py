@@ -10,6 +10,7 @@ class Factor:
     """
     An abstract parent class.
     """
+
     __metaclass__ = ABCMeta
 
     def __init__(self, var_names):
@@ -17,7 +18,7 @@ class Factor:
         A super class constructor that should be called from the base class constructor.
         """
         if len(set(var_names)) != len(var_names):
-            raise ValueError('duplicate variables in var_names: ', var_names)
+            raise ValueError("duplicate variables in var_names: ", var_names)
 
         self._var_names = var_names
         if not isinstance(var_names, list):
@@ -135,7 +136,7 @@ class Factor:
         :param values: The values of vars.
         :return: The resulting reduced factor.
         """
-    
+
     def observe(self, vrs, values):
         """
         (Alias for reduce) Reduce a factor by observing certain values for certain variables.
@@ -202,4 +203,3 @@ class Factor:
         :return: The inverse equality result.
         """
         return not self.__eq__(other)
-

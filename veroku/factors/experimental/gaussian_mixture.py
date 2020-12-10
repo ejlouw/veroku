@@ -42,7 +42,7 @@ class GaussianMixture(Factor):
                                  of each s_im as a Gaussian
         :type cancel_method: int
         """
-        assert factors, 'Error: empty list passed to constructor.'
+        assert factors, "Error: empty list passed to constructor."
         self.cancel_method = cancel_method
         self.components = [gaussian.copy() for gaussian in factors]
         self.num_components = len(factors)
@@ -51,7 +51,7 @@ class GaussianMixture(Factor):
 
         for component in self.components:
             if var_names0 != component.var_names:
-                raise ValueError('inconsistent var_names in list of Gaussians.')
+                raise ValueError("inconsistent var_names in list of Gaussians.")
         super().__init__(var_names=var_names0)
 
     def equals(self, factor):
@@ -65,9 +65,9 @@ class GaussianMixture(Factor):
         """
         # TODO: consider adding type error here rather
         if not isinstance(factor, GaussianMixture):
-            raise TypeError(f'factor must be of GaussianMixture type but has type {type(factor)}')
+            raise TypeError(f"factor must be of GaussianMixture type but has type {type(factor)}")
         if factor.num_components != self.num_components:
-                return False
+            return False
         for i in range(self.num_components):
             found_corresponding_factor = False
             for j in range(i, self.num_components):
@@ -118,7 +118,7 @@ class GaussianMixture(Factor):
                 for gauss_bi in factor.components:
                     new_components.append(gauss_ai.multiply(gauss_bi))
         else:
-            raise TypeError('unsupported factor type.')
+            raise TypeError("unsupported factor type.")
         return GaussianMixture(new_components)
 
     def divide(self, factor):
@@ -144,7 +144,7 @@ class GaussianMixture(Factor):
                 if self.cancel_method == 2:
                     return GaussianMixture._gm_division_m2(self, factor)
         else:
-            raise TypeError('unsupported factor type.')
+            raise TypeError("unsupported factor type.")
         new_components = []
         for gauss in self.components:
             new_components.append(gauss.divide(single_gaussian))
@@ -197,6 +197,7 @@ class GaussianMixture(Factor):
             log_potentials.append(gauss.log_potential(x))
         total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
+
     # pylint: enable=invalid-name
 
     def potential(self, x_val):
@@ -280,7 +281,7 @@ class GaussianMixture(Factor):
         new_components = []
         for gauss in self.components:
             gauss_copy = gauss.copy()
-            gauss_copy._add_log_weight(-1.0*unnormalized_log_weight)
+            gauss_copy._add_log_weight(-1.0 * unnormalized_log_weight)
             new_components.append(gauss_copy)
         return GaussianMixture(new_components)
 
@@ -310,7 +311,9 @@ class GaussianMixture(Factor):
         :rtype: float list
         """
         weights = self._get_weights()
-        component_choice_samples = np.random.choice(range(len(weights)), size=num_samples,  p=weights / np.sum(weights))
+        component_choice_samples = np.random.choice(
+            range(len(weights)), size=num_samples, p=weights / np.sum(weights)
+        )
         samples = []
         for comp_index in component_choice_samples:
             samples.append(self.components[comp_index].sample(1)[0])
@@ -365,14 +368,14 @@ class GaussianMixture(Factor):
         elif self.dim == 2:
             self._plot_2d(log=log, xlim=xlim, ylim=ylim)
         else:
-            raise NotImplementedError('Plotting not implemented for dim!=1.')
+            raise NotImplementedError("Plotting not implemented for dim!=1.")
 
     def show(self):
         """
         Print the parameters of the Gaussian mixture distribution
         """
         for i, gauss in enumerate(self.components):
-            print('component ', i, '/', len(self.components))
+            print("component ", i, "/", len(self.components))
             gauss.show()
 
     # pylint: disable=invalid-name
@@ -395,11 +398,15 @@ class GaussianMixture(Factor):
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim])
         for gauss in self.components:
-            ududT = gauss.get_weight() * (gauss.get_mean() - new_mean).dot((gauss.get_mean() - new_mean).transpose())
+            ududT = gauss.get_weight() * (gauss.get_mean() - new_mean).dot(
+                (gauss.get_mean() - new_mean).transpose()
+            )
             new_cov += gauss.get_weight() * gauss.get_cov() + ududT
         new_cov = new_cov / sum_weights
-        return Gaussian(cov=new_cov, mean=new_mean, log_weight=log_sum_weights,
-                        var_names=self.components[0].var_names)
+        return Gaussian(
+            cov=new_cov, mean=new_mean, log_weight=log_sum_weights, var_names=self.components[0].var_names
+        )
+
     # pylint: enable=invalid-name
 
     def argmax(self):
@@ -409,7 +416,7 @@ class GaussianMixture(Factor):
         :return: The argmax assignment.
         :rtype: numpy.ndarray
         """
-        global_maximum_potential = -float('inf')
+        global_maximum_potential = -float("inf")
         global_argmax = None
         success = False
 
@@ -417,7 +424,7 @@ class GaussianMixture(Factor):
             return -1.0 * self.potential(x_val)
 
         for gauss in self.components:
-            res = minimize(neg_gmm_pot, x0=gauss.get_mean(), method='BFGS', options={'disp': False})
+            res = minimize(neg_gmm_pot, x0=gauss.get_mean(), method="BFGS", options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
@@ -426,7 +433,7 @@ class GaussianMixture(Factor):
                     global_maximum_potential = local_maximum_potential
                     global_argmax = x_local_max
         if not success:
-            raise Exception('could not find optimum')
+            raise Exception("could not find optimum")
         return global_argmax
 
     def _argmin(self):
@@ -437,7 +444,7 @@ class GaussianMixture(Factor):
         :return: The point where the function has a global minimum.
         :rtype: np.ndarray
         """
-        global_minimum_potential = float('inf')
+        global_minimum_potential = float("inf")
         global_argmin = None
         success = False
 
@@ -445,7 +452,7 @@ class GaussianMixture(Factor):
             return self.potential(x_vals)
 
         for gauss in self.components:
-            res = minimize(gmm_pot, x0=gauss.get_mean(), method='BFGS', options={'disp': False})
+            res = minimize(gmm_pot, x0=gauss.get_mean(), method="BFGS", options={"disp": False})
             x_local_min = res.x
             if res.success:
                 success = True
@@ -454,7 +461,7 @@ class GaussianMixture(Factor):
                     global_minimum_potential = local_minimum_potential
                     global_argmin = x_local_min
         if not success:
-            raise Exception('could not find optimum')
+            raise Exception("could not find optimum")
         return global_argmin
 
     # pylint: disable=invalid-name
@@ -487,9 +494,11 @@ class GaussianMixture(Factor):
 
         new_log_weight = np.log(sum_weights)
 
-        new_K, new_h, new_g = GaussianMixture._complex_cov_form_to_real_canform(new_cov, new_mean, new_log_weight)
-        return Gaussian(K=new_K, h=new_h, g=new_g,
-                        var_names=self.components[0].var_names)
+        new_K, new_h, new_g = GaussianMixture._complex_cov_form_to_real_canform(
+            new_cov, new_mean, new_log_weight
+        )
+        return Gaussian(K=new_K, h=new_h, g=new_g, var_names=self.components[0].var_names)
+
     # pylint: enable=invalid-name
 
     @staticmethod
@@ -509,6 +518,7 @@ class GaussianMixture(Factor):
         log_det_term = cmath.log(np.linalg.det(2.0 * np.pi * cov))
         g = abs(log_weight - 0.5 * uTKu - 0.5 * log_det_term)
         return K.real, h.real, g.real
+
     # pylint: enable=invalid-name
 
     @staticmethod
@@ -549,12 +559,15 @@ class GaussianMixture(Factor):
 
         mode_locations = []
         for minimum_loc in minimum_locations:
-            res = minimize(neg_gm_log_quotient_potential, x0=minimum_loc, method='BFGS', options={'disp': False})
+            res = minimize(
+                neg_gm_log_quotient_potential, x0=minimum_loc, method="BFGS", options={"disp": False}
+            )
             x_local_min = res.x
             if res.success:
                 mode_locations.append(x_local_min)
         unique_mode_locations = _factor_utils.remove_duplicate_values(mode_locations, tol=1e-3)
         return inverse_gaussian_mixtures, unique_mode_locations
+
     # pylint: enable=protected-access
     # pylint: enable=invalid-name
 
@@ -576,8 +589,9 @@ class GaussianMixture(Factor):
         """
 
         resulting_gaussian_components = []
-        inverse_gaussian_mixtures, unique_mode_locations = GaussianMixture._get_inverse_gaussians(gaussian_mixture_a,
-                                                                                                  gaussian_mixture_b)
+        inverse_gaussian_mixtures, unique_mode_locations = GaussianMixture._get_inverse_gaussians(
+            gaussian_mixture_a, gaussian_mixture_b
+        )
         inv_gm = GaussianMixture(inverse_gaussian_mixtures)
 
         for mode_location in unique_mode_locations:
@@ -589,10 +603,10 @@ class GaussianMixture(Factor):
             log_weight_i = -0.5 * np.log(np.linalg.det(K_i / (2.0 * np.pi))) * inv_gm.log_potential(mean_i)
             g_i = log_weight_i - 0.5 * uTKu + 0.5 * np.log(np.linalg.det(K_i / (2.0 * np.pi)))
 
-            component = Gaussian(K=K_i, h=h_i, g=g_i,
-                                 var_names=gaussian_mixture_a.components[0].var_names)
+            component = Gaussian(K=K_i, h=h_i, g=g_i, var_names=gaussian_mixture_a.components[0].var_names)
             resulting_gaussian_components.append(component)
         return GaussianMixture(resulting_gaussian_components)
+
     # pylint: enable=protected-access
     # pylint: enable=invalid-name
 
@@ -632,12 +646,13 @@ class GaussianMixture(Factor):
             if _factor_utils.is_pos_def(inverse_gaussian_approx.K):
                 count += 1
                 # raise ValueError(' precision is negative definite.')
-                print('Warning: precision is negative definite.')
+                print("Warning: precision is negative definite.")
             gaussian_approx = inverse_gaussian_approx._invert()
             resulting_gaussian_components.append(gaussian_approx)
-        print('num pos def = ', count, '/', len(gma.components))
+        print("num pos def = ", count, "/", len(gma.components))
         resulting_gm = GaussianMixture(resulting_gaussian_components)
         return resulting_gm
+
     # pylint: enable=protected-access
 
     def _get_limits_for_2d_plot(self):  # pragma: no cover
@@ -677,7 +692,7 @@ class GaussianMixture(Factor):
         elif xlim is not None and ylim is not None:
             pass
         else:
-            print('Warning: partial limits received. Generating limits automatically.')
+            print("Warning: partial limits received. Generating limits automatically.")
             xlim, ylim = self._get_limits_for_2d_plot()
 
         xlabel = self.var_names[0]

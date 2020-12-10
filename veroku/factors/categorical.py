@@ -64,21 +64,23 @@ class Categorical(Factor):
 
         if cardinalities is None:
             if log_probs_tensor is None:
-                msg = 'numpy array type log_probs_tensor is expected cardinalities are not supplied.\n' + \
-                      'Alternatively, provide cardinalities with dict type probs_table.'
+                msg = (
+                    "numpy array type log_probs_tensor is expected cardinalities are not supplied.\n"
+                    + "Alternatively, provide cardinalities with dict type probs_table."
+                )
                 raise ValueError(msg)
             cardinalities = log_probs_tensor.shape
         elif len(cardinalities) != len(var_names):
-            raise ValueError('The cardinalities and var_names lists should be the same length.')
+            raise ValueError("The cardinalities and var_names lists should be the same length.")
         if (log_probs_tensor is None) and (probs_table is None):
-            raise ValueError('Either log_probs_tensor or probs_table must be specified')
+            raise ValueError("Either log_probs_tensor or probs_table must be specified")
         if log_probs_tensor is None:
             probs_tensor = np.zeros(shape=cardinalities)
             for assignment, prob in probs_table.items():
                 try:
                     probs_tensor[assignment] = prob
                 except IndexError:
-                    error_message = f'assignment {assignment} is not consistent with the cardinalities ({cardinalities}) provided'
+                    error_message = f"assignment {assignment} is not consistent with the cardinalities ({cardinalities}) provided"
                     raise IndexError(error_message)
             with warnings.catch_warnings():
                 # prevents 'divide by zero encountered in log' from displaying
@@ -86,7 +88,7 @@ class Categorical(Factor):
                 self.log_probs_tensor = np.log(probs_tensor)
         else:
             if len(log_probs_tensor.shape) != len(var_names):
-                raise ValueError('log_probs_tensor should have dimension equal to the number of variables.')
+                raise ValueError("log_probs_tensor should have dimension equal to the number of variables.")
             self.log_probs_tensor = log_probs_tensor.copy()
         # TODO: remove this
         self.var_cards = dict(zip(var_names, cardinalities))
@@ -114,7 +116,7 @@ class Categorical(Factor):
         if new_var_names_order == self.var_names:
             return self.copy()
         if set(new_var_names_order) != set(self.var_names):
-            raise ValueError('The new_var_names_order set must be the same as the factor variables.')
+            raise ValueError("The new_var_names_order set must be the same as the factor variables.")
         vars_new_order_indices = [self.var_names.index(v) for v in new_var_names_order]
         log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
         return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor)
@@ -129,7 +131,7 @@ class Categorical(Factor):
         :rtype: bool
         """
         if not isinstance(factor, Categorical):
-            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
+            raise TypeError(f"factor must be of Categorical type but has type {type(factor)}")
         if set(self.var_names) != set(factor.var_names):
             return False
         factor_copy = factor.reorder(self.var_names)
@@ -144,8 +146,7 @@ class Categorical(Factor):
         :return: The copy of this factor.
         :rtype: Categorical
         """
-        return Categorical(var_names=self.var_names.copy(),
-                           log_probs_tensor=self.log_probs_tensor.copy())
+        return Categorical(var_names=self.var_names.copy(), log_probs_tensor=self.log_probs_tensor.copy())
 
     @staticmethod
     def tensor_operation(tensor_a, tensor_b, tensor_a_var_names, tensor_b_var_names, func):
@@ -184,7 +185,9 @@ class Categorical(Factor):
         f2_tensor_new_shape = tensor_b.transpose(f2_vars_new_order)
         # now f2 has var order / dim order:  [common_vars_dim, [1]*num_f2_vars]
 
-        f2_dim_expansion_axis = list(range(len(remaining_f2_vars), len(remaining_f2_vars) + len(remaining_f1_vars)))
+        f2_dim_expansion_axis = list(
+            range(len(remaining_f2_vars), len(remaining_f2_vars) + len(remaining_f1_vars))
+        )
         f2_tensor_std_shape = np.expand_dims(f2_tensor_new_shape, axis=f2_dim_expansion_axis)
         # now f1 has var order / dim order: [f1_vars_dims, [1]*num_f1_vars] =
         # [common_vars, rest_f1_vars_dims, [1]*num_f2_vars]
@@ -221,7 +224,9 @@ class Categorical(Factor):
         vars_unobserved = [v for v in self.var_names if v not in vrs]
         obs_dict = dict(zip(vrs, values))
 
-        reduced_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
+        reduced_tensor_indexing = tuple(
+            [obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names]
+        )
         result_table = self.log_probs_tensor[reduced_tensor_indexing]
         return Categorical(var_names=vars_unobserved, log_probs_tensor=result_table)
 
@@ -233,7 +238,9 @@ class Categorical(Factor):
         """
         for var in self.var_names:
             if var in factor.var_cards:
-                error_msg = f'Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}'
+                error_msg = (
+                    f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
+                )
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
     def multiply(self, factor):
@@ -246,10 +253,11 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         if not isinstance(factor, Categorical):
-            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
+            raise TypeError(f"factor must be of Categorical type but has type {type(factor)}")
         self._assert_consistent_cardinalities(factor)
-        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
-                                                           self.var_names, factor.var_names, operator.add)
+        result_tensor, result_vars = self.tensor_operation(
+            self.log_probs_tensor, factor.log_probs_tensor, self.var_names, factor.var_names, operator.add
+        )
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def cancel(self, factor):
@@ -266,14 +274,17 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         augmented_factor_tensor = factor.log_probs_tensor.copy()
-        special_case_indices = np.where((augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf))
+        special_case_indices = np.where(
+            (augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf)
+        )
 
         indices_are_empty = [a.size == 0 for a in special_case_indices]
 
         if not all(indices_are_empty):
             augmented_factor_tensor[special_case_indices] = np.float(0.0)
-        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, augmented_factor_tensor,
-                                                           self.var_names, factor.var_names, operator.sub)
+        result_tensor, result_vars = self.tensor_operation(
+            self.log_probs_tensor, augmented_factor_tensor, self.var_names, factor.var_names, operator.sub
+        )
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def divide(self, factor, special_rules=None):
@@ -289,10 +300,11 @@ class Categorical(Factor):
         :rtype: Categorical
         """
         if not isinstance(factor, Categorical):
-            raise TypeError(f'factor must be of Categorical type but has type {type(factor)}')
+            raise TypeError(f"factor must be of Categorical type but has type {type(factor)}")
         self._assert_consistent_cardinalities(factor)
-        result_tensor, result_vars = self.tensor_operation(self.log_probs_tensor, factor.log_probs_tensor,
-                                                           self.var_names, factor.var_names, operator.sub)
+        result_tensor, result_vars = self.tensor_operation(
+            self.log_probs_tensor, factor.log_probs_tensor, self.var_names, factor.var_names, operator.sub
+        )
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
     def argmax(self):
@@ -370,11 +382,8 @@ class Categorical(Factor):
             if np.isclose(kld, 0.0, atol=1e-4):
                 #  this is fine (numerical error)
                 return 0.0
-            kld_msg_details = 'Categorical:\n' + \
-                              normalized_self.__repr__() + \
-                              '\nfactor:' + \
-                              factor_.__repr__()
-            raise ValueError(f'Negative KLD: {kld}. Details:\n{kld_msg_details}')
+            kld_msg_details = "Categorical:\n" + normalized_self.__repr__() + "\nfactor:" + factor_.__repr__()
+            raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}")
         return kld
 
     def distance_from_vacuous(self):
@@ -398,7 +407,7 @@ class Categorical(Factor):
         :param assignment: The assignment
         :return: The value
         """
-        assert set(vrs) == set(self.var_names), 'variables (vrs) do not match factor variables.'
+        assert set(vrs) == set(self.var_names), "variables (vrs) do not match factor variables."
         obs_dict = dict(zip(vrs, assignment))
         obs_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
         return np.exp(self.log_probs_tensor[obs_tensor_indexing])
@@ -417,12 +426,12 @@ class Categorical(Factor):
         :rtype: str
         """
         # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
-        tabbed_spaced_var_names = '\t'.join(self.var_names) + '\tprob\n'
+        tabbed_spaced_var_names = "\t".join(self.var_names) + "\tprob\n"
         repr_str = tabbed_spaced_var_names
         for assignment in np.ndindex(self.log_probs_tensor.shape):
             prob = self.log_probs_tensor[assignment]
             prob = np.exp(prob)
-            repr_str += '\t'.join(map(str, assignment)) + f'\t{prob:.4f}\n'
+            repr_str += "\t".join(map(str, assignment)) + f"\t{prob:.4f}\n"
         return repr_str
 
 
@@ -470,7 +479,9 @@ class CategoricalTemplate(FactorTemplate):
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
-        return Categorical(var_names=var_names,
-                           probs_table=self.probs_table,
-                           cardinalities=self.cardinalities,
-                           log_probs_tensor=self.log_probs_tensor)
+        return Categorical(
+            var_names=var_names,
+            probs_table=self.probs_table,
+            cardinalities=self.cardinalities,
+            log_probs_tensor=self.log_probs_tensor,
+        )

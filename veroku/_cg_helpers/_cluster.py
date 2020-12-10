@@ -1,5 +1,6 @@
 import uuid
 import copy
+
 FIX_NON_PSD_MATRICES = False
 
 # TODO: add evidence observation functionality
@@ -11,7 +12,7 @@ class Cluster(object):
     A class for instantiating clusters for use in ClusterGraph objects.
     """
 
-    def __init__(self, factor, cluster_name_prefix=''):
+    def __init__(self, factor, cluster_name_prefix=""):
         """
         Construct a cluster with an initial factor potential.
 
@@ -21,7 +22,7 @@ class Cluster(object):
         self._factor = factor
         # self._cluster_id = name if name is not None else str(uuid.uuid1())
         # self._cluster_id = name if name is not None else str(factor.var_names)
-        self._cluster_id = cluster_name_prefix + ','.join(factor.var_names)
+        self._cluster_id = cluster_name_prefix + ",".join(factor.var_names)
         self._neighbour_sepsets = {}  # neighbour_id as key
         self._received_message_factors = {}  # neighbour_id as key
         self._neighbour_references = []
@@ -53,7 +54,7 @@ class Cluster(object):
                        to enforce the running intersection property)
         """
         # TODO: Add var_names check here (there should be a non-zero intersection)
-        assert len(sepset) > 0, 'Error: cant add neighbour with no overlapping variable scope.'
+        assert len(sepset) > 0, "Error: cant add neighbour with no overlapping variable scope."
         self._neighbour_references.append(other_cluster)
         self._neighbour_sepsets[other_cluster.cluster_id] = list(sepset)
 
@@ -89,7 +90,7 @@ class Cluster(object):
         :param Message message: The received Message
         """
         # Absorb message
-        assert message.receiver_id == self.cluster_id, 'Error: Message not meant for this Cluster.'
+        assert message.receiver_id == self.cluster_id, "Error: Message not meant for this Cluster."
         self._factor = self._factor.multiply(message.factor)
 
         # Cancel out any message previously received from sender cluster
@@ -190,9 +191,16 @@ class Message(object):
         :return: The string.
         :rtype: str
         """
-        repr_str = 'sender_id: ' + self._sender_id + '\n' + \
-                   'receiver_id: ' + self._receiver_id + '\n' + \
-                   'factor: \n' + self._factor.__repr__()
+        repr_str = (
+            "sender_id: "
+            + self._sender_id
+            + "\n"
+            + "receiver_id: "
+            + self._receiver_id
+            + "\n"
+            + "factor: \n"
+            + self._factor.__repr__()
+        )
         return repr_str
 
     @property

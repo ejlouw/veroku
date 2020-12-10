@@ -11,7 +11,7 @@ def make_sepset_node_name(node_a_name, node_b_name):
     :return: The sepset's name
     :rtype: str
     """
-    return 'sepset__' + '__'.join(sorted([node_a_name, node_b_name]))
+    return "sepset__" + "__".join(sorted([node_a_name, node_b_name]))
 
 
 def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
@@ -27,8 +27,12 @@ def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     """
 
     sepset_node_name = make_sepset_node_name(node_a_name, node_b_name)
-    change_graph_edge_color(graph=graph, node_a_name=node_a_name, node_b_name=sepset_node_name, new_color=new_color)
-    change_graph_edge_color(graph=graph, node_a_name=node_b_name, node_b_name=sepset_node_name, new_color=new_color)
+    change_graph_edge_color(
+        graph=graph, node_a_name=node_a_name, node_b_name=sepset_node_name, new_color=new_color
+    )
+    change_graph_edge_color(
+        graph=graph, node_a_name=node_b_name, node_b_name=sepset_node_name, new_color=new_color
+    )
 
 
 def contains_non_overlapping_substrings(substring_a, substring_b, string):
@@ -57,21 +61,21 @@ def contains_non_overlapping_substrings(substring_a, substring_b, string):
     if substring_a in substring_b:
         if substring_a not in string:
             return False
-        string = string.replace(substring_b, '')
+        string = string.replace(substring_b, "")
         if substring_a in string:
             return True
         return False
     if substring_b in substring_a:
         if substring_b not in string:
             return False
-        string = string.replace(substring_a, '')
+        string = string.replace(substring_a, "")
         if substring_b in string:
             return True
         return False
     # Neither substring strings is a substring of the other, so we can remove the one and check if the other is still
     # present.
     if substring_a in string:
-        string = string.replace(substring_a, '')
+        string = string.replace(substring_a, "")
     else:
         return False
     result = substring_b in string
@@ -90,19 +94,19 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
 
     edge_found = False
     for i, s in enumerate(graph.body):
-        if '--' in s:
+        if "--" in s:
             if contains_non_overlapping_substrings(node_a_name, node_b_name, s):
                 pattern = f'(\\t?"?{node_a_name}"?\s--\s"?{node_b_name}"?\s\[.*color=)([\S]*\s)(.*)'
-                new_s = re.sub(pattern, f'\g<1>{new_color} \g<3>', s)
+                new_s = re.sub(pattern, f"\g<1>{new_color} \g<3>", s)
                 # TODO: improve this (it's a bit hacky)
                 if new_s == s:
                     pattern = f'(\\t?"?{node_b_name}"?\s--\s"?{node_a_name}"?\s\[.*color=)([\S]*\s)(.*)'
-                    new_s = re.sub(pattern, f'\g<1>{new_color} \g<3>', s)
+                    new_s = re.sub(pattern, f"\g<1>{new_color} \g<3>", s)
 
                 graph.body[i] = new_s
                 edge_found = True
     if not edge_found:
-        raise ValueError(f'no edge between node {node_a_name} and node {node_b_name} in graph.')
+        raise ValueError(f"no edge between node {node_a_name} and node {node_b_name} in graph.")
 
 
 def change_graph_node_color(graph, node_name, new_color):
@@ -116,12 +120,14 @@ def change_graph_node_color(graph, node_name, new_color):
     """
     node_found = False
     for i, s in enumerate(graph.body):
-        if '--' not in s:  # not edge
+        if "--" not in s:  # not edge
             if node_name in s:
-                graph.body[i] = re.sub(f'(\\t?"?{node_name}"?\s\[.*fillcolor=)([\S]*\s)(.*)',f'\g<1>{new_color} \g<3>', s)
+                graph.body[i] = re.sub(
+                    f'(\\t?"?{node_name}"?\s\[.*fillcolor=)([\S]*\s)(.*)', f"\g<1>{new_color} \g<3>", s
+                )
                 node_found = True
     if not node_found:
-        raise ValueError(f'cannot change colour of not existing node: no node {node_name} in graph')
+        raise ValueError(f"cannot change colour of not existing node: no node {node_name} in graph")
 
 
 def graph_to_pil_image(graph):
@@ -129,8 +135,8 @@ def graph_to_pil_image(graph):
     Convert the graph to a PIL image.
     :param graph: The graph to convert.
     """
-    graph.render('/tmp/test.gv', view=False)
-    pil_image = PIL_Image.open('/tmp/test.gv.png')
+    graph.render("/tmp/test.gv", view=False)
+    pil_image = PIL_Image.open("/tmp/test.gv.png")
     pil_image_copy = pil_image.copy()
     pil_image.close()
     return pil_image_copy
@@ -144,33 +150,23 @@ def add_message_pass_animation_frames(graph, frames, node_a_name, node_b_name):
     :param node_a_name: The one node.
     :param node_b_name: The other node.
     """
-    new_color = 'red'
-    change_graph_node_color(graph=graph,
-                            node_name=node_a_name,
-                            new_color=new_color)
+    new_color = "red"
+    change_graph_node_color(graph=graph, node_name=node_a_name, new_color=new_color)
     frames.append(graph_to_pil_image(graph))
 
-    change_cluster_graph_edge_color(graph=graph,
-                                    node_a_name=node_a_name,
-                                    node_b_name=node_b_name,
-                                    new_color=new_color)
+    change_cluster_graph_edge_color(
+        graph=graph, node_a_name=node_a_name, node_b_name=node_b_name, new_color=new_color
+    )
     frames.append(graph_to_pil_image(graph))
 
-    change_graph_node_color(graph=graph,
-                            node_name=node_b_name,
-                            new_color=new_color)
+    change_graph_node_color(graph=graph, node_name=node_b_name, new_color=new_color)
     frames.append(graph_to_pil_image(graph))
-    change_graph_node_color(graph=graph,
-                            node_name=node_a_name,
-                            new_color='white')
+    change_graph_node_color(graph=graph, node_name=node_a_name, new_color="white")
     frames.append(graph_to_pil_image(graph))
 
-    change_cluster_graph_edge_color(graph=graph,
-                                    node_a_name=node_a_name,
-                                    node_b_name=node_b_name,
-                                    new_color='black')
+    change_cluster_graph_edge_color(
+        graph=graph, node_a_name=node_a_name, node_b_name=node_b_name, new_color="black"
+    )
     frames.append(graph_to_pil_image(graph))
-    change_graph_node_color(graph=graph,
-                            node_name=node_b_name,
-                            new_color='white')
+    change_graph_node_color(graph=graph, node_name=node_b_name, new_color="white")
     frames.append(graph_to_pil_image(graph))
