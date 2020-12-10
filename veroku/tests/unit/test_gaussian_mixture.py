@@ -16,6 +16,7 @@ from veroku.factors.experimental.gaussian_mixture import GaussianMixture
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
     """
     A test helper function that generates random Gaussian factors.
+
     :param cov_coeff: The scale coefficient for the uniform distribution that the variance parameter is drawn from.
     :param mean_coeff:  The scale coefficient for the uniform distribution that the mean parameter is drawn from.
     :return: a random Gaussian factor
@@ -32,6 +33,7 @@ def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
 def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3, seed=0):
     """
     A test helper function that generates random Gaussian factors.
+
     :param n: the number of components.
     :param cov_coeff: The scale coefficient for the uniform distribution that the variance parameter is drawn from.
     :param mean_coeff:  The scale coefficient for the uniform distribution that the mean parameter is drawn from.

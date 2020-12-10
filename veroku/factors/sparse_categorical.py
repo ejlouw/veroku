@@ -279,6 +279,8 @@ class SparseCategorical(Factor):
 
         :param var_names: The variable names.
         :type var_names: str list
+        :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])
+        :type cardinalities: int list
         :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
             Missing assignments are assumed to have zero probability.
         :type
@@ -312,6 +314,29 @@ class SparseCategorical(Factor):
     # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
     #  when probs turn to 0.
     # TODO: Add variable order sorting
+
+    def _all_non_default_equal(self, factor):
+        """
+        Check that all non default values in this factor are the same as the corresponding values in factor, where
+        the two factors have the same variable scope.
+
+        :param factor: The other factor
+        :return: The result of the check.
+        :rtype: bool
+        """
+
+        for assign, factor_log_prob in self.log_probs_table.items():
+
+            if assign not in factor.log_probs_table:
+                # TODO: make this `not is_close` and simplify this method
+                if factor_log_prob != factor.default_log_prob:
+                    return False
+            else:
+                self_log_prob = factor.log_probs_table[assign]
+                if not np.isclose(self_log_prob, factor_log_prob):
+                    return False
+        return True
+
     def equals(self, factor):
         """
         Check if this factor is the same as another factor.
@@ -333,29 +358,13 @@ class SparseCategorical(Factor):
             factor_ = factor.reorder(self.var_names)
         # factors now have same variable order
 
-        # Check the values for every non-default assignment of self
-        for assign, self_log_prob in self.log_probs_table.items():
-
-            if assign not in factor_.log_probs_table:
-                if self_log_prob != factor_.default_log_prob:
-                    return False
-            else:
-                factor_log_prob = factor_.log_probs_table[assign]
-                if not np.isclose(factor_log_prob, self_log_prob):
-                    return False
         # everywhere that self has non default values, factor has the same values.
-
+        if not self._all_non_default_equal(factor_):
+            return False
         # TODO: improve efficiency here (there could be a lot of duplication with the above loop)
-        # Check the values for every non-default assignment of factor
-        for assign, factor_log_prob in factor_.log_probs_table.items():
-
-            if assign not in self.log_probs_table:
-                if factor_log_prob != self.default_log_prob:
-                    return False
-            else:
-                self_log_prob = self.log_probs_table[assign]
-                if not np.isclose(self_log_prob, factor_log_prob):
-                    return False
+        #   Check the values for every non-default assignment of factor
+        if not factor_._all_non_default_equal(self):
+            return False
 
         # If all possible assignments have not been checked - check that the default values are the same
         if not self._is_dense() and not factor._is_dense():
@@ -492,6 +501,13 @@ class SparseCategorical(Factor):
         return max(self.log_probs_table.items(), key=operator.itemgetter(1))[0]
 
     def _apply_to_probs(self, func, include_assignment=False):
+        """
+        Apply a function to the log probs of the factor.
+
+        :param func: The function to apply to the log probs in this factor.
+        :param include_assignment: Whether or not to pass the assignment to the function as well
+            (along with the log probs).
+        """
         for assign, prob in self.log_probs_table.items():
             if include_assignment:
                 self.log_probs_table[assign] = func(prob, assign)
@@ -670,9 +686,6 @@ class SparseCategorical(Factor):
         uniform_log_prob = -np.log(np.product(cards))
         uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
         kl = self.kl_divergence(uniform_factor, normalize_factor=False)
-        if kl < 0.0:
-            raise ValueError(f"kl ({kl}) < 0.0")
-            self.show()
         return kl
 
     def potential(self, vrs, assignment):
@@ -685,7 +698,7 @@ class SparseCategorical(Factor):
         assert set(vrs) == set(self.var_names), 'variables (vrs) do not match factor variables.'
         vrs_to_var_names_indices = [self.var_names.index(v) for v in vrs]
         var_names_order_assignments = tuple([assignment[i] for i in vrs_to_var_names_indices])
-        return self.log_probs_table[var_names_order_assignments]
+        return np.exp(self.log_probs_table[var_names_order_assignments])
 
     def _to_df(self):
         log_probs_table = self.log_probs_table
@@ -693,7 +706,9 @@ class SparseCategorical(Factor):
         df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: 'assignment', 1: 'log_prob'})
         df[var_names] = pd.DataFrame(df['assignment'].to_list())
         df.drop(columns=['assignment'], inplace=True)
-        return df
+        # Correct column order
+        var_cols = [c for c in df.columns if c != 'log_prob']
+        return df[var_cols + ['log_prob']]
 
     def show(self):
         """
@@ -751,12 +766,14 @@ class SparseCategorical(Factor):
 
 class SparseCategoricalTemplate(FactorTemplate):
 
-    def __init__(self, log_probs_table, cardinalities, var_templates=None):
+    def __init__(self, probs_table, cardinalities, var_templates=None):
         """
         Create a Categorical factor template.
 
-        :param log_probs_table: The log_probs_table that specifies the assignments and values for the template.
-        :type log_probs_table: tuple:float dict
+        :param probs_table: The log_probs_table that specifies the assignments and values for the template.
+        :type probs_table: tuple:float dict
+        :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])
+        :type cardinalities: int list
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
@@ -768,7 +785,7 @@ class SparseCategoricalTemplate(FactorTemplate):
         """
         # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)
-        self.log_probs_table = _fast_copy_probs_table(log_probs_table)
+        self.probs_table = _fast_copy_probs_table(probs_table)
         self.cardinalities = cardinalities
 
     def make_factor(self, format_dict=None, var_names=None):
@@ -787,6 +804,6 @@ class SparseCategoricalTemplate(FactorTemplate):
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
         cardinalities = list(self.cardinalities)
-        factor = SparseCategorical(log_probs_table=self.log_probs_table,
+        factor = SparseCategorical(probs_table=self.probs_table,
                                    var_names=var_names, cardinalities=cardinalities)
         return factor

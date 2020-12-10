@@ -38,9 +38,15 @@ class Categorical(Factor):
 
         :param var_names: The variable names.
         :type var_names: str list
+        :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2]). This is
+            only required if the probs_table param is supplied instead of the log_probs_tensor.
+        :type cardinalities: int list
         :param probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
-            Missing assignments are assumed to have zero probability.
+            Missing assignments are assumed to have zero probability. This parameter is not required if log_probs_tensor
+            is given.
         :type probs_table: dict
+        :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)
+        :type log_probs_tensor: numpy.ndarray
 
         Example:
             >>> var_names = ['rain','slip']
@@ -384,9 +390,6 @@ class Categorical(Factor):
         uniform_log_tensor = np.ones(self.log_probs_tensor.shape) * uniform_log_prob
         uniform_factor = Categorical(var_names=self.var_names, log_probs_tensor=uniform_log_tensor)
         kl = self.kl_divergence(uniform_factor, normalize_factor=False)
-        if kl < 0.0:
-            raise ValueError(f"kl ({kl}) < 0.0")
-            self.show()
         return kl
 
     def potential(self, vrs, assignment):
@@ -399,7 +402,7 @@ class Categorical(Factor):
         assert set(vrs) == set(self.var_names), 'variables (vrs) do not match factor variables.'
         obs_dict = dict(zip(vrs, assignment))
         obs_tensor_indexing = tuple([obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names])
-        return self.log_probs_tensor[obs_tensor_indexing]
+        return np.exp(self.log_probs_tensor[obs_tensor_indexing])
 
     def show(self):
         """
@@ -426,14 +429,19 @@ class Categorical(Factor):
 
 class CategoricalTemplate(FactorTemplate):
 
-    def __init__(self, log_probs, var_templates):
+    def __init__(self, var_templates=None, cardinalities=None, probs_table=None, log_probs_tensor=None):
         """
         Create a Categorical factor template.
 
-        :param log_probs: The log probs table that specifies the assignments and values for the template.
-        :type log_probs: tuple:float dict
-        :param var_templates: A list of formattable strings.
-        :type var_templates: str list
+        :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2]). This is
+            only required if the probs_table param is supplied instead of the log_probs_tensor.
+        :type cardinalities: int list
+        :param probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
+            Missing assignments are assumed to have zero probability. This parameter is not required if log_probs_tensor
+            is given.
+        :type probs_table: dict
+        :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)
+        :type log_probs_tensor: numpy.ndarray
 
         log_probs_table example:
         {(0, 0): 0.1,
@@ -443,7 +451,9 @@ class CategoricalTemplate(FactorTemplate):
         """
         # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)
-        self.log_probs_table = copy.deepcopy(log_probs)
+        self.log_probs_tensor = copy.deepcopy(log_probs_tensor)
+        self.cardinalities = cardinalities
+        self.probs_table = probs_table
 
     def make_factor(self, format_dict=None, var_names=None):
         """
@@ -457,5 +467,7 @@ class CategoricalTemplate(FactorTemplate):
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
-        return Categorical(probs_table=copy.deepcopy(self.log_probs),
-                           var_names=var_names, cardinalities=self.var_cards.values())
+        return Categorical(var_names=var_names,
+                           probs_table=self.probs_table,
+                           cardinalities=self.cardinalities,
+                           log_probs_tensor=self.log_probs_tensor)

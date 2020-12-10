@@ -52,6 +52,7 @@ class Cluster(object):
         :param list sepset: The sepset between the neighbours (can be smaller than the scope intersection in order
                        to enforce the running intersection property)
         """
+        # TODO: Add var_names check here (there should be a non-zero intersection)
         assert len(sepset) > 0, 'Error: cant add neighbour with no overlapping variable scope.'
         self._neighbour_references.append(other_cluster)
         self._neighbour_sepsets[other_cluster.cluster_id] = list(sepset)
@@ -102,14 +103,11 @@ class Cluster(object):
         """
         Get the sepset between this cluster and another.
 
-        :param neighbour_id: The id of the other cluster.
-        :return: (list) The sepset
+        :param str neighbour_id: The id of the other cluster.
+        :return: The sepset
+        :rtype: list
         """
-        sepset = []
-        try:
-            sepset = self._neighbour_sepsets[neighbour_id]
-        except KeyError:
-            pass
+        sepset = self._neighbour_sepsets[neighbour_id].copy()
         return sepset
 
     @property

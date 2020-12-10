@@ -11,7 +11,7 @@ class TestAnimation(unittest.TestCase):
     """
     def test_contains_non_overlapping_substrings(self):
         """
-        Test that the the contains_non_overlapping_substrings function iss able to identify strings that contain two
+        Test that the contains_non_overlapping_substrings function iss able to identify strings that contain two
         non-overlapping substrings.
         """
         # TODO: Consider splitting these into separate tests or simplifying the contains_non_overlapping_substrings
