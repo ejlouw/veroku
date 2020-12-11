@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod
-import copy
-
 """
 This module contains an abstract parent class, defining the minimum functions that all factors should have
 """
+
+from abc import ABCMeta, abstractmethod
+import copy
 
 
 class Factor:
@@ -58,11 +58,13 @@ class Factor:
         return list(set(self.var_names) - set(vrs))
 
     @abstractmethod
-    def equals(self, factor):
+    def equals(self, factor, rtol=1e-04, atol=1e-04):
         """
-        An abstract function for checking if this factor is equal to another factor.
+         An abstract function for checking if this factor is equal to another factor.
 
         :param factor: The factor to be compared to.
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the check.
         :rtype: bool
         """

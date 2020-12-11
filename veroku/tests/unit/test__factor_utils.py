@@ -1,13 +1,14 @@
+"""
+A test module for the _factor_utils module.
+"""
+
 import unittest
 import mockito
 import numpy as np
 
 from veroku.factors import _factor_utils
 
-
-"""
-A test module for the _factor_utils module.
-"""
+# pylint: disable=too-many-public-methods
 
 
 class TestFactorUtils(unittest.TestCase):

@@ -1,5 +1,14 @@
-from PIL import Image as PIL_Image
+"""
+A module for animating graphviz graphs.
+"""
+
+# System imports
 import re
+
+# Third-party imports
+from PIL import Image as PIL_Image
+
+# pylint: disable=anomalous-backslash-in-string
 
 
 def make_sepset_node_name(node_a_name, node_b_name):
@@ -93,17 +102,17 @@ def change_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     """
 
     edge_found = False
-    for i, s in enumerate(graph.body):
-        if "--" in s:
-            if contains_non_overlapping_substrings(node_a_name, node_b_name, s):
+    for i, string_i in enumerate(graph.body):
+        if "--" in string_i:
+            if contains_non_overlapping_substrings(node_a_name, node_b_name, string_i):
                 pattern = f'(\\t?"?{node_a_name}"?\s--\s"?{node_b_name}"?\s\[.*color=)([\S]*\s)(.*)'
-                new_s = re.sub(pattern, f"\g<1>{new_color} \g<3>", s)
+                new_string_i = re.sub(pattern, f"\g<1>{new_color} \g<3>", string_i)
                 # TODO: improve this (it's a bit hacky)
-                if new_s == s:
+                if new_string_i == string_i:
                     pattern = f'(\\t?"?{node_b_name}"?\s--\s"?{node_a_name}"?\s\[.*color=)([\S]*\s)(.*)'
-                    new_s = re.sub(pattern, f"\g<1>{new_color} \g<3>", s)
+                    new_string_i = re.sub(pattern, f"\g<1>{new_color} \g<3>", string_i)
 
-                graph.body[i] = new_s
+                graph.body[i] = new_string_i
                 edge_found = True
     if not edge_found:
         raise ValueError(f"no edge between node {node_a_name} and node {node_b_name} in graph.")

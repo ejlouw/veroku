@@ -13,9 +13,10 @@ from veroku.cluster_graph import ClusterGraph
 A test module for the example notebooks.
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=import-error
 # pylint: disable=no-member
+# pylint: disable=no-name-in-module
+# pylint: disable=import-outside-toplevel
+# pylint: disable=unused-import
 
 
 class TestNotebooks(unittest.TestCase):
@@ -84,10 +85,10 @@ class TestNotebooks(unittest.TestCase):
                 correct_marginal = joint.marginalize(vrs, keep=True)
                 correct_marginals.append(correct_marginal)
             for actual_marginal, expected_marginal in zip(position_posteriors, correct_marginals):
-                actual_K = actual_marginal.get_K()
-                expected_K = expected_marginal.get_K()
+                actual_prec = actual_marginal.get_prec()
+                expected_prec = expected_marginal.get_prec()
                 actual_h = actual_marginal.get_h()
                 expected_h = expected_marginal.get_h()
                 # TODO: see why log_weight (and g) parameters are so different between the actual and expected factors.
-                self.assertTrue(np.allclose(actual_K, expected_K))
+                self.assertTrue(np.allclose(actual_prec, expected_prec))
                 self.assertTrue(np.allclose(actual_h, expected_h, rtol=1.0e-5, atol=1.0e-5))

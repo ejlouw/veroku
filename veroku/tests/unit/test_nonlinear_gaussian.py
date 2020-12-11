@@ -1,3 +1,7 @@
+"""
+Tests for the NonLinearGaussian module.
+"""
+
 # System imports
 import unittest
 
@@ -8,12 +12,7 @@ import numpy as np
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.nonlinear_gaussian import NonLinearGaussian
 
-"""
-Tests for the NonLinearGaussian module.
-"""
 
-
-# pylint: disable=too-many-public-methods
 class TestNonLinearGaussian(unittest.TestCase):
     """
     Tests for NonlinearGaussian Class.
@@ -24,8 +23,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         Test that the multiply function results in the correct joint distribution when the absorbed factor has the same
         scope as the conditioning scope.
         """
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=["a", "b"],
@@ -41,13 +43,13 @@ class TestNonLinearGaussian(unittest.TestCase):
         )
 
         # expected parameters
-        S_xx = conditioning_cov
-        S_xy = conditioning_cov.dot(A.T)
-        S_yx = A.dot(conditioning_cov.T)
-        S_yy = A.dot(conditioning_cov).dot(A.T) + noise_cov
-        expected_joint_cov = np.block([[S_xx, S_xy], [S_yx, S_yy]])
+        s_xx = conditioning_cov
+        s_xy = conditioning_cov.dot(a_mat.T)
+        s_yx = a_mat.dot(conditioning_cov.T)
+        s_yy = a_mat.dot(conditioning_cov).dot(a_mat.T) + noise_cov
+        expected_joint_cov = np.block([[s_xx, s_xy], [s_yx, s_yy]])
         u_x = conditioning_mean
-        u_y = A.dot(conditioning_mean)
+        u_y = a_mat.dot(conditioning_mean)
         expected_joint_mean = np.block([[u_x], [u_y]])
 
         expected_joint = Gaussian(
@@ -70,8 +72,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         conditional_update_factor = Gaussian(
             cov=conditional_update_cov, mean=conditional_update_mean, log_weight=0.0, var_names=["c", "d"]
         )
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=["a", "b"],
@@ -85,15 +90,15 @@ class TestNonLinearGaussian(unittest.TestCase):
         conditioning_gaussian = Gaussian(
             cov=conditioning_cov, mean=conditioning_mean, log_weight=0.0, var_names=["a", "b"]
         )
-        S_xx = conditioning_cov
-        S_xy = conditioning_cov.dot(A.T)
-        S_yx = A.dot(conditioning_cov.T)
-        S_yy = A.dot(conditioning_cov).dot(A.T) + noise_cov
-        joint_cov = np.block([[S_xx, S_xy], [S_yx, S_yy]])
+        s_xx = conditioning_cov
+        s_xy = conditioning_cov.dot(a_mat.T)
+        s_yx = a_mat.dot(conditioning_cov.T)
+        s_yy = a_mat.dot(conditioning_cov).dot(a_mat.T) + noise_cov
+        joint_cov = np.block([[s_xx, s_xy], [s_yx, s_yy]])
         np.linalg.inv(joint_cov),
 
         u_x = conditioning_mean
-        u_y = A.dot(conditioning_mean)
+        u_y = a_mat.dot(conditioning_mean)
         joint_mean = np.block([[u_x], [u_y]])
 
         expected_joint = Gaussian(
@@ -103,13 +108,9 @@ class TestNonLinearGaussian(unittest.TestCase):
 
         nlg_factor = nlg_factor.multiply(conditional_update_factor)
         nlg_factor = nlg_factor.multiply(conditioning_gaussian)
-        # expected_joint._update_covform()
         conditional_update_factor.show()
-
-        print("\n\n expected_joint ")
         expected_joint.show()
         nlg_factor._recompute_joint()
-        print("\n\n\nactual factor")
         nlg_factor.show()
 
         self.assertTrue(expected_joint.equals(nlg_factor.joint_distribution))
@@ -118,8 +119,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         """
         Test that marginalising an unconditioned non-linear Gaussian results in a vacuous Gaussian.
         """
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=["a", "b"],
@@ -135,8 +139,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         """
         Test that marginalising an unconditioned non-linear Gaussian results in a vacuous Gaussian.
         """
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=["a", "b"],
@@ -152,8 +159,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         """
         Test that marginalising an unconditioned non-linear Gaussian results in a vacuous Gaussian.
         """
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=["a", "b"],
@@ -170,8 +180,11 @@ class TestNonLinearGaussian(unittest.TestCase):
         Test that marginalising an unconditioned non-linear Gaussian results in a vacuous Gaussian.
         """
         ab_vars = ["a", "b"]
-        A = np.array([[2, 0], [0, 1]])
-        transform = lambda x, varnames: A.dot(x)
+        a_mat = np.array([[2, 0], [0, 1]])
+
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
+
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(
             conditioning_vars=ab_vars, conditional_vars=["c", "d"], transform=transform, noise_cov=noise_cov
@@ -193,10 +206,10 @@ class TestNonLinearGaussian(unittest.TestCase):
         """
         ab_vars = ["a", "b"]
         cd_vars = ["c", "d"]
-        A = np.array([[2, 0], [0, 1]])
+        a_mat = np.array([[2, 0], [0, 1]])
 
-        def transform(x, _):
-            return A.dot(x)
+        def transform(x_val, _):
+            return a_mat.dot(x_val)
 
         noise_cov = np.array([[1, 0], [0, 1]])
         nlg_factor = NonLinearGaussian(

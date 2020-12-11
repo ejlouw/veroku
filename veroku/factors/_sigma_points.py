@@ -1,9 +1,9 @@
-import numpy as np
-from veroku.factors.gaussian import Gaussian
-
 """
 A module for computing and transforming sigma points and converting between sigma points and covariance parameters.
 """
+
+import numpy as np
+from veroku.factors.gaussian import Gaussian
 
 
 def get_sigma_points_array(gaussian_factor):

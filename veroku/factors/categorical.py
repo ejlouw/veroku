@@ -1,3 +1,7 @@
+"""
+A module for instantiating sparse tables with log probabilities.
+"""
+
 # System imports
 import copy
 import operator
@@ -15,10 +19,6 @@ from veroku.factors._factor_template import FactorTemplate
 # special operator rules
 LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
 LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
-
-"""
-A module for instantiating sparse tables with log probabilities.
-"""
 
 # TODO: consider removing some unused functions
 
@@ -287,15 +287,12 @@ class Categorical(Factor):
         )
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
 
-    def divide(self, factor, special_rules=None):
+    def divide(self, factor):
         """
         Divide this factor by another factor and return the result.
 
         :param factor: The factor to divide by.
         :type factor: Categorical
-        :param special_rules: Any special rules to apply for specific values of the left and right variables.
-            For example: {(left_var_val, right_var_val): result, ...}
-        :type special_rules: dict
         :return: The factor quotient.
         :rtype: Categorical
         """

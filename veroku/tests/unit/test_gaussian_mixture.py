@@ -1,3 +1,7 @@
+"""
+A test module for the GaussianMixture class
+"""
+
 # System imports
 import unittest
 
@@ -8,10 +12,6 @@ import mockito
 # Local imports
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.gaussian_mixture import GaussianMixture
-
-"""
-A test module for the GaussianMixture class
-"""
 
 
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
@@ -85,9 +85,9 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the equals function returns false when the factor comparing with is not a GaussianMixture.
         """
         not_a_gm_factor = mockito.mock()
-        gm = get_random_gaussian_mixture()
+        gmix = get_random_gaussian_mixture()
         with self.assertRaises(TypeError):
-            gm.equals(not_a_gm_factor)
+            gmix.equals(not_a_gm_factor)
 
     def test_equals_true(self):
         """

@@ -1,3 +1,8 @@
+"""
+This module contains an abstract parent class, defining the some common default functions for factor template classes.
+"""
+
+
 from abc import ABC
 
 

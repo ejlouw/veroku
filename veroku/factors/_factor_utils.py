@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 import copy
 
 
-def format_list_elements(lst, format_dict):
+def format_list_elements(str_list, format_dict):
     """
     Format a list of formattable stings.
 
-    :param list lst: The list of strings.
+    :param list str_list: The list of strings.
     :param format_dict: The dictionary specifying the values of the formattable parts of the strings.
     :return: A list of formatted
     :rtype: str list
@@ -26,7 +26,7 @@ def format_list_elements(lst, format_dict):
         ['a_0', 'b_0', 'c_0']
 
     """
-    formatted_list = [e.format(**format_dict) for e in lst]
+    formatted_list = [element.format(**format_dict) for element in str_list]
     return formatted_list
 
 
@@ -145,10 +145,6 @@ def list_to_square_matrix(matrix_like_object):
     return matrix
 
 
-# pylint: enable=inconsistent-return-statements
-
-
-# pylint: disable=inconsistent-return-statements
 def make_square_matrix(matrix_like_object):
     """
     This function converts a matrix like object into a standard numpy square matrix.
@@ -167,9 +163,6 @@ def make_square_matrix(matrix_like_object):
         assert matrix_like_object.shape[0] == matrix_like_object.shape[1]
         return matrix_like_object.copy()
     raise ValueError(f"cannot convert matrix_like_object {matrix_like_object} to square matrix.")
-
-
-# pylint: enable=inconsistent-return-statements
 
 
 def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, operator):
@@ -332,30 +325,30 @@ def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
     plt.ylabel(ylabel)
 
 
-def inv_matrix(m):
+def inv_matrix(mat):
     """
     Invert matrix using the numpy.linalg.inv function and describe matrix if inversion fails.
 
-    :param nupmy.ndarry m: The matrix to invert.
+    :param numpy.ndarray mat: The matrix to invert.
     :return: The inverted matrix
-    :rtype: np.ndarray
+    :rtype: numpy.ndarray
     """
     try:
-        m_inv = np.linalg.inv(m)
+        mat_inv = np.linalg.inv(mat)
     except np.linalg.LinAlgError as e:
-        raise type(e)(e.args[0] + f":\n{m}")
-    return m_inv
+        raise type(e)(e.args[0] + f":\n{mat}")
+    return mat_inv
 
 
-def log(x):
+def log(x_val):
     """ "
     Get the log of a value using the numpy.log function and output the input value if invalid.
 
-    :param numerical x: The value to compute the log of.
+    :param numerical x_val: The value to compute the log of.
     :return: The log value.
     :rtype: numerical
     """
-    if x < 0.0:
-        raise Warning(f"Invalid value ({x}) in log")
-    logx = np.log(x)
+    if x_val < 0.0:
+        raise Warning(f"Invalid value ({x_val}) in log")
+    logx = np.log(x_val)
     return logx

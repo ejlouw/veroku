@@ -1,8 +1,14 @@
+"""
+A module for instantiating and performing operations on Non-linear Gaussian functions.
+"""
+
 # System imports
 import operator
 import copy
 
 # Third-party imports
+from abc import ABC
+
 import numpy as np
 
 # Local imports
@@ -19,9 +25,8 @@ from veroku.factors._factor_utils import (
 from veroku.factors._factor_template import FactorTemplate
 
 # TODO: see that lazy evaluation (recompute joint) is done sensibly and consistently
-"""
-A module for instantiating and performing operations on Non-linear Gaussian functions.
-"""
+
+# pylint: disable=protected-access
 
 
 class NonLinearGaussian(Factor):
@@ -119,17 +124,14 @@ class NonLinearGaussian(Factor):
         self_copy._recompute_joint()
         return self_copy._joint_distribution
 
-    # pylint: disable=invalid-name
-    def get_K(self):
+    def get_prec(self):
         """
         Get the K matrix (after ensuring that the canonical form is updated.)
 
         :return: The K parameter.
         """
         self._recompute_joint()
-        return self._joint_distribution.get_K()
-
-    # pylint: enable=invalid-name
+        return self._joint_distribution.get_prec()
 
     def get_h(self):
         """
@@ -148,9 +150,6 @@ class NonLinearGaussian(Factor):
         """
         self._recompute_joint()
         return self._joint_distribution.get_g()
-        # pylint: enable=invalid-name
-
-        # pylint: disable=invalid-name
 
     def get_cov(self):
         """

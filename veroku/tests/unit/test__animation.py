@@ -1,3 +1,7 @@
+"""
+A test module for the _animation module.
+"""
+
 import unittest
 from unittest import mock
 
@@ -6,10 +10,6 @@ from veroku._cg_helpers._animation import (
     change_graph_node_color,
     change_graph_edge_color,
 )
-
-"""
-A test module for the _animation module.
-"""
 
 
 class TestAnimation(unittest.TestCase):

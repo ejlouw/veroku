@@ -9,6 +9,8 @@ from veroku.factors._factor_utils import get_subset_evidence
 #   how we multiply factors when we have special factors such as nonlinear Gaussian factors in the factorised factor.
 #   Currently this class is mostly focussed on factorised Gaussians.
 
+# pylint: disable=protected-access
+
 
 class FactorizedFactor(Factor):
     """

@@ -1,7 +1,10 @@
+"""
+A module for instantiating sparse tables with log probabilities.
+"""
+
 # System imports
 import copy
 import operator
-import time
 
 # Third-party imports
 import numpy as np
@@ -13,9 +16,7 @@ import itertools
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
 
-"""
-A module for instantiating sparse tables with log probabilities.
-"""
+# pylint: disable=protected-access
 
 
 def _make_dense(factor):
@@ -442,7 +443,7 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
 
-        vars_unobserved = [v for v in self.var_names if v not in vrs]
+        vars_unobserved = [var_name for var_name in self.var_names if var_name not in vrs]
         nested_table, nested_table_vars = _get_nested_sorted_probs(
             new_variables_order_outer=vrs,
             new_variables_order_inner=vars_unobserved,
@@ -495,11 +496,10 @@ class SparseCategorical(Factor):
         :rtype: SparseCategorical
         """
 
-        def special_divide(a, b):
-            if (a == -np.inf) and (b == -np.inf):
+        def special_divide(val_a, val_b):
+            if (val_a == -np.inf) and (val_b == -np.inf):
                 return -np.inf
-            else:
-                return a - b
+            return val_a - val_b
 
         return self._apply_binary_operator(factor, special_divide, default_rules="any")
 
@@ -694,18 +694,18 @@ class SparseCategorical(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-        log_P = self.normalize()
-        log_Q = factor
+        log_p = self.normalize()
+        log_q = factor
         if normalize_factor:
-            log_Q = factor.normalize()
+            log_q = factor.normalize()
 
-        kld = self._raw_kld(log_P, log_Q)
+        kld = self._raw_kld(log_p, log_q)
 
         if kld < 0.0:
             if np.isclose(kld, 0.0, atol=1e-4):
                 #  this is fine (numerical error)
                 return 0.0
-            kld_msg_details = "Categorical:\n" + log_P.__repr__() + "\nfactor:" + log_Q.__repr__()
+            kld_msg_details = "Categorical:\n" + log_p.__repr__() + "\nfactor:" + log_q.__repr__()
             raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}")
         return kld
 

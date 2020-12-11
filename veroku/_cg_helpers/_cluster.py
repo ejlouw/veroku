@@ -171,8 +171,8 @@ class Message(object):
         Check if this message equals another message.
 
         :param other: The other message.
-        :param rtol: The relative tolerance to use for factor equality check.
-        :param atol: The absolute tolerance to use for factor equality check.
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the equality check.
         :rtype: bool
         """

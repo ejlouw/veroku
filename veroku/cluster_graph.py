@@ -1,3 +1,7 @@
+"""
+A module for building and performing inference with cluster graphs
+"""
+
 import IPython
 import networkx as nx
 import numpy as np
@@ -10,15 +14,12 @@ from veroku.factors._factor_utils import get_subset_evidence
 import matplotlib.pyplot as plt
 import collections
 
-"""
-A module for building and performing inference with cluster graphs 
-"""
-
-
 # TODO: Optimise _pass_message.
 # TODO: Improve sepsets selection for less loopiness.
 # TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need
 #  new messages calculated.
+
+# pylint: disable=protected-access
 
 
 def _sort_almost_sorted(almost_sorted_deque, key):
@@ -52,7 +53,7 @@ def _evidence_reduce_factors(factors, evidence):
     :rtype factors: Factor list
     """
     reduced_factors = []
-    for i, factor in enumerate(factors):
+    for factor in factors:
         if evidence is not None:
             vrs, values = get_subset_evidence(all_evidence_dict=evidence, subset_vars=factor.var_names)
             if len(vrs) > 0:
@@ -99,13 +100,13 @@ def _absorb_subset_factors(factors):
     return final_graph_cluster_factors
 
 
-class ClusterGraph(object):
+class ClusterGraph:
     """
     A class for building and performing inference with cluster graphs.
     """
 
     def __init__(
-        self, factors, evidence=None, special_evidence=dict(), disable_tqdm=False, verbose=False, debug=False
+        self, factors, evidence=None, special_evidence=None, disable_tqdm=False, verbose=False, debug=False
     ):
         """
         Construct a Cluster graph from a list of factors.
@@ -124,12 +125,13 @@ class ClusterGraph(object):
         """
         # TODO: see if evidence and special_evidence can be replaced by a single variable.
         self.num_messages_passed = 0
-        self.special_evidence = special_evidence
         self.disable_tqdm = disable_tqdm
         self.verbose = verbose
 
         self.sync_message_passing_max_distances = []
-
+        if special_evidence is None:
+            special_evidence = dict()
+        self.special_evidence = special_evidence
         all_evidence_vars = set(self.special_evidence.keys())
         if evidence is not None:
             evidence_vars = set(evidence.keys())

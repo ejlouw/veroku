@@ -1,3 +1,7 @@
+"""
+A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+"""
+
 # System imports
 import cmath
 import copy
@@ -14,12 +18,11 @@ from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 
-"""
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
-"""
+
+# pylint: disable=protected-access
 
 
-def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
+def make_random_gaussian(var_names, mean_range=None, cov_range=None):
     """
     Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
     distributions.
@@ -33,6 +36,10 @@ def make_random_gaussian(var_names, mean_range=[-10, 10], cov_range=[1, 10]):
     :return: The random Gaussian.
     :rtype: Gaussian
     """
+    if mean_range is None:
+        mean_range = [-10, 10]
+    if cov_range is None:
+        cov_range = [1, 10]
     assert var_names, "Error: var_names list cannot be empty."
     dim = len(var_names)
     # TODO: Add non diagonal covariance matrix sampling and add test for PSD covariance matrices.
@@ -59,14 +66,14 @@ def make_std_gaussian(var_names):
     return random_gaussian
 
 
-def make_linear_gaussian(A, N, conditioning_vars, conditional_vars):
+def make_linear_gaussian(a_mat, n_mat, conditioning_vars, conditional_vars):
     """
     Make a linear Gaussian factor.
 
-    :param A: The linear transform matrix.
-    :type A: Numpy array
-    :param N: The additive noise covariance matrix.
-    :type A: Numpy array
+    :param a_mat: The linear transform matrix.
+    :type a_mat: numpy.ndarray
+    :param n_mat: The additive noise covariance matrix.
+    :type n_mat: numpy.ndarray
     :param conditioning_vars: The list of conditioning variables.
     :param conditional_vars: The list of conditional variables.
     :return: The linear Gaussian Template
@@ -75,52 +82,52 @@ def make_linear_gaussian(A, N, conditioning_vars, conditional_vars):
 
     # TODO: improve this by adding the correct equations for calculating the linear Gaussian parameters that do not rely
     #  on the dummy factor multiplication.
-    X_dim = len(conditioning_vars)
-    Sxx = np.eye(X_dim)
-    Kxx = np.linalg.inv(Sxx)
+    x_dim = len(conditioning_vars)
+    cov_xx = np.eye(x_dim)
+    prec_xx = np.linalg.inv(cov_xx)
 
-    ux = np.zeros([X_dim, 1])
-    hx = Kxx @ ux
-    uxTKxxux = ux.transpose() @ hx
-    gx = -0.5 * uxTKxxux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * Sxx))
+    u_x = np.zeros([x_dim, 1])
+    h_x = prec_xx @ u_x
+    uxtkxxux = u_x.T @ h_x
+    g_x = -0.5 * uxtkxxux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * cov_xx))
 
-    S = np.block([[Sxx, Sxx @ A.T], [A @ Sxx, A @ Sxx @ A.T + N]])
-    K_joint = np.linalg.inv(S)
-    K_cpd = K_joint.copy()
-    K_cpd[:X_dim, :X_dim] = K_cpd[:X_dim, :X_dim] - Kxx
+    cov = np.block([[cov_xx, cov_xx @ a_mat.T], [a_mat @ cov_xx, a_mat @ cov_xx @ a_mat.T + n_mat]])
+    prec_joint = np.linalg.inv(cov)
+    prec_cpd = prec_joint.copy()
+    prec_cpd[:x_dim, :x_dim] = prec_cpd[:x_dim, :x_dim] - prec_xx
 
-    mean_joint = np.block([[ux], [A.T @ ux]])
+    mean_joint = np.block([[u_x], [a_mat.T @ u_x]])
 
-    h_joint = K_joint @ mean_joint
+    h_joint = prec_joint @ mean_joint
     h_cpd = h_joint.copy()
-    h_cpd[:X_dim] = h_cpd[:X_dim] - hx
+    h_cpd[:x_dim] = h_cpd[:x_dim] - h_x
 
-    uTKux = mean_joint.T @ K_joint @ mean_joint
-    g_joint = 0.5 * uTKux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * S))
-    g_cpd = g_joint - gx
+    utkux = mean_joint.T @ prec_joint @ mean_joint
+    g_joint = 0.5 * utkux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * cov))
+    g_cpd = g_joint - g_x
     var_names = conditioning_vars + conditional_vars
 
-    return Gaussian(var_names=var_names, K=K_cpd, h=h_cpd, g=g_cpd)
+    return Gaussian(var_names=var_names, prec=prec_cpd, h_vec=h_cpd, g_val=g_cpd)
 
 
-def make_linear_gaussian_cpd_template(A, N, conditioning_var_templates, conditional_var_templates):
+def make_linear_gaussian_cpd_template(a_mat, n_mat, conditioning_var_templates, conditional_var_templates):
     """
     Make a linear Gaussian factor template.
 
-    :param A: The linear transform matrix.
-    :type A: Numpy array
-    :param N: The additive noise covariance matrix.
-    :type A: Numpy array
+    :param a_mat: The linear transform matrix.
+    :type a_mat: numpy.ndarray
+    :param n_mat: The additive noise covariance matrix.
+    :type n_mat: numpy.ndarray
     :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
     :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
     :return: The linear Gaussian Template
     :rtype: Gaussian
     """
-    assert len(conditioning_var_templates) == A.shape[0]
-    assert N.shape[0] == A.shape[0]
-    nlg = make_linear_gaussian(A, N, conditioning_var_templates, conditional_var_templates)
+    assert len(conditioning_var_templates) == a_mat.shape[0]
+    assert n_mat.shape[0] == a_mat.shape[0]
+    nlg = make_linear_gaussian(a_mat, n_mat, conditioning_var_templates, conditional_var_templates)
     var_templates = conditioning_var_templates + conditional_var_templates
-    gaussian_parameters = {"K": nlg.get_K(), "h": nlg.get_h(), "g": 0}
+    gaussian_parameters = {"prec": nlg.get_prec(), "h": nlg.get_h(), "g": 0}
     return GaussianTemplate(gaussian_parameters, var_templates)
 
 
@@ -129,8 +136,7 @@ class Gaussian(Factor):
     A class for instantiating and performing operations om multivariate Gaussian distributions.
     """
 
-    # pylint: disable=invalid-name
-    def __init__(self, cov=None, mean=None, log_weight=None, K=None, h=None, g=None, var_names=None):
+    def __init__(self, cov=None, mean=None, log_weight=None, prec=None, h_vec=None, g_val=None, var_names=None):
         """
         General constructor that can use either covariance form or canonical form parameters to construct a
         d-dimensional multivariate Gaussian object.
@@ -141,12 +147,12 @@ class Gaussian(Factor):
         :type mean: dx1 numpy.ndarray or float
         :param log_weight: the log of the weight (the Gaussian function integrates to the weight value)
         :type log_weight: float
-        :param K: the precision matrix (or precision scalar in 1-dimensional case).
-        :type K: dxd numpy.ndarray or float
-        :param h: the h vector  (or h scalar in 1-dimensional case).
-        :type h: dx1 numpy.ndarray or float
-        :param g: the g parameter
-        :type g: float
+        :param prec: the precision matrix (or precision scalar in 1-dimensional case).
+        :type prec: dxd numpy.ndarray or float
+        :param h_vec: the h vector  (or h scalar in 1-dimensional case).
+        :type h_vec: dx1 numpy.ndarray or float
+        :param g_val: the g parameter
+        :type g_val: float
         :param var_names: a list of variable names where the order of the names correspond to the order in the
                          mean/covariance or K/h parameters
         :type var_names: str list
@@ -154,7 +160,7 @@ class Gaussian(Factor):
 
         super().__init__(var_names=var_names)
         self._is_vacuous = False
-        if all(v is None for v in [K, h, g]):
+        if all(v is None for v in [prec, h_vec, g_val]):
             if any(v is None for v in [cov, mean, log_weight]):
                 raise ValueError("incomplete parameters")
             self.cov = _factor_utils.make_square_matrix(cov)
@@ -164,34 +170,32 @@ class Gaussian(Factor):
             assert self.cov.shape[0] == self.dim, "Error: Covariance matrix dimension inconsistency."
             assert self.mean.shape[0] == self.dim, "Error: Mean vector dimension inconsistency."
             self.log_weight = _factor_utils.make_scalar(log_weight)
-            self.K, self.h, self.g = None, None, None
-            self.CANFORM = False
-            self.COVFORM = True
+            self.prec, self.h_vec, self.g_val = None, None, None
+            self.canform = False
+            self.covform = True
         else:
-            if any(v is None for v in [K, h, g]):
+            if any(v is None for v in [prec, h_vec, g_val]):
                 raise ValueError("incomplete parameters")
-            self.K = _factor_utils.make_square_matrix(K)
-            self.h = _factor_utils.make_column_vector(h)
-            if self.K.shape[0] != self.dim:
+            self.prec = _factor_utils.make_square_matrix(prec)
+            self.h_vec = _factor_utils.make_column_vector(h_vec)
+            if self.prec.shape[0] != self.dim:
                 pass
-            assert len(self.K.shape) == 2, "Error: Precision matrix must be two dimensional."
-            assert self.K.shape[0] == self.dim, "Error: Precision matrix dimension inconsistency."
-            h_error_msg = f"Error: h vector dimension inconsistency: {self.h.shape[0]} (should be {self.dim})"
-            assert self.h.shape[0] == self.dim, h_error_msg
-            self.g = _factor_utils.make_scalar(g)
+            assert len(self.prec.shape) == 2, "Error: Precision matrix must be two dimensional."
+            assert self.prec.shape[0] == self.dim, "Error: Precision matrix dimension inconsistency."
+            h_error_msg = f"Error: h vector dimension inconsistency: {self.h_vec.shape[0]} (should be {self.dim})"
+            assert self.h_vec.shape[0] == self.dim, h_error_msg
+            self.g_val = _factor_utils.make_scalar(g_val)
             self.cov, self.mean, self.log_weight = None, None, None
-            self.CANFORM = True
-            self.COVFORM = False
+            self.canform = True
+            self.covform = False
 
             # Note: this is important to allow vacuous Gaussians (that arise, for exmaple, when Gaussians are divided by
             # identical distributions or with unconditioned nonlinear Gaussians) to be merginalised.
             if self.is_vacuous:
                 self._is_vacuous = True
 
-    # pylint: enable=invalid-name
-
     @classmethod
-    def make_vacuous(cls, var_names, g=0.0):
+    def make_vacuous(cls, var_names, g_val=0.0):
         """
         Make an vacuous Gaussian distribution with a zero precision matrix and zero h vector and zero g value.
         This 'Gaussian' is effectively a constant function (it has infinite variance and infinite mass) with value
@@ -199,19 +203,17 @@ class Gaussian(Factor):
 
         :param var_names: The variable names.
         :type var_names: str list
-        :param g: The g parameter.
-        :type g: float
+        :param g_val: The g parameter.
+        :type g_val: float
         :return: The vacuous Gaussian with zero K and h parameters.
         :rtype: Gaussian
         """
         dim = len(var_names)
-        K_zero = np.zeros([dim, dim])
+        prec_zero = np.zeros([dim, dim])
         h_zero = np.zeros([dim, 1])
-        g_zero = g
-        return cls(K=K_zero, h=h_zero, g=g_zero, var_names=var_names)
+        g_zero = g_val
+        return cls(prec=prec_zero, h_vec=h_zero, g_val=g_zero, var_names=var_names)
 
-    # pylint: disable=invalid-name
-    # pylint: disable=protected-access
     def _reorder_parameters(self, new_order_vars):
         """
         Reorder the values in the matrix and vector parameters according to the order of new_order_vars
@@ -226,17 +228,17 @@ class Gaussian(Factor):
         ), "Error: new_order_vars must contain the same variable names as in var_names."
         new_order = [new_order_vars.index(var) for var in self._var_names]
 
-        if self.CANFORM:
-            new_K = np.zeros([self.dim, self.dim])
-            new_h = np.zeros([self.dim, 1])
+        if self.canform:
+            new_prec = np.zeros([self.dim, self.dim])
+            new_h_vec = np.zeros([self.dim, 1])
             for i, new_i in enumerate(new_order):
-                new_h[new_i, 0] = self.h[i, 0]
+                new_h_vec[new_i, 0] = self.h_vec[i, 0]
                 for j, new_j in enumerate(new_order):
-                    new_K[new_i, new_j] = self.K[i, j]
-            self.K = new_K
-            self.h = new_h
+                    new_prec[new_i, new_j] = self.prec[i, j]
+            self.prec = new_prec
+            self.h_vec = new_h_vec
 
-        if self.COVFORM:
+        if self.covform:
             new_cov = np.zeros([self.dim, self.dim])
             new_mean = np.zeros([self.dim, 1])
             for i, new_i in enumerate(new_order):
@@ -247,26 +249,19 @@ class Gaussian(Factor):
             self.mean = new_mean
         self._var_names = new_order_vars
 
-    # pylint: enable=protected-access
-    # pylint: enable=invalid-name
-
-    # pylint: disable=protected-access
     def _canform_equals(self, gaussian, rtol, atol):
         """
         Helper function for check equivalence of canonical form parameters.
         """
-        if not np.isclose(self.g, gaussian.get_g(), rtol=rtol, atol=atol, equal_nan=False):
+        if not np.isclose(self.g_val, gaussian.get_g(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         gaussian._reorder_parameters(self.var_names)
-        if not np.allclose(self.h, gaussian.get_h(), rtol=rtol, atol=atol, equal_nan=False):
+        if not np.allclose(self.h_vec, gaussian.get_h(), rtol=rtol, atol=atol, equal_nan=False):
             return False
-        if not np.allclose(self.K, gaussian.get_K(), rtol=rtol, atol=atol, equal_nan=False):
+        if not np.allclose(self.prec, gaussian.get_prec(), rtol=rtol, atol=atol, equal_nan=False):
             return False
         return True
 
-    # pylint: enable=protected-access
-
-    # pylint: disable=protected-access
     def _covform_equals(self, gaussian, rtol, atol):
         """
         Helper function for check equivalence of covariance form parameters.
@@ -281,18 +276,14 @@ class Gaussian(Factor):
             return False
         return True
 
-    # pylint: enable=protected-access
-
     def equals(self, factor, rtol=1e-04, atol=1e-04):
         """
         Check if this factor is the same as another factor.
 
         :param factor: The factor to compare with.
         :type factor: Gaussian
-        :param rtol: The absolute tolerance parameter (see numpy Notes for allclose function).
-        :type rtol: float
-        :param atol: The absolute tolerance parameter (see numpy Notes for allclose function).
-        :type atol: float
+        :param float rtol: The absolute tolerance parameter (see numpy Notes for allclose function).
+        :param float atol: The absolute tolerance parameter (see numpy Notes for allclose function).
         :return: Result of equals comparison between self and gaussian
         rtype: bool
         """
@@ -306,38 +297,32 @@ class Gaussian(Factor):
             return False
 
         gaussian_copy = factor.copy()
-        # pylint: disable=protected-access
         if self._var_names != factor.var_names:
             gaussian_copy._reorder_parameters(self._var_names)
         if gaussian_copy._is_vacuous and self._is_vacuous:
             return True
-        if self.CANFORM:
+        if self.canform:
             if self._canform_equals(factor, rtol, atol):
                 return True
             return False
         self._update_covform()
-        if self.COVFORM:
+        if self.covform:
             if not self._covform_equals(factor, rtol, atol):
                 return False
-        # pylint: enable=protected-access
         return True
 
-    # pylint: disable=invalid-name
-    def get_K(self):
+    def get_prec(self):
         """
-        Get the K parameter.
+        Get the precision parameter.
 
-        :return: The K parameter.
+        :return: The prec parameter.
         :rtype: dxd numpy.ndarray or float
         """
         self._update_canform()
-        if self.K is not None:
-            return self.K.copy()
+        if self.prec is not None:
+            return self.prec.copy()
         return None
 
-    # pylint: enable=invalid-name
-
-    # pylint: disable=invalid-name
     def get_h(self):
         """
         Get the h vector.
@@ -346,13 +331,10 @@ class Gaussian(Factor):
         :rtype: float
         """
         self._update_canform()
-        if self.h is not None:
-            return self.h.copy()
+        if self.h_vec is not None:
+            return self.h_vec.copy()
         return None
 
-    # pylint: enable=invalid-name
-
-    # pylint: disable=invalid-name
     def get_g(self):
         """
         Get the g parameter.
@@ -361,9 +343,7 @@ class Gaussian(Factor):
         :rtype: float
         """
         self._update_canform()
-        return self.g
-
-    # pylint: enable=invalid-name
+        return self.g_val
 
     def _cov_exists(self):
         """
@@ -371,16 +351,14 @@ class Gaussian(Factor):
         :return: The result of the check.
         :rtype: bool
         """
-        if self.COVFORM:
+        if self.covform:
             return True
-        else:
-            try:
-                np.linalg.inv(self.K)
-            except np.linalg.LinAlgError:
-                return False
+        try:
+            np.linalg.inv(self.prec)
+        except np.linalg.LinAlgError:
+            return False
         return True
 
-    # pylint: disable=invalid-name
     def get_cov(self):
         """
         Get the covariance parameter.
@@ -392,8 +370,6 @@ class Gaussian(Factor):
         if self.cov is not None:
             return self.cov.copy()
         return None
-
-    # pylint: enable=invalid-name
 
     def get_mean(self):
         """
@@ -444,15 +420,16 @@ class Gaussian(Factor):
         log_weight no longer corresponds to the integral and the log of the weight will have a imaginary component.
         Computing the complex log-weight can however still be useful: it is used, for example, in the (experimental)
         Gaussian mixture division function (_gm_division_m2).
+
+        :return: The potentially complex log weight
+        :rtype: complex
         """
-        # pylint: disable=invalid-name
         self._update_canform()
-        cov = np.linalg.inv(self.K)
-        mean = cov.dot(self.h)
-        uTKu = ((mean.transpose()).dot(self.K)).dot(mean).astype(complex)
-        log_weight = self.g + 0.5 * uTKu + 0.5 * cmath.log(np.linalg.det(2.0 * np.pi * cov))
+        cov = np.linalg.inv(self.prec)
+        mean = cov @ self.h_vec
+        ut_prec_u = (mean.T @ self.prec @ mean).astype(complex)
+        log_weight = self.g_val + 0.5 * ut_prec_u + 0.5 * cmath.log(np.linalg.det(2.0 * np.pi * cov))
         return log_weight
-        # pylint: enable=invalid-name
 
     def _invert(self):
         """
@@ -460,11 +437,11 @@ class Gaussian(Factor):
 
         :return: The inverted Gaussian.
         """
-        assert self.CANFORM
+        assert self.canform
         gaussian_copy = self.copy()
-        gaussian_copy.K = (-1.0) * self.K
-        gaussian_copy.h = (-1.0) * self.h
-        gaussian_copy.g = (-1.0) * self.g
+        gaussian_copy.prec = (-1.0) * self.prec
+        gaussian_copy.h_vec = (-1.0) * self.h_vec
+        gaussian_copy.g_val = (-1.0) * self.g_val
         gaussian_copy._destroy_covform()
         return gaussian_copy
 
@@ -475,9 +452,9 @@ class Gaussian(Factor):
         :param log_weight_to_add: The log value to add to the weight.
         :type log_weight_to_add: float
         """
-        if self.CANFORM:
-            self.g += log_weight_to_add
-        if self.COVFORM:
+        if self.canform:
+            self.g_val += log_weight_to_add
+        if self.covform:
             self.log_weight += log_weight_to_add
 
     def get_weight(self):
@@ -507,25 +484,24 @@ class Gaussian(Factor):
             # print('Warning: marginalising vacuous Gaussian')
             return Gaussian.make_vacuous(var_names=vars_to_keep)
 
-        if self.CANFORM:
-            xx_indcs = [self.var_names.index(var_x) for var_x in vars_to_keep]
-            yy_indcs = [self.var_names.index(var_y) for var_y in vars_to_integrate_out]
-            Kxx = self.K[np.ix_(xx_indcs, xx_indcs)]
-            Kxy = self.K[np.ix_(xx_indcs, yy_indcs)]
-            Kyx = Kxy.transpose()
-            Kyy = self.K[yy_indcs][:, yy_indcs]
-            inv_Kyy = np.linalg.inv(Kyy)
-            hx = self.h[xx_indcs]
-            hy = self.h[yy_indcs]
-            Kxy_inv_Kyy = Kxy.dot(np.linalg.inv(Kyy))
-            K = Kxx - Kxy_inv_Kyy.dot(Kyx)
-            h = hx - Kxy_inv_Kyy.dot(hy)
-            g = self.g + 0.5 * (
-                (hy.T.dot(np.linalg.inv(Kyy)).dot(hy)) + np.log(np.linalg.det(2.0 * np.pi * inv_Kyy))
-            )
-            return Gaussian(K=K, h=h, g=g, var_names=vars_to_keep)
+        if self.canform:
+            xx_indices = [self.var_names.index(var_x) for var_x in vars_to_keep]
+            yy_indices = [self.var_names.index(var_y) for var_y in vars_to_integrate_out]
+            prec_xx = self.prec[np.ix_(xx_indices, xx_indices)]
+            prec_xy = self.prec[np.ix_(xx_indices, yy_indices)]
+            prec_yx = prec_xy.T
+            prec_yy = self.prec[yy_indices][:, yy_indices]
+            inv_prec_yy = np.linalg.inv(prec_yy)
+            h_x = self.h_vec[xx_indices]
+            h_y = self.h_vec[yy_indices]
+            prec_xy_inv_prec_yy = prec_xy @ np.linalg.inv(prec_yy)
+            prec = prec_xx - prec_xy_inv_prec_yy @ prec_yx
+            h_vec = h_x - prec_xy_inv_prec_yy @ h_y
+            log_det_2pi_inv_prec_yy = np.log(np.linalg.det(2.0 * np.pi * inv_prec_yy))
+            g_val = self.g_val + 0.5 * (h_y.T @ inv_prec_yy @ h_y + log_det_2pi_inv_prec_yy)
+            return Gaussian(prec=prec, h_vec=h_vec, g_val=g_val, var_names=vars_to_keep)
 
-        assert self.COVFORM
+        assert self.covform
         indices_to_keep = [self._var_names.index(variable) for variable in vars_to_keep]
         marginal_var_names = vars_to_keep.copy()
 
@@ -539,34 +515,32 @@ class Gaussian(Factor):
         """
         Destroy the canonical form parameters.
         """
-        self.K, self.h, self.h = None, None, None
-        self.CANFORM = False
+        self.prec, self.h_vec, self.h_vec = None, None, None
+        self.canform = False
 
     def _destroy_covform(self):
         """
         Destroy the covariance form parameters.
         """
         self.cov, self.mean, self.log_weight = None, None, None
-        self.COVFORM = False
+        self.covform = False
 
     def _update_canform(self):
         """
         Update the canonical form parameters of the Gaussian.
         """
-        # pylint: disable=invalid-name
-        if self.CANFORM:
+        if self.canform:
             return
-        assert self.COVFORM
-        self.K = _factor_utils.inv_matrix(self.cov)
-        self.h = self.K.dot(self.mean)
-        uTKu = ((self.mean.transpose()).dot(self.K)).dot(self.mean)
+        assert self.covform
+        self.prec = _factor_utils.inv_matrix(self.cov)
+        self.h_vec = self.prec @ self.mean
+        utku = self.mean.T @ self.prec @ self.mean
 
-        det2picov = np.linalg.det(2.0 * np.pi * self.cov)
-        g_ = self.log_weight - 0.5 * uTKu - 0.5 * _factor_utils.log(det2picov)
+        det_2pi_cov = np.linalg.det(2.0 * np.pi * self.cov)
+        updated_g_val = self.log_weight - 0.5 * utku - 0.5 * _factor_utils.log(det_2pi_cov)
 
-        self.g = _factor_utils.make_scalar(g_)
-        self.CANFORM = True
-        # pylint: enable=invalid-name
+        self.g_val = _factor_utils.make_scalar(updated_g_val)
+        self.canform = True
 
     def _update_covform(self):
         """
@@ -574,19 +548,17 @@ class Gaussian(Factor):
         """
         if self._is_vacuous:
             raise Exception("cannot update covariance form for vacuous Gaussian.")
-        # pylint: disable=invalid-name
-        if self.COVFORM:
+        if self.covform:
             return
-        assert self.CANFORM
-        self.cov = _factor_utils.inv_matrix(self.K)
+        assert self.canform
+        self.cov = _factor_utils.inv_matrix(self.prec)
         assert not np.isnan(np.sum(self.cov)), "Error: nan values in cov matrix after inversion."
-        self.mean = self.cov.dot(self.h)
-        uTKu = ((self.mean.transpose()).dot(self.K)).dot(self.mean)
+        self.mean = self.cov @ self.h_vec
+        utku = self.mean.T @ self.prec @ self.mean
         det_2_pi_cov = np.linalg.det(2.0 * np.pi * self.cov)
-        log_weight_ = self.g + 0.5 * uTKu + 0.5 * np.log(det_2_pi_cov)
+        log_weight_ = self.g_val + 0.5 * utku + 0.5 * np.log(det_2_pi_cov)
         self.log_weight = _factor_utils.make_scalar(log_weight_)
-        self.COVFORM = True
-        # pylint: enable=invalid-name
+        self.covform = True
 
     def multiply(self, factor):
         """
@@ -617,13 +589,12 @@ class Gaussian(Factor):
                         ('+' for multiplication and '-' for division)
         :return: the resulting Gaussian
         """
-        # pylint: disable=invalid-name
-        K_a = self.get_K()
-        K_b = factor.get_K()
-        assert len(K_a.shape) == 2
-        assert len(K_b.shape) == 2
-        K_c, new_vars_0 = _factor_utils.indexed_square_matrix_operation(
-            K_a, K_b, self._var_names, factor.var_names, operator_function
+        prec_a = self.get_prec()
+        prec_b = factor.get_prec()
+        assert len(prec_a.shape) == 2
+        assert len(prec_b.shape) == 2
+        prec_c, new_vars_0 = _factor_utils.indexed_square_matrix_operation(
+            prec_a, prec_b, self._var_names, factor.var_names, operator_function
         )
         g_a = self.get_g()
         g_b = factor.get_g()
@@ -635,8 +606,7 @@ class Gaussian(Factor):
             h_a, h_b, self._var_names, factor.var_names, operator_function
         )
         assert new_vars_0 == new_vars_1
-        return Gaussian(K=K_c, h=h_c, g=g_c, var_names=new_vars_0)
-        # pylint: enable=invalid-name
+        return Gaussian(prec=prec_c, h_vec=h_c, g_val=g_c, var_names=new_vars_0)
 
     def sample(self, num_samples):
         """
@@ -648,13 +618,12 @@ class Gaussian(Factor):
         :rtype: int
         """
         std_gaussian_samples = np.random.normal(0, 1, [self.dim, num_samples])
-        Xs = std_gaussian_samples
+        zero_mean_samples = std_gaussian_samples
         self._update_covform()
-        L = np.linalg.cholesky(self.cov)
-        X = L.dot(Xs) + self.mean
-        return X
+        chol_cov = np.linalg.cholesky(self.cov)
+        samples = chol_cov @ zero_mean_samples + self.mean
+        return samples
 
-    # pylint: disable=invalid-name
     def _get_observation_reduced_canonical_vars(self, observed_indices, unobserved_indices, observed_vec):
         """
         A helper function for reduce.
@@ -663,33 +632,25 @@ class Gaussian(Factor):
         :type observed_indices: int list
         :param unobserved_indices: The unobserved variable indices
         :type unobserved_indices: int list
-        :return: the reduced parameters K_observed, h_observed, g_observed
+        :return: the reduced parameters prec_observed, h_observed, g_observed
         :rtype: numpy.ndarray, numpy.ndarray, float
         """
-        K = self.get_K()
-        h = self.get_h()
-        K_reduced = 0
+        prec = self.get_prec()
+        h_vec = self.get_h()
+        prec_reduced = 0
         h_reduced = 0
         if unobserved_indices:
-            K_XX = K[np.ix_(unobserved_indices, unobserved_indices)]
-            K_reduced = K_XX.copy()
-            K_XY = K[np.ix_(unobserved_indices, observed_indices)]
-            h_X = h[np.ix_(unobserved_indices, [0])]
-            h_reduced = h_X - K_XY.dot(observed_vec)
+            prec_xx = prec[np.ix_(unobserved_indices, unobserved_indices)]
+            prec_reduced = prec_xx.copy()
+            prec_xy = prec[np.ix_(unobserved_indices, observed_indices)]
+            h_x = h_vec[np.ix_(unobserved_indices, [0])]
+            h_reduced = h_x - prec_xy @ observed_vec
 
-        K_YY = K[np.ix_(observed_indices, observed_indices)]
-        h_Y = h[np.ix_(observed_indices, [0])]
-        g_reduced = (
-            self.get_g()
-            + (h_Y.transpose()).dot(observed_vec)
-            - 0.5 * ((observed_vec.transpose()).dot(K_YY)).dot(observed_vec)
-        )
+        prec_yy = prec[np.ix_(observed_indices, observed_indices)]
+        h_y = h_vec[np.ix_(observed_indices, [0])]
+        g_reduced = self.get_g() + h_y.T @ observed_vec - 0.5 * observed_vec.T @ prec_yy @ observed_vec
+        return prec_reduced, h_reduced, g_reduced
 
-        return K_reduced, h_reduced, g_reduced
-
-    # pylint: enable=invalid-name
-
-    # pylint: disable=invalid-name
     def reduce(self, vrs, values):
         """
         Observe a subset of the variables in the scope of this Gaussian and return the resulting factor.
@@ -704,23 +665,20 @@ class Gaussian(Factor):
         observed_vec = _factor_utils.make_column_vector(values)
 
         assert isinstance(vrs, list)  # just to future-proof interface
-        assert set(vrs) <= set(
-            self._var_names
-        ), "Error: observed variables must be a subset of the gaussian variables."
+        assert set(vrs) <= set(self._var_names), "observed variables must a be subset of the gaussian variables."
 
         unobserved_vars = list(set(self._var_names) - set(vrs))
         unobserved_vars.sort()  # the above operations seems to return inconsistent orderings
         observed_indices = [self._var_names.index(v) for v in vrs]
         unobserved_indices = [self._var_names.index(v) for v in unobserved_vars]
 
-        K_reduced, h_reduced, g_reduced = self._get_observation_reduced_canonical_vars(
+        prec_reduced, h_reduced, g_reduced = self._get_observation_reduced_canonical_vars(
             observed_indices=observed_indices,
             unobserved_indices=unobserved_indices,
             observed_vec=observed_vec,
         )
 
-        return Gaussian(K=K_reduced, h=h_reduced, g=g_reduced, var_names=unobserved_vars)
-        # pylint: enable=invalid-name
+        return Gaussian(prec=prec_reduced, h_vec=h_reduced, g_val=g_reduced, var_names=unobserved_vars)
 
     def distance_from_vacuous(self):
         """
@@ -764,8 +722,8 @@ class Gaussian(Factor):
         factor_ = factor
         if normalize_factor:
             factor_ = factor.normalize()
-        inv_cov_q = factor_.get_K()
-        inv_cov_p = normalized_self.get_K()
+        inv_cov_q = factor_.get_prec()
+        inv_cov_p = normalized_self.get_prec()
         cov_p = normalized_self.get_cov()
 
         u_q = factor_.get_mean()
@@ -775,8 +733,8 @@ class Gaussian(Factor):
         det_inv_cov_p = np.linalg.det(inv_cov_p)
         assert det_inv_cov_q != 0.0, "Unexpected factor covariance determinant of 0."
         det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
-        trace_term = 0.5 * np.trace(inv_cov_q.dot(cov_p))
-        mahalanobis_term = 0.5 * (u_p - u_q).T.dot(inv_cov_q).dot(u_p - u_q)
+        trace_term = 0.5 * np.trace(inv_cov_q @ cov_p)
+        mahalanobis_term = 0.5 * (u_p - u_q).T @ inv_cov_q @ (u_p - u_q)
         dim_term = 0.5 * normalized_self.dim
         kld = det_term + trace_term + mahalanobis_term - dim_term
         # TODO: Add warning or error if this is negative and remove abs below
@@ -785,7 +743,8 @@ class Gaussian(Factor):
     @property
     def is_vacuous(self):
         """
-        Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.
+        Check if a Gaussian distribution contains no information. This is the case when the precision matrix is a zero
+         matrix.
 
         :return: The result of the check.
         :rtype: Bool
@@ -793,9 +752,9 @@ class Gaussian(Factor):
 
         if self._is_vacuous:
             return True
-        if self.CANFORM:
-            if np.allclose(self.K, 0.0):
-                if not _factor_utils.is_pos_def(self.K):
+        if self.canform:
+            if np.allclose(self.prec, 0.0):
+                if not _factor_utils.is_pos_def(self.prec):
                     return True
         return False
 
@@ -807,8 +766,8 @@ class Gaussian(Factor):
         :rtype: Gaussian
         """
 
-        if self.COVFORM and self.CANFORM:
-            assert isinstance(self.g, (int, float))
+        if self.covform and self.canform:
+            assert isinstance(self.g_val, (int, float))
             assert isinstance(self.log_weight, (int, float))
             gaussian_copy = Gaussian(
                 cov=self.cov.copy(),
@@ -816,13 +775,13 @@ class Gaussian(Factor):
                 log_weight=self.log_weight,
                 var_names=copy.deepcopy(self._var_names),
             )
-            gaussian_copy.K = self.K.copy()
-            gaussian_copy.h = self.h.copy()
-            gaussian_copy.g = self.g
-            gaussian_copy.CANFORM = True
+            gaussian_copy.prec = self.prec.copy()
+            gaussian_copy.h_vec = self.h_vec.copy()
+            gaussian_copy.g_val = self.g_val
+            gaussian_copy.canform = True
             return gaussian_copy
 
-        if self.COVFORM:
+        if self.covform:
             assert isinstance(self.log_weight, (int, float))
             return Gaussian(
                 cov=self.cov.copy(),
@@ -830,10 +789,11 @@ class Gaussian(Factor):
                 log_weight=self.log_weight,
                 var_names=copy.deepcopy(self._var_names),
             )
-        if self.CANFORM:
-            assert isinstance(self.g, (int, float))
+        if self.canform:
+            assert isinstance(self.g_val, (int, float))
             return Gaussian(
-                K=self.K.copy(), h=self.h.copy(), g=self.g, var_names=copy.deepcopy(self._var_names)
+                prec=self.prec.copy(), h_vec=self.h_vec.copy(), g_val=self.g_val,
+                var_names=copy.deepcopy(self._var_names)
             )
         raise Exception("Gaussian is neither in canonical form nor in covariance form?")
 
@@ -847,7 +807,6 @@ class Gaussian(Factor):
         """
         return np.exp(self.log_potential(x_val))
 
-    # pylint: disable=invalid-name
     def log_potential(self, x_val, vrs=None):
         """
         Get the log of the value of the Gaussian potential at x_val.
@@ -866,24 +825,19 @@ class Gaussian(Factor):
             assert len(x_val_list) == len(self.var_names)
             x_val = [x_val_list[vrs.index(v)] for v in self.var_names]
         x_vec = _factor_utils.make_column_vector(x_val)
-        if self.COVFORM:
+        if self.covform:
             log_norm = self.log_weight - 0.5 * np.log(np.linalg.det(2.0 * np.pi * self.cov))
-            K = _factor_utils.inv_matrix(self.cov)
-            exponent = ((-0.5 * (self.mean - x_vec).transpose()).dot(K)).dot(self.mean - x_vec)
+            prec = _factor_utils.inv_matrix(self.cov)
+            exponent = -0.5 * (self.mean - x_vec).T @ prec @ (self.mean - x_vec)
             log_potx = log_norm + exponent
-
-        if self.CANFORM:
-            log_potx = (
-                -0.5 * (x_vec.transpose().dot(self.K)).dot(x_vec) + x_vec.transpose().dot(self.h) + self.g
-            )
-
+        if self.canform:
+            log_potx = -0.5 * x_vec.T @ self.prec @ x_vec + x_vec.T @ self.h_vec + self.g_val
         return log_potx[0, 0]
-
-    # pylint: enable=invalid-name
 
     def _get_cov_repr_str(self):
         """
         Get the string representation for the covariance form parameters.
+
         :return: The parameter representation string.
         :rtype: str
         """
@@ -891,21 +845,22 @@ class Gaussian(Factor):
         self_copy._update_covform()
         np.set_printoptions(linewidth=np.inf)
         repr_str = (
-            "Cov        = \n"
-            + str(self_copy.cov)
-            + "\n"
-            + "mean       = \n"
-            + str(self_copy.mean)
-            + "\n"
-            + "log_weight = \n"
-            + str(self_copy.log_weight)
-            + "\n"
+                "cov        = \n"
+                + str(self_copy.cov)
+                + "\n"
+                + "mean       = \n"
+                + str(self_copy.mean)
+                + "\n"
+                + "log_weight = \n"
+                + str(self_copy.log_weight)
+                + "\n"
         )
         return repr_str
 
     def _get_can_repr_str(self):
         """
         Get the string representation for the canonical form parameters.
+
         :return: The parameter representation string.
         :rtype: str
         """
@@ -913,24 +868,25 @@ class Gaussian(Factor):
         self_copy._update_canform()
         np.set_printoptions(linewidth=np.inf)
         repr_str = (
-            "K = \n"
-            + str(self_copy.K)
-            + "\n"
-            + "h = \n"
-            + str(self_copy.h)
-            + "\n"
-            + "g = \n"
-            + str(self_copy.g)
-            + "\n"
-            + "is_vacuous: "
-            + str(self_copy._is_vacuous)
-            + "\n"
+                "prec = \n"
+                + str(self_copy.prec)
+                + "\n"
+                + "h = \n"
+                + str(self_copy.h_vec)
+                + "\n"
+                + "g = \n"
+                + str(self_copy.g_val)
+                + "\n"
+                + "is_vacuous: "
+                + str(self_copy._is_vacuous)
+                + "\n"
         )
         return repr_str
 
-    def __repr__(self):  # pragma: no cover
+    def __repr__(self):
         """
         Get the string representation of the Gaussian factor.
+
         :return: The factor representation string.
         :rtype: str
         """
@@ -943,7 +899,7 @@ class Gaussian(Factor):
         repr_str += self._get_cov_repr_str()
         return repr_str
 
-    def show(self, update_covform=True, show_canform=False):  # pragma: no cover
+    def show(self, update_covform=True, show_canform=False):
         """
         Print the parameters of the Gaussian distribution
 
@@ -959,9 +915,9 @@ class Gaussian(Factor):
         if not self._is_vacuous and update_covform:
             self_copy._update_covform()
         print("vars = ", self_copy.var_names)
-        if self_copy.COVFORM:
+        if self_copy.covform:
             print(self_copy._get_cov_repr_str())
-        if self_copy.CANFORM and show_canform:
+        if self_copy.canform and show_canform:
             print(self_copy._get_can_repr_str())
 
     def show_vis(self, figsize=(10, 8)):
@@ -972,17 +928,15 @@ class Gaussian(Factor):
         :type figsize: 2 element int tuple
         """
         # TODO: find a way of making cov matrix square.
-        f, [ax_cov, ax_mean] = plt.subplots(nrows=2, figsize=figsize)
+        _, [ax_cov, ax_mean] = plt.subplots(nrows=2, figsize=figsize)
         cov_df = pd.DataFrame(data=self.get_cov(), index=self.var_names, columns=self.var_names)
         mean_df = pd.DataFrame(data=self.get_mean(), index=self.var_names, columns=["var_names"])
-        sns.heatmap(
-            cov_df, ax=ax_cov, cbar=True, cbar_kws=dict(use_gridspec=False, location="top"), annot=True
-        )
-
+        cbar_kws = dict(use_gridspec=False, location="top")
+        sns.heatmap(cov_df, ax=ax_cov, cbar=True, cbar_kws=cbar_kws, annot=True)
         mean_df.plot.bar(ax=ax_mean, legend=False)
         plt.xticks(rotation=0)
 
-    def _get_limits_for_2d_plot(self):  # pragma: no cover
+    def _get_limits_for_2d_plot(self):
         """
         Get x and y limits which includes most of the Gaussian mixture's mass, by considering
         the mean and variance of each Gaussian component.
@@ -996,29 +950,27 @@ class Gaussian(Factor):
         return [x_lower, x_upper], [y_lower, y_upper]
 
     # TODO: reconcile with GaussianMixture _plot_2d
-    def _plot_2d(self, log, xlim, ylim):  # pragma: no cover
+    def _plot_2d(self, log, x_lim=None, y_lim=None):
         """
         Plot a 2d Gaussian mixture potential function
 
         :param log: if this is True, the log-potential will be plotted
-        :param xlim: the x limits to plot the function over (optional)
-        :param ylim: the y limits to plot the function over (optional)
+        :param x_lim: the x limits to plot the function over (optional)
+        :param y_lim: the y limits to plot the function over (optional)
         """
-        if xlim is None and ylim is None:
-            xlim, ylim = self._get_limits_for_2d_plot()
-        elif xlim is not None and ylim is not None:
-            pass
-        else:
-            print("Warning: partial limits received. Generating limits automatically.")
-            xlim, ylim = self._get_limits_for_2d_plot()
+        xlim_default, ylim_default = self._get_limits_for_2d_plot()
+        if x_lim is None:
+            x_lim = xlim_default
+        if y_lim is None:
+            y_lim = ylim_default
 
         xlabel = self.var_names[0]
         ylabel = self.var_names[1]
 
         if not log:
-            _factor_utils.plot_2d(func=self.potential, xlim=xlim, ylim=ylim, xlabel=xlabel, ylabel=ylabel)
+            _factor_utils.plot_2d(func=self.potential, xlim=x_lim, ylim=y_lim, xlabel=xlabel, ylabel=ylabel)
         else:
-            _factor_utils.plot_2d(func=self.log_potential, xlim=xlim, ylim=ylim, xlabel=xlabel, ylabel=ylabel)
+            _factor_utils.plot_2d(func=self.log_potential, xlim=x_lim, ylim=y_lim, xlabel=xlabel, ylabel=ylabel)
 
     def plot(self, log=False, xlim=None, ylim=None):
         """
@@ -1034,9 +986,9 @@ class Gaussian(Factor):
         if self.dim == 1:
             if xlim is None:
                 stddev = np.sqrt(self.get_cov()[0, 0])
-                lb = self.get_mean()[0, 0] - 3.0 * stddev
-                ub = self.get_mean()[0, 0] + 3.0 * stddev
-                xlim = [lb, ub]
+                lower_bound = self.get_mean()[0, 0] - 3.0 * stddev
+                upper_bound = self.get_mean()[0, 0] + 3.0 * stddev
+                xlim = [lower_bound, upper_bound]
             if xlim is not None:
                 x_lower = xlim[0]
                 x_upper = xlim[1]
@@ -1048,7 +1000,7 @@ class Gaussian(Factor):
                 potx = np.array([self.potential(xi) for xi in x_series])
             plt.plot(x_series, potx)
         elif self.dim == 2:
-            self._plot_2d(log=log, xlim=xlim, ylim=ylim)
+            self._plot_2d(log=log, x_lim=xlim, y_lim=ylim)
         else:
             raise NotImplementedError("Plotting not implemented for dim!=1.")
 
@@ -1069,14 +1021,14 @@ class Gaussian(Factor):
         full_cov = self.get_cov()
         full_mean = self.get_mean()
 
-        covs = [w * full_cov for w in weights]
+        covs = [weight * full_cov for weight in weights]
         means = [full_mean - np.sqrt(full_cov), full_mean, full_mean + np.sqrt(full_cov)]
 
         gaussians = []
         for mean, cov, weight in zip(means, covs, weights):
-            gaussians.append(
-                Gaussian(cov=cov, mean=mean, log_weight=np.log(weight), var_names=self.var_names)
-            )
+            gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(weight), var_names=self.var_names)
+            gaussians.append(gaussian)
+
         return GaussianMixture(gaussians)
 
 
@@ -1094,15 +1046,15 @@ class GaussianTemplate(FactorTemplate):
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
-        >>>gaussian_parameters = {'K': np.array([[1,0],[0,1]]),
+        >>>gaussian_parameters = {'prec': np.array([[1,0],[0,1]]),
         >>>                       'h': np.array([[0],[1]]),
         >>>                       'g': 0}
         """
 
         super().__init__(var_templates=var_templates)
-        self.K = gaussian_parameters["K"]
-        self.h = gaussian_parameters["h"]
-        self.g = gaussian_parameters["g"]
+        self.prec = gaussian_parameters["prec"]
+        self.h_vec = gaussian_parameters["h"]
+        self.g_val = gaussian_parameters["g"]
 
     def make_factor(self, format_dict=None, var_names=None):
         """
@@ -1110,6 +1062,8 @@ class GaussianTemplate(FactorTemplate):
 
         :param format_dict: The dictionary to be used to format the var_templates strings.
         :type format_dict: str dict
+        :param var_names: The variable names.
+        :type var_names: str list
         :return: The instantiated factor.
         :rtype: Gaussian
         """
@@ -1117,6 +1071,6 @@ class GaussianTemplate(FactorTemplate):
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
         # TODO: remove this and find better solution
-        g = Gaussian(K=self.K.copy(), h=self.h.copy(), g=self.g, var_names=var_names)
+        g = Gaussian(prec=self.prec.copy(), h_vec=self.h_vec.copy(), g_val=self.g_val, var_names=var_names)
         g._is_vacuous = True
         return g

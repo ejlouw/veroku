@@ -1,13 +1,13 @@
+"""
+A test module for the _cluster module.
+"""
+
 import unittest
 from unittest import mock
 
 from veroku._cg_helpers._cluster import Cluster, Message
 
 CLUSTER_NAME_PREFIX = "cluster_"
-
-"""
-A test module for the _cluster module.
-"""
 
 
 class TestCluster(unittest.TestCase):

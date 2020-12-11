@@ -1,14 +1,13 @@
-import unittest
+"""
+A test module for the _sigma_points module.
+"""
 
+import unittest
 from mockito import when
 
 from veroku.factors import _sigma_points
 from veroku.factors.gaussian import make_random_gaussian
 import numpy as np
-
-"""
-A test module for the _sigma_points module.
-"""
 
 
 class TestSigmaPoints(unittest.TestCase):
@@ -55,10 +54,10 @@ class TestSigmaPoints(unittest.TestCase):
         """
         Test that the computed sigma points are correct.
         """
-        g1 = make_random_gaussian(var_names=["a", "b", "c"])
-        expected_cov = g1.get_cov()
-        expected_mean = g1.get_mean()
-        sps = _sigma_points.get_sigma_points_array(g1)
+        g_1 = make_random_gaussian(var_names=["a", "b", "c"])
+        expected_cov = g_1.get_cov()
+        expected_mean = g_1.get_mean()
+        sps = _sigma_points.get_sigma_points_array(g_1)
         actual_mean = np.expand_dims(np.mean(sps, axis=1), axis=1)
         actual_cov = np.cov(sps, bias=True)
 

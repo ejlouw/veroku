@@ -5,8 +5,8 @@
 [comment]: # (doc-start)
 
 ### Disclaimer
-This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
-but will be made public soon.
+This project is still in the very early stages of development. Use this library at your own risk. The github repo is 
+also still private, but will be made public soon.
 
 ### Installation
 For installing through pip:
@@ -67,7 +67,7 @@ On the roadmap:
 * Normal-Wishart distribution
 
 ### Dependencies
-For the python dependencies see the https://github.com/ejlouw/veroku/blob/master/requirements.txt file.
+For the python dependencies see the [requirements](https://github.com/ejlouw/veroku/blob/master/requirements.txt) file.
 The following additional dependencies are also required for some functionality (these are not installed automatically
  with the `pip install`):
 
@@ -77,20 +77,22 @@ See https://graphviz.org/download/ for installation instructions.
 
 ### Contributing
 <div style="text-align: justify">
-If you would like to contribute to veroku, the TODO's in the code are a good place to start.
-There are a few very simple ones, but some are more complex. Another area where
-contributions will be valuable is in getting the experimental modules rounded off
-and writing tests for these modules. Another potential area for contribution would
-be the items on the roadmap, although it would be best if the experimental modules
-are first rounded off.  In general, please remember to ensure that  the following
-guidelines are followed when contributing:
+If you would like to contribute to veroku, the TODO's in the code are a good place to start. There are a few very simple
+ ones, but some are more complex. Another area where contributions will be valuable is in getting the experimental
+ modules rounded off and writing tests for these modules. Another potential area for contribution would be the items on 
+ the roadmap, although it would be best if the experimental modules are first rounded off.  In general, please remember
+ to ensure that  the following guidelines are followed when contributing:
 </div>
 
 * Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)	
-* Run the `black check <params> <dir>` command from the terminal (from the project root directory) to ensure that the code style is correct (see the *Setup And Test* section in  [main.yml](https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml) for the exact command)
-* If necessary, run the same command, but without the `check` flag in order to refactor the code. NB: please ensure that you have committed all changes prior to this, as black will automatically refactor the files.
+* Run the `black check <params> <dir>` command from the terminal (from the project root directory) to ensure that the 
+    code style is correct (see the *Setup And Test* section in 
+    [main.yml](https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml) for the exact command)
+* If necessary, run the same command, but without the `check` flag in order to refactor the code. NB: please ensure that
+    you have committed all changes prior to this, as black will automatically refactor the files.
 
 
 
 ### License
-Veroku is released under 3-Clause BSD license. You can view the license [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).
+Veroku is released under a 3-Clause BSD license. You can view the license
+[here](https://github.com/ejlouw/veroku/blob/master/LICENSE).

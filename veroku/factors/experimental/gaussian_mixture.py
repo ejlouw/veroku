@@ -1,3 +1,7 @@
+"""
+A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+"""
+
 # System imports
 import cmath
 
@@ -18,9 +22,7 @@ from veroku.factors.gaussian import Gaussian
 # TODO: Add tests for the divide methods.
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
-"""
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
-"""
+# pylint: disable=protected-access
 
 
 class GaussianMixture(Factor):
@@ -182,23 +184,20 @@ class GaussianMixture(Factor):
             new_components.append(gauss.marginalize(vrs, keep))
         return GaussianMixture(new_components)
 
-    # pylint: disable=invalid-name
-    def log_potential(self, x):
+    def log_potential(self, x_val):
         """
         Get the log of the value of the Gaussian mixture potential at X.
 
-        :param x: The point to evaluate the GaussianMixture at.
-        :type x: vector-like
+        :param x_val: The point to evaluate the GaussianMixture at.
+        :type x_val: vector-like
         :return: log of the value of the GaussianMixture potential at x.
         :rtype: float
         """
         log_potentials = []
         for gauss in self.components:
-            log_potentials.append(gauss.log_potential(x))
+            log_potentials.append(gauss.log_potential(x_val))
         total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
-
-    # pylint: enable=invalid-name
 
     def potential(self, x_val):
         """
@@ -378,7 +377,6 @@ class GaussianMixture(Factor):
             print("component ", i, "/", len(self.components))
             gauss.show()
 
-    # pylint: disable=invalid-name
     def moment_match_to_single_gaussian(self):
         """
         Calculate the mean and covariance of the Gaussian mixture and return a Gaussian with these parameters as an
@@ -390,24 +388,22 @@ class GaussianMixture(Factor):
         new_mean = np.zeros([self.dim, 1])
         log_weights = []
         for gauss in self.components:
-            wm = gauss.get_weight() * gauss.get_mean()
-            new_mean += wm
+            weight_mean = gauss.get_weight() * gauss.get_mean()
+            new_mean += weight_mean
             log_weights.append(gauss.get_log_weight())
         log_sum_weights = special.logsumexp(log_weights)
         sum_weights = np.exp(log_sum_weights)
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim])
         for gauss in self.components:
-            ududT = gauss.get_weight() * (gauss.get_mean() - new_mean).dot(
+            udud_t = gauss.get_weight() * (gauss.get_mean() - new_mean).dot(
                 (gauss.get_mean() - new_mean).transpose()
             )
-            new_cov += gauss.get_weight() * gauss.get_cov() + ududT
+            new_cov += gauss.get_weight() * gauss.get_cov() + udud_t
         new_cov = new_cov / sum_weights
         return Gaussian(
             cov=new_cov, mean=new_mean, log_weight=log_sum_weights, var_names=self.components[0].var_names
         )
-
-    # pylint: enable=invalid-name
 
     def argmax(self):
         """
@@ -464,7 +460,6 @@ class GaussianMixture(Factor):
             raise Exception("could not find optimum")
         return global_argmin
 
-    # pylint: disable=invalid-name
     def _moment_match_complex_gaussian(self):
         """
         Calculate the mean and covariance of the Gaussian mixture and return a Gaussian
@@ -478,7 +473,7 @@ class GaussianMixture(Factor):
         weights = []
         for gauss in self.components:
             c_weight = gauss.get_complex_weight()
-            c_mean = np.linalg.inv(gauss.get_K()).dot(gauss.get_h()).astype(complex)
+            c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
             new_mean += c_weight * c_mean
             weights.append(c_weight)
         sum_weights = sum(weights)
@@ -486,23 +481,20 @@ class GaussianMixture(Factor):
         new_cov = np.zeros([self.dim, self.dim]).astype(complex)
         for gauss in self.components:
             c_weight = gauss.get_complex_weight()
-            c_mean = np.linalg.inv(gauss.get_K()).dot(gauss.get_h()).astype(complex)
-            ududT = c_weight * (c_mean - new_mean).dot((c_mean - new_mean).transpose())
-            c_cov = np.linalg.inv(gauss.get_K()).astype(complex)
-            new_cov += c_weight * c_cov + ududT
+            c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
+            udud_t = c_weight * (c_mean - new_mean).dot((c_mean - new_mean).transpose())
+            c_cov = np.linalg.inv(gauss.get_prec()).astype(complex)
+            new_cov += c_weight * c_cov + udud_t
         new_cov = new_cov / sum_weights
 
         new_log_weight = np.log(sum_weights)
 
-        new_K, new_h, new_g = GaussianMixture._complex_cov_form_to_real_canform(
+        new_prec, new_h_vec, new_g = GaussianMixture._complex_cov_form_to_real_canform(
             new_cov, new_mean, new_log_weight
         )
-        return Gaussian(K=new_K, h=new_h, g=new_g, var_names=self.components[0].var_names)
-
-    # pylint: enable=invalid-name
+        return Gaussian(prec=new_prec, h_vec=new_h_vec, g_val=new_g, var_names=self.components[0].var_names)
 
     @staticmethod
-    # pylint: disable=invalid-name
     def _complex_cov_form_to_real_canform(cov, mean, log_weight):
         """
         A helper function for _moment_match_complex_gaussian.
@@ -510,20 +502,16 @@ class GaussianMixture(Factor):
         :param cov: the (possibly complex) covariance matrix
         :param mean: the (possibly complex) covariance matrix
         :param log_weight: the (possibly complex) log weight
-        :return: the real parts of the converted canonical parameters (K, h, g)
+        :return: the real parts of the converted canonical parameters (prec, h_vec, g_val)
         """
-        K = np.linalg.inv(cov)
-        h = K.dot(mean)
-        uTKu = ((mean.transpose()).dot(K)).dot(mean)
+        prec = np.linalg.inv(cov)
+        h_vec = prec.dot(mean)
+        ut_k_u = ((mean.transpose()).dot(prec)).dot(mean)
         log_det_term = cmath.log(np.linalg.det(2.0 * np.pi * cov))
-        g = abs(log_weight - 0.5 * uTKu - 0.5 * log_det_term)
-        return K.real, h.real, g.real
-
-    # pylint: enable=invalid-name
+        g_val = abs(log_weight - 0.5 * ut_k_u - 0.5 * log_det_term)
+        return prec.real, h_vec.real, g_val.real
 
     @staticmethod
-    # pylint: disable=invalid-name
-    # pylint: disable=protected-access
     def _get_inverse_gaussians(gaussian_mixture_a, gaussian_mixture_b):
         """
         A helper function for _gm_division_m1. Returns the inverse components.
@@ -568,12 +556,7 @@ class GaussianMixture(Factor):
         unique_mode_locations = _factor_utils.remove_duplicate_values(mode_locations, tol=1e-3)
         return inverse_gaussian_mixtures, unique_mode_locations
 
-    # pylint: enable=protected-access
-    # pylint: enable=invalid-name
-
     @staticmethod
-    # pylint: disable=invalid-name
-    # pylint: disable=protected-access
     def _gm_division_m1(gaussian_mixture_a, gaussian_mixture_b):
         """
         Method 1 for approximating the quotient (gma/gmb) of two Gaussian mixtures as a Gaussian mixture.
@@ -595,23 +578,19 @@ class GaussianMixture(Factor):
         inv_gm = GaussianMixture(inverse_gaussian_mixtures)
 
         for mode_location in unique_mode_locations:
-            K_i = nd.Hessian(inv_gm.log_potential)(mode_location)
+            prec_i = nd.Hessian(inv_gm.log_potential)(mode_location)
             mean_i = _factor_utils.make_column_vector(mode_location)
-            h_i = K_i.dot(mean_i)
+            h_i = prec_i.dot(mean_i)
 
-            uTKu = ((mean_i.transpose()).dot(K_i)).dot(mean_i)
-            log_weight_i = -0.5 * np.log(np.linalg.det(K_i / (2.0 * np.pi))) * inv_gm.log_potential(mean_i)
-            g_i = log_weight_i - 0.5 * uTKu + 0.5 * np.log(np.linalg.det(K_i / (2.0 * np.pi)))
+            ut_k_u = ((mean_i.transpose()).dot(prec_i)).dot(mean_i)
+            log_weight_i = -0.5 * np.log(np.linalg.det(prec_i / (2.0 * np.pi))) * inv_gm.log_potential(mean_i)
+            g_i = log_weight_i - 0.5 * ut_k_u + 0.5 * np.log(np.linalg.det(prec_i / (2.0 * np.pi)))
 
-            component = Gaussian(K=K_i, h=h_i, g=g_i, var_names=gaussian_mixture_a.components[0].var_names)
+            component = Gaussian(prec=prec_i, h_vec=h_i, g_val=g_i, var_names=gaussian_mixture_a.components[0].var_names)
             resulting_gaussian_components.append(component)
         return GaussianMixture(resulting_gaussian_components)
 
-    # pylint: enable=protected-access
-    # pylint: enable=invalid-name
-
     @staticmethod
-    # pylint: disable=protected-access
     def _gm_division_m2(gma, gmb):
         """
         Method 2 for approximating the quotient (gma/gmb) of two Gaussian mixtures as a Gaussian mixture.
@@ -643,7 +622,7 @@ class GaussianMixture(Factor):
             inverse_gaussian_mixture = GaussianMixture(inverse_components)
             inverse_gaussian_mixtures.append(inverse_gaussian_mixture)
             inverse_gaussian_approx = inverse_gaussian_mixture._moment_match_complex_gaussian()
-            if _factor_utils.is_pos_def(inverse_gaussian_approx.K):
+            if _factor_utils.is_pos_def(inverse_gaussian_approx.prec):
                 count += 1
                 # raise ValueError(' precision is negative definite.')
                 print("Warning: precision is negative definite.")
@@ -653,9 +632,7 @@ class GaussianMixture(Factor):
         resulting_gm = GaussianMixture(resulting_gaussian_components)
         return resulting_gm
 
-    # pylint: enable=protected-access
-
-    def _get_limits_for_2d_plot(self):  # pragma: no cover
+    def _get_limits_for_2d_plot(self):
         """
         Get x and y limits which includes most of the Gaussian mixture's mass, by considering
         the mean and variance of each Gaussian component.
@@ -679,7 +656,7 @@ class GaussianMixture(Factor):
         y_upper = max(y_upper_candidates)
         return [x_lower, x_upper], [y_lower, y_upper]
 
-    def _plot_2d(self, log, xlim, ylim):  # pragma: no cover
+    def _plot_2d(self, log, xlim, ylim):
         """
         Plot a 2d Gaussian mixture potential function
 
