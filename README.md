@@ -89,12 +89,6 @@ If you would like to contribute to veroku, the TODO's in the code are a good pla
 
 * The use of pylint disable statements should be reserved only for special cases and are not generally acceptable.
 * Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)	
-* Run the `black check <params> <dir>` command from the terminal (from the project root directory) to ensure that the 
-    code style is correct (see the *Setup And Test* section in 
-    [main.yml](https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml) for the exact command)
-* If necessary, run the same command, but without the `check` flag in order to refactor the code. NB: please ensure that
-    you have committed all changes prior to this, as black will automatically refactor the files.
-
 
 
 ### License

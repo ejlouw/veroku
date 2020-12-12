@@ -23,6 +23,7 @@ from veroku.factors._factor_utils import (
 from veroku.factors._factor_template import FactorTemplate
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
+
 # TODO: see that lazy evaluation (recompute joint) is done sensibly and consistently
 
 # pylint: disable=protected-access
@@ -34,18 +35,16 @@ class NonLinearGaussian(Factor):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(
-        self,
-        conditioning_vars,
-        conditional_vars,
-        transform,
-        noise_cov,
-        log_weight=0.0,
-        joint_distribution=None,
-        conditional_update_factor=None,
-        conditioning_factor=None,
-        observed_evidence=None,
-    ):
+    def __init__(self,
+                 conditioning_vars,
+                 conditional_vars,
+                 transform,
+                 noise_cov,
+                 log_weight=0.0,
+                 joint_distribution=None,
+                 conditional_update_factor=None,
+                 conditioning_factor=None,
+                 observed_evidence=None):
         """
         The initializer.
 
@@ -246,9 +245,8 @@ class NonLinearGaussian(Factor):
         conditioning_factor_var_names = []
         if self.conditioning_factor is not None:
             conditioning_factor_var_names = self.conditioning_factor.var_names
-        if set(conditioning_factor_var_names).union(set(conditioning_observed_vars)) != set(
-            self.conditioning_vars
-        ):
+        vars_obs_vars_union = set(conditioning_factor_var_names).union(set(conditioning_observed_vars))
+        if vars_obs_vars_union != set(self.conditioning_vars):
             # The conditioning_factor variables and observed conditional variables combined do not make up a
             # complete set - so we cannot calculate the transform.
             self._joint_distribution = Gaussian.make_vacuous(self.var_names)
@@ -272,9 +270,7 @@ class NonLinearGaussian(Factor):
         if len(conditioning_observed_vars) > 0:
             observed_vec = _factor_utils.make_column_vector(conditioning_observed_values)
             tiled_observed_vec = np.tile(observed_vec, [1, conditioning_factor_sigma_points_array.shape[1]])
-            extended_sigma_points_array = np.concatenate(
-                [tiled_observed_vec, conditioning_factor_sigma_points_array]
-            )
+            extended_sigma_points_array = np.concatenate([tiled_observed_vec, conditioning_factor_sigma_points_array])
             extended_sigma_point_vars = conditioning_observed_vars + conditioning_factor.var_names
         else:
             extended_sigma_points_array = conditioning_factor_sigma_points_array
@@ -283,11 +279,9 @@ class NonLinearGaussian(Factor):
         # TODO: Add conditional var_names here somehow. We need to ensure that the correct variables are used
         # in the correct place in the transformation. In the past, we have simply done this by standardising
         # on the variable indices in different place, but this is probably not very safe.
-        joint_cov, joint_mean = sigma_points_array_to_joint_params(
-            sigma_points_array=extended_sigma_points_array,
-            transform=self.transform,
-            var_names=extended_sigma_point_vars,
-        )
+        joint_cov, joint_mean = sigma_points_array_to_joint_params(sigma_points_array=extended_sigma_points_array,
+                                                                   transform=self.transform,
+                                                                   var_names=extended_sigma_point_vars)
         if (joint_mean.shape[0] != len(self.var_names)) or (joint_cov.shape[0] != len(self.var_names)):
             raise AssertionError("Transform resulted in incorrect number of variables.")
 
@@ -300,11 +294,11 @@ class NonLinearGaussian(Factor):
         joint_cov_plus_noise, joint_vars = indexed_square_matrix_operation(
             joint_cov, self.noise_cov, joint_var_names, self.conditional_vars, operator.add
         )
-        self._joint_distribution = Gaussian(
-            cov=joint_cov_plus_noise,
-            mean=joint_mean,
-            log_weight=self.log_weight + conditioning_factor.log_weight,
-            var_names=joint_vars,
+        joint_log_weight = self.log_weight + conditioning_factor.log_weight
+        self._joint_distribution = Gaussian(cov=joint_cov_plus_noise,
+                                            mean=joint_mean,
+                                            log_weight=joint_log_weight,
+                                            var_names=joint_vars,
         )
         if self.conditional_update_factor is not None:
             self._joint_distribution = self._joint_distribution.multiply(self.conditional_update_factor)
@@ -656,7 +650,6 @@ class NonLinearGaussianMixture(Factor):
 
 
 class NonLinearGaussianTemplate(FactorTemplate):
-
     """
     A template class for NonLinearGaussian factors.
     """

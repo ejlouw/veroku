@@ -370,9 +370,7 @@ class SparseCategorical(Factor):
     A class for instantiating sparse tables with log probabilities.
     """
 
-    def __init__(
-            self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf
-    ):
+    def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 

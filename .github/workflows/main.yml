@@ -43,7 +43,6 @@ jobs:
       - name: Setup And Test
         run: |
           echo Checking code style
-          black --check --line-length=110  veroku/
           pylint ./veroku
 
           echo Installing Additional Dependencies
