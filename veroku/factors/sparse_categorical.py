@@ -544,8 +544,8 @@ class SparseCategorical(Factor):
             del result_var_cards[var]
 
         cards = list(result_var_cards.values())
-        vars = vars_unobserved
-        return SparseCategorical(var_names=vars, log_probs_table=lp_table, cardinalities=cards)
+        var_names = vars_unobserved
+        return SparseCategorical(var_names=var_names, log_probs_table=lp_table, cardinalities=cards)
 
     def _assert_consistent_cardinalities(self, factor):
         """
