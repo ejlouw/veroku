@@ -87,10 +87,6 @@ class TestNotebooks(unittest.TestCase):
                 correct_marginal = joint.marginalize(vrs, keep=True)
                 correct_marginals.append(correct_marginal)
             for actual_marginal, expected_marginal in zip(position_posteriors, correct_marginals):
-                actual_prec = actual_marginal.get_prec()
-                expected_prec = expected_marginal.get_prec()
-                actual_h = actual_marginal.get_h()
-                expected_h = expected_marginal.get_h()
                 # TODO: see why log_weight (and g) parameters are so different between the actual and expected factors.
-                self.assertTrue(np.allclose(actual_prec, expected_prec))
-                self.assertTrue(np.allclose(actual_h, expected_h, rtol=1.0e-5, atol=1.0e-5))
+                self.assertTrue(np.allclose(actual_marginal.get_prec(), expected_marginal.get_prec()))
+                self.assertTrue(np.allclose(actual_marginal.get_h(), expected_marginal.get_h(), rtol=1.0e-5, atol=1.0e-5))

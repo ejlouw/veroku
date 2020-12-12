@@ -15,6 +15,8 @@ import pandas as pd
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
+from veroku.factors import _factor_utils
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # pylint: disable=protected-access
 
@@ -84,7 +86,7 @@ def _make_inner_dense(sparse_nested_table, outer_inner_cards, default_value):
 
 
 def _get_nested_sorted_probs(
-    new_variables_order_outer, new_variables_order_inner, old_variable_order, old_assign_probs
+        new_variables_order_outer, new_variables_order_inner, old_variable_order, old_assign_probs
 ):
     """
     Reorder variables to a new order (and sort assignments) and then convert the probs dictionary to a hierarchical
@@ -120,7 +122,7 @@ def _get_nested_sorted_probs(
         l1_assign = tuple(new_row_assignment[: len(new_variables_order_outer)])
         if l1_assign not in new_assign_probs:
             new_assign_probs[l1_assign] = dict()
-        assign_l2 = tuple(new_row_assignment[len(new_variables_order_outer) :])
+        assign_l2 = tuple(new_row_assignment[len(new_variables_order_outer):])
         new_assign_probs[l1_assign][assign_l2] = old_prob_i
     return new_assign_probs, new_variable_order
 
@@ -157,8 +159,148 @@ def _flatten_ntd(ntd):
     return flattened_ntd
 
 
+def _apply_any_scope_binary_opp(ntd_a,
+                                ntd_b,
+                                full_sd_a_default_sub_table,
+                                full_sd_b_default_sub_table,
+                                symmetric_difference_combinations,
+                                func,
+                                default):
+    """
+    Apply a binary operation using the two nested tables, a list of all the outer assignments that need to be process
+     and default inner sub tables for each. This function loops through the outer assignments in the
+    symmetric_difference_combinations, and gets the inner sub-table for each nested distribution dictionary (if the
+    assignment is not present, the respective default sub-tables are used). The binary operation applied using these
+    sub-table pairs and the result, finally, forms a part of the resulting final table.
+
+    :param dict ntd_a: The one nested dictionary representing the distribution.
+    :param dict ntd_b: The other nested dictionary representing the distribution.
+    :param dict full_sd_a_default_sub_table: The default sub-table to be used for missing outer entries in ntd_a
+    :param dict full_sd_b_default_sub_table: The default sub-table to be used for missing outer entries in ntd_a
+    :param iterable symmetric_difference_combinations: The list of outer scope assignments that need to be processed.
+    :param func: The binary operation.
+    :param default: The default value for the inner dictionaries
+    :return: The resulting distribution dictionary.
+    :rtype: dict
+    """
+    resulting_factor_table = dict()
+    for sd_assign_a, sd_assign_b in symmetric_difference_combinations:
+        joined_sd_assignment = sd_assign_a + sd_assign_b
+
+        # TODO: Add special, pre-computed result if both 0.
+        common_vars_subtable_a = ntd_a.get(sd_assign_a, full_sd_a_default_sub_table)
+        common_vars_subtable_b = ntd_b.get(sd_assign_b, full_sd_b_default_sub_table)
+
+        # TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.
+        subtable_result = _same_scope_binary_operation(
+            common_vars_subtable_a, common_vars_subtable_b, func, default
+        )
+        if subtable_result:
+            resulting_factor_table[joined_sd_assignment] = subtable_result
+    return resulting_factor_table
+
+
+def _any_scope_bin_opp_none(ntd_a, ntd_b, outer_inner_cards_a, outer_inner_cards_b, func, default):
+    """
+    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
+    This function assumes that no combination of default or non-default values is guaranteed to result in a default
+    value.
+    :param ntd_a: The one nested dictionary representing the distribution.
+    :param ntd_b: The other nested dictionary representing the distribution.
+    ::param outer_inner_cards_a: The cardinalities of the inner and outer variables respectively in ntd_a
+     (i.e [[2],[2,3]]).
+    :param outer_inner_cards_b: The cardinalities of the inner and outer variables respectively in ntd_b
+     (i.e [[2],[2,3]]).
+    :param default: The default value.
+    :return: The resulting distribution dictionary.
+    :rtype: dict
+    """
+    # we have to check everything - any combination of {value, default_value} could result in non-default value.
+    ntd_a_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_a[0]]))
+    ntd_b_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_b[0]]))
+
+    full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
+    full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
+    symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
+    # Having only dense default table is not good enough, as this will still not cause the missing default values in
+    # the sub tables to be used to compute potentially none default result values. we therefore need to make these
+    # sub tables dense.
+    ntd_a = _make_inner_dense(ntd_a, outer_inner_cards_a, default)
+    ntd_b = _make_inner_dense(ntd_b, outer_inner_cards_b, default)
+    resulting_table = _apply_any_scope_binary_opp(ntd_a,
+                                                  ntd_b,
+                                                  full_sd_a_default_sub_table,
+                                                  full_sd_b_default_sub_table,
+                                                  symmetric_difference_combinations,
+                                                  func,
+                                                  default)
+    return resulting_table
+
+
+def _any_scope_bin_opp_both(ntd_a, ntd_b, outer_inner_cards_a, outer_inner_cards_b, func, default):
+    """
+    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
+    This function assumes that the result will be default only if both ntd_a and ntd_b has a default value.
+    :param ntd_a: The one nested dictionary representing the distribution.
+    :param ntd_b: The other nested dictionary representing the distribution.
+    :param outer_inner_cards_a: The cardinalities of the inner and outer variables respectively in ntd_a
+     (i.e [[2],[2,3]]).
+    :param outer_inner_cards_b: The cardinalities of the inner and outer variables respectively in ntd_b
+     (i.e [[2],[2,3]]).
+    :param default: The default value.
+    :return: The resulting distribution dictionary.
+    :rtype: dict
+    """
+    # The result will only be default if the values in both ntd_a are default. This means
+    # that we have to extend the assignments in the symmetric_difference_combinations to
+    # those the full set of all possible assignments where either ntd_a is not default or
+    # ntd_b is not default, because we need to calculate these results explicitly.
+    # For example:
+    # ntd_a:
+    #    a b
+    #    0 0  v
+    #   (1 0) d
+    # ntd_b:
+    #    a c
+    #    0 0  v
+    #    1 0  v
+    # The full set of resulting operations would be:
+    # a b c
+    # 0 0 0 vv
+    # 0 0 1 vd
+    # 0 1 0 dv
+    # 0 1 1 dd = d
+    # 1 0 0 dv
+    # 1 0 1 dd = d
+    # 1 1 0 dv
+    # 1 1 1 dd = d
+    # But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this
+    # entry. We do this by adding default sub tables below.
+    outer_assignments_a = set(ntd_a.keys())
+    outer_assignments_b = set(ntd_b.keys())
+    ntd_a_sd_assignments = list(outer_assignments_a.union(outer_assignments_b))
+    # TODO: replace this deepcopy with something faster
+    ntd_b_sd_assignments = copy.deepcopy(ntd_a_sd_assignments)
+    full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
+    full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
+    # Calculate the symmetric_difference_combinations
+    # The symmetric_difference_combinations are the combinations of the sub-assignments that are not common to both
+    # factors. Depending on the value of default_rules, these assignments could only include assignments actually
+    # specified in the nested table dictionaries, or some or all of the missing assignments (if default values in
+    # either) table does not necessarily guarantee default results.
+    symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
+    resulting_table = _apply_any_scope_binary_opp(ntd_a,
+                                                  ntd_b,
+                                                  full_sd_a_default_sub_table,
+                                                  full_sd_b_default_sub_table,
+                                                  symmetric_difference_combinations,
+                                                  func,
+                                                  default)
+    return resulting_table
+
+
 def _any_scope_binary_operation(
-    ntd_a, outer_inner_cards_a, ntd_b, outer_inner_cards_b, func, default, default_rules="none"
+        ntd_a, outer_inner_cards_a, ntd_b, outer_inner_cards_b, func, default, default_rules="none"
 ):
     """
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
@@ -181,7 +323,6 @@ def _any_scope_binary_operation(
     # TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?).
     #  Seems like it works - confirm.
 
-    resulting_factor_table = dict()
     ntd_a_sd_assignments = ntd_a.keys()
     ntd_b_sd_assignments = ntd_b.keys()
     # Note: sd: symmetric_difference
@@ -189,81 +330,27 @@ def _any_scope_binary_operation(
     full_sd_a_default_sub_table = None
     full_sd_b_default_sub_table = None
 
-    # Calculate the symmetric_difference_combinations
-    # The symmetric_difference_combinations are the combinations of the sub-assignments
-    # that are not common to both factors. Depending on the value of default_rules, these
-    # assignments could only include assignments actually specified in the nested table
-    # dictionaries, or some or all of the missing assignments (if default values in either)
-    # table does not necessarily guarantee default results.
     if default_rules == "none":
-
-        # we have to check everything - any combination of {value, default_value} could result in non-default value.
-        ntd_a_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_a[0]]))
-        ntd_b_sd_assignments = list(itertools.product(*[range(c) for c in outer_inner_cards_b[0]]))
-
-        full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
-        full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
-
-        # Having only dense default table is not good enough, as this will still not cause the missing
-        # default values in the sub tables to be used to compute potentially none default result values.
-        # we therefore need to make these sub tables dense.
-        ntd_a = _make_inner_dense(ntd_a, outer_inner_cards_a, default)
-        ntd_b = _make_inner_dense(ntd_b, outer_inner_cards_b, default)
-
+        resulting_factor_table = _any_scope_bin_opp_none(ntd_a, ntd_b, outer_inner_cards_a, outer_inner_cards_b, func,
+                                                         default)
     elif default_rules == "both":
-        # The result will only be default if the values in both ntd_a are default. This means
-        # that we have to extend the assignments in the symmetric_difference_combinations to
-        # those the full set of all possible assignments where either ntd_a is not default or
-        # ntd_b is not default, because we need to calculate these results explicitly.
-        # For example:
-        # ntd_a:
-        #    a b
-        #    0 0  v
-        #   (1 0) d
-        # ntd_b:
-        #    a c
-        #    0 0  v
-        #    1 0  v
-        # The full set of resulting operations would be:
-        # a b c
-        # 0 0 0 vv
-        # 0 0 1 vd
-        # 0 1 0 dv
-        # 0 1 1 dd = d
-        # 1 0 0 dv
-        # 1 0 1 dd = d
-        # 1 1 0 dv
-        # 1 1 1 dd = d
-        # But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this
-        # entry. We do this by adding default sub tables below.
-        outer_assignments_a = set(ntd_a.keys())
-        outer_assignments_b = set(ntd_b.keys())
-        ntd_a_sd_assignments = list(outer_assignments_a.union(outer_assignments_b))
-        # TODO: replace this deepcopy with something faster
-        ntd_b_sd_assignments = copy.deepcopy(ntd_a_sd_assignments)
-
-        full_sd_a_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_a[1], default)
-        full_sd_b_default_sub_table = _make_dense_default_probs_dict(outer_inner_cards_b[1], default)
+        resulting_factor_table = _any_scope_bin_opp_both(ntd_a, ntd_b, outer_inner_cards_a, outer_inner_cards_b, func,
+                                                         default)
 
     # TODO: This is strange - improve.
     # TODO: See if any performance gains are possible with 'left' and 'right' flags and add them if so.
     elif default_rules == "any":
-        pass  # no further processing necessary
-    symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
+        symmetric_difference_combinations = itertools.product(*[ntd_a_sd_assignments, ntd_b_sd_assignments])
+        resulting_factor_table = _apply_any_scope_binary_opp(ntd_a,
+                                                             ntd_b,
+                                                             full_sd_a_default_sub_table,
+                                                             full_sd_b_default_sub_table,
+                                                             symmetric_difference_combinations,
+                                                             func,
+                                                             default)
+    else:
+        raise ValueError(f'Unsupported value for {default_rules} default_rules')
 
-    for sd_assign_a, sd_assign_b in symmetric_difference_combinations:
-        joined_sd_assignment = sd_assign_a + sd_assign_b
-
-        # TODO: Add special, pre-computed result if both 0.
-        common_vars_subtable_a = ntd_a.get(sd_assign_a, full_sd_a_default_sub_table)
-        common_vars_subtable_b = ntd_b.get(sd_assign_b, full_sd_b_default_sub_table)
-
-        # TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.
-        subtable_result = _same_scope_binary_operation(
-            common_vars_subtable_a, common_vars_subtable_b, func, default
-        )
-        if subtable_result:
-            resulting_factor_table[joined_sd_assignment] = subtable_result
     return resulting_factor_table
 
 
@@ -274,7 +361,7 @@ def _fast_copy_probs_table(table):
     :param dict table: A dictionary with the tuples of ints as keys and floats as values.
     :return: The copied table.
     """
-    table_copy = {tuple([a for a in assign]): value for assign, value in table.items()}
+    table_copy = {tuple(assign): value for assign, value in table.items()}
     return table_copy
 
 
@@ -284,7 +371,7 @@ class SparseCategorical(Factor):
     """
 
     def __init__(
-        self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf
+            self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf
     ):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
@@ -353,7 +440,7 @@ class SparseCategorical(Factor):
                     return False
         return True
 
-    def equals(self, factor, rtol=1e-05, atol=1e-05):
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
 
@@ -453,15 +540,14 @@ class SparseCategorical(Factor):
             old_variable_order=self.var_names,
             old_assign_probs=self.log_probs_table,
         )
-        result_table = nested_table[tuple(values)]
+        lp_table = nested_table[tuple(values)]
         result_var_cards = copy.deepcopy(self.var_cards)
         for var in vrs:
             del result_var_cards[var]
 
-        cardinalities = list(result_var_cards.values())
-        return SparseCategorical(
-            var_names=vars_unobserved, log_probs_table=result_table, cardinalities=cardinalities
-        )
+        cards = list(result_var_cards.values())
+        vars = vars_unobserved
+        return SparseCategorical(var_names=vars, log_probs_table=lp_table, cardinalities=cards)
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -557,6 +643,7 @@ class SparseCategorical(Factor):
         :return: The resulting factor.
         :rtype: SparseCategorical
         """
+        # pylint: disable=too-many-locals
         if not isinstance(factor, SparseCategorical):
             raise TypeError(f"factor must be of SparseCategorical type but has type {type(factor)}")
         self._assert_consistent_cardinalities(factor)
@@ -644,18 +731,6 @@ class SparseCategorical(Factor):
             return True
         return False
 
-    @property
-    def is_vacuous(self):
-        """
-        Check if this factor is vacuous (i.e uniform).
-
-        :return: Whether the factor is vacuous or not.
-        :rtype: bool
-        """
-        if self.distance_from_vacuous() < 1e-10:
-            return True
-        return False
-
     @staticmethod
     def _raw_kld(log_p, log_q):
         """
@@ -673,9 +748,8 @@ class SparseCategorical(Factor):
                 # lim_{p->0} p*log(p/q) = 0, with q = p
                 # So if p_i = 0, kld_i = 0
                 return 0.0
-            else:
-                kld_i = np.exp(log_pi) * (log_pi - log_qi)
-                return kld_i
+            kld_i = np.exp(log_pi) * (log_pi - log_qi)
+            return kld_i
 
         kld_factor = SparseCategorical._apply_binary_operator(
             log_p, log_q, kld_from_log_elements, default_rules="none"
@@ -724,8 +798,8 @@ class SparseCategorical(Factor):
         cards = list(uniform_factor.var_cards.values())
         uniform_log_prob = -np.log(np.product(cards))
         uniform_factor._apply_to_probs(lambda x: uniform_log_prob)
-        kl = self.kl_divergence(uniform_factor, normalize_factor=False)
-        return kl
+        kld = self.kl_divergence(uniform_factor, normalize_factor=False)
+        return kld
 
     def potential(self, vrs, assignment):
         """
@@ -748,12 +822,12 @@ class SparseCategorical(Factor):
         """
         log_probs_table = self.log_probs_table
         var_names = self.var_names
-        df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: "assignment", 1: "log_prob"})
-        df[var_names] = pd.DataFrame(df["assignment"].to_list())
-        df.drop(columns=["assignment"], inplace=True)
+        factor_df = pd.DataFrame.from_dict(log_probs_table.items()).rename(columns={0: "assignment", 1: "log_prob"})
+        factor_df[var_names] = pd.DataFrame(factor_df["assignment"].to_list())
+        factor_df.drop(columns=["assignment"], inplace=True)
         # Correct column order
-        var_cols = [c for c in df.columns if c != "log_prob"]
-        return df[var_cols + ["log_prob"]]
+        var_cols = [c for c in factor_df.columns if c != "log_prob"]
+        return factor_df[var_cols + ["log_prob"]]
 
     def show(self):
         """
@@ -768,13 +842,13 @@ class SparseCategorical(Factor):
         :return: The representation string
         :rtype: str
         """
-        # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
         tabbed_spaced_var_names = "\t".join(self.var_names) + "\tprob\n"
         repr_str = tabbed_spaced_var_names
+        spacings = ['\t' * _factor_utils.tabs_to_cover_string(var) for var in self.var_names] + ['\n']
         for assignment, log_prob in self.log_probs_table.items():
-            prob = log_prob
-            prob = np.exp(prob)
-            repr_str += "\t".join(map(str, assignment)) + f"\t{prob:.4f}\n"
+            prob = np.exp(log_prob)
+            line = _factor_utils.space_assignments_and_probs(assignment, prob, spacings)
+            repr_str += line
         return repr_str
 
     def reorder(self, new_var_names_order):
@@ -812,7 +886,6 @@ class SparseCategorical(Factor):
 
 
 class SparseCategoricalTemplate(FactorTemplate):
-
     """
     A class for specifying sparse categorical factor templates and creating categorical factors from these templates.
     """
@@ -855,8 +928,6 @@ class SparseCategoricalTemplate(FactorTemplate):
         if format_dict is not None:
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
-        cardinalities = list(self.cardinalities)
-        factor = SparseCategorical(
-            probs_table=self.probs_table, var_names=var_names, cardinalities=cardinalities
-        )
+        cards = list(self.cardinalities)
+        factor = SparseCategorical(probs_table=self.probs_table, var_names=var_names, cardinalities=cards)
         return factor

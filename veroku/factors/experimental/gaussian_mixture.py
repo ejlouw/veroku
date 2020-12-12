@@ -16,6 +16,7 @@ from scipy import special
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors.gaussian import Gaussian
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # TODO: confirm that the different GaussianMixture divide methods have sufficient stability and accuracy in their
 #  approximations.
@@ -56,14 +57,16 @@ class GaussianMixture(Factor):
                 raise ValueError("inconsistent var_names in list of Gaussians.")
         super().__init__(var_names=var_names0)
 
-    def equals(self, factor):
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
-        Check if this Gaussian mixture is the same as another factor.
+        Check if this factor is the same as another factor.
 
-        :param factor: The factor to compare to.
+        :param factor: The factor to compare with.
         :type factor: GaussianMixture
-        :return: The result of the comparison.
-        :rtype: bool
+        :param float rtol: The absolute tolerance parameter (see numpy Notes for allclose function).
+        :param float atol: The absolute tolerance parameter (see numpy Notes for allclose function).
+        :return: Result of equals comparison between self and gaussian
+        rtype: bool
         """
         # TODO: consider adding type error here rather
         if not isinstance(factor, GaussianMixture):
@@ -168,7 +171,7 @@ class GaussianMixture(Factor):
             new_components.append(gauss.reduce(vrs, values))
         return GaussianMixture(new_components)
 
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Integrate out variables from this Gaussian mixture.
 
@@ -183,6 +186,27 @@ class GaussianMixture(Factor):
         for gauss in self.components:
             new_components.append(gauss.marginalize(vrs, keep))
         return GaussianMixture(new_components)
+
+    def distance_from_vacuous(self):
+        """
+        NOTE: Not Implemented yet.
+        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous (uniform) version of it.
+
+        :return: The KL-divergence
+        """
+        raise NotImplementedError('This function has not been implemented yet.')
+
+    def kl_divergence(self, factor):
+        """
+        NOTE: Not Implemented yet.
+        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
+
+        :param factor: The other factor
+        :type factor: GaussianMixture
+        :return: The Kullback-Leibler divergence
+        :rtype: float
+        """
+        raise NotImplementedError('This function has not been implemented yet.')
 
     def log_potential(self, x_val):
         """
@@ -472,7 +496,7 @@ class GaussianMixture(Factor):
         new_mean = np.zeros([self.dim, 1]).astype(complex)
         weights = []
         for gauss in self.components:
-            c_weight = gauss.get_complex_weight()
+            c_weight = gauss._get_complex_weight()
             c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
             new_mean += c_weight * c_mean
             weights.append(c_weight)
@@ -480,7 +504,7 @@ class GaussianMixture(Factor):
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim]).astype(complex)
         for gauss in self.components:
-            c_weight = gauss.get_complex_weight()
+            c_weight = gauss._get_complex_weight()
             c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
             udud_t = c_weight * (c_mean - new_mean).dot((c_mean - new_mean).transpose())
             c_cov = np.linalg.inv(gauss.get_prec()).astype(complex)

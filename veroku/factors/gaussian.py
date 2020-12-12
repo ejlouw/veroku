@@ -17,10 +17,11 @@ import matplotlib.pyplot as plt
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
-
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # pylint: disable=protected-access
 # pylint: disable=no-self-use
+
 
 def make_random_gaussian(var_names, mean_range=None, cov_range=None):
     """
@@ -88,8 +89,7 @@ def make_linear_gaussian(a_mat, n_mat, conditioning_vars, conditional_vars):
 
     u_x = np.zeros([x_dim, 1])
     h_x = prec_xx @ u_x
-    uxtkxxux = u_x.T @ h_x
-    g_x = -0.5 * uxtkxxux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * cov_xx))
+    g_x = -0.5 * u_x.T @ h_x + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * cov_xx))
 
     cov = np.block([[cov_xx, cov_xx @ a_mat.T], [a_mat @ cov_xx, a_mat @ cov_xx @ a_mat.T + n_mat]])
     prec_joint = np.linalg.inv(cov)
@@ -98,16 +98,14 @@ def make_linear_gaussian(a_mat, n_mat, conditioning_vars, conditional_vars):
 
     mean_joint = np.block([[u_x], [a_mat.T @ u_x]])
 
-    h_joint = prec_joint @ mean_joint
-    h_cpd = h_joint.copy()
+    h_cpd = prec_joint @ mean_joint
     h_cpd[:x_dim] = h_cpd[:x_dim] - h_x
 
     utkux = mean_joint.T @ prec_joint @ mean_joint
     g_joint = 0.5 * utkux + np.log(1.0) - 0.5 * np.log(np.linalg.det(2.0 * np.pi * cov))
     g_cpd = g_joint - g_x
-    var_names = conditioning_vars + conditional_vars
 
-    return Gaussian(var_names=var_names, prec=prec_cpd, h_vec=h_cpd, g_val=g_cpd)
+    return Gaussian(var_names=conditioning_vars + conditional_vars, prec=prec_cpd, h_vec=h_cpd, g_val=g_cpd)
 
 
 def make_linear_gaussian_cpd_template(a_mat, n_mat, conditioning_var_templates, conditional_var_templates):
@@ -276,7 +274,7 @@ class Gaussian(Factor):
             return False
         return True
 
-    def equals(self, factor, rtol=1e-04, atol=1e-04):
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
 
@@ -405,7 +403,7 @@ class Gaussian(Factor):
         gaussian_copy._destroy_canform()
         return gaussian_copy
 
-    def get_complex_weight(self):
+    def _get_complex_weight(self):
         """
         Get (possibly complex) weight parameter.
 
@@ -466,7 +464,31 @@ class Gaussian(Factor):
         """
         return np.exp(self.get_log_weight())
 
-    def marginalize(self, vrs, keep=False):
+    def _canform_marginalise(self, vars_to_keep, vars_to_integrate_out):
+        """
+        Calculate the marginal distribution using the canonical parameters.
+
+        :param vars_to_keep: The variables to keep.
+        :param vars_to_integrate_out: The variables to integrate out/
+        :return: The marginal Gaussian
+        """
+        xx_indices = [self.var_names.index(var_x) for var_x in vars_to_keep]
+        yy_indices = [self.var_names.index(var_y) for var_y in vars_to_integrate_out]
+        prec_xx = self.prec[np.ix_(xx_indices, xx_indices)]
+        prec_xy = self.prec[np.ix_(xx_indices, yy_indices)]
+        prec_yx = prec_xy.T
+        prec_yy = self.prec[yy_indices][:, yy_indices]
+        inv_prec_yy = np.linalg.inv(prec_yy)
+        h_x = self.h_vec[xx_indices]
+        h_y = self.h_vec[yy_indices]
+        prec_xy_inv_prec_yy = prec_xy @ np.linalg.inv(prec_yy)
+        prec = prec_xx - prec_xy_inv_prec_yy @ prec_yx
+        h_vec = h_x - prec_xy_inv_prec_yy @ h_y
+        log_det_2pi_inv_prec_yy = np.log(np.linalg.det(2.0 * np.pi * inv_prec_yy))
+        g_val = self.g_val + 0.5 * (h_y.T @ inv_prec_yy @ h_y + log_det_2pi_inv_prec_yy)
+        return Gaussian(prec=prec, h_vec=h_vec, g_val=g_val, var_names=vars_to_keep)
+
+    def marginalize(self, vrs, keep=True):
         """
         Integrate out variables from this Gaussian.
 
@@ -484,21 +506,7 @@ class Gaussian(Factor):
             return Gaussian.make_vacuous(var_names=vars_to_keep)
 
         if self.canform:
-            xx_indices = [self.var_names.index(var_x) for var_x in vars_to_keep]
-            yy_indices = [self.var_names.index(var_y) for var_y in vars_to_integrate_out]
-            prec_xx = self.prec[np.ix_(xx_indices, xx_indices)]
-            prec_xy = self.prec[np.ix_(xx_indices, yy_indices)]
-            prec_yx = prec_xy.T
-            prec_yy = self.prec[yy_indices][:, yy_indices]
-            inv_prec_yy = np.linalg.inv(prec_yy)
-            h_x = self.h_vec[xx_indices]
-            h_y = self.h_vec[yy_indices]
-            prec_xy_inv_prec_yy = prec_xy @ np.linalg.inv(prec_yy)
-            prec = prec_xx - prec_xy_inv_prec_yy @ prec_yx
-            h_vec = h_x - prec_xy_inv_prec_yy @ h_y
-            log_det_2pi_inv_prec_yy = np.log(np.linalg.det(2.0 * np.pi * inv_prec_yy))
-            g_val = self.g_val + 0.5 * (h_y.T @ inv_prec_yy @ h_y + log_det_2pi_inv_prec_yy)
-            return Gaussian(prec=prec, h_vec=h_vec, g_val=g_val, var_names=vars_to_keep)
+            return self._canform_marginalise(vars_to_keep, vars_to_integrate_out)
 
         assert self.covform
         indices_to_keep = [self._var_names.index(variable) for variable in vars_to_keep]
@@ -690,8 +698,7 @@ class Gaussian(Factor):
         """
         if self._is_vacuous:
             return 0.0
-        else:
-            return float("inf")
+        return float("inf")
 
     def kl_divergence(self, factor, normalize_factor=True):
         """
@@ -734,8 +741,7 @@ class Gaussian(Factor):
         det_term = 0.5 * cmath.log(det_inv_cov_p / det_inv_cov_q)
         trace_term = 0.5 * np.trace(inv_cov_q @ cov_p)
         mahalanobis_term = 0.5 * (u_p - u_q).T @ inv_cov_q @ (u_p - u_q)
-        dim_term = 0.5 * normalized_self.dim
-        kld = det_term + trace_term + mahalanobis_term - dim_term
+        kld = det_term + trace_term + mahalanobis_term - 0.5 * normalized_self.dim
         # TODO: Add warning or error if this is negative and remove abs below
         return np.abs(kld[0][0])
 
@@ -898,26 +904,18 @@ class Gaussian(Factor):
         repr_str += self._get_cov_repr_str()
         return repr_str
 
-    def show(self, update_covform=True, show_canform=False):
+    def show(self):
         """
         Print the parameters of the Gaussian distribution
-
-        :param update_covform: Whether or not to update the covariance form before showing.
-        :type update_covform: bool
-        :param show_canform: Whether or not toshow the canonical form as well.
-        :type show_canform: bool
         """
         np.set_printoptions(edgeitems=3)
         np.set_printoptions(precision=4)
         np.core.arrayprint._line_width = 200
-        self_copy = self.copy()
-        if not self._is_vacuous and update_covform:
-            self_copy._update_covform()
-        print("vars = ", self_copy.var_names)
-        if self_copy.covform:
-            print(self_copy._get_cov_repr_str())
-        if self_copy.canform and show_canform:
-            print(self_copy._get_can_repr_str())
+        print("vars = ", self.var_names)
+        if self.covform:
+            print(self._get_cov_repr_str())
+        if self.canform:
+            print(self._get_can_repr_str())
 
     def show_vis(self, figsize=(10, 8)):
         """
@@ -1012,7 +1010,8 @@ class Gaussian(Factor):
         :return: The split Gaussian Mixture.
         :rtype: GaussianMixture
         """
-        from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+        # Note this is here to prevent circular imports
+        from veroku.factors.experimental.gaussian_mixture import GaussianMixture  # pylint: disable=import-outside-toplevel
 
         if self.dim != 1:
             raise NotImplementedError("Gaussian must be one dimensional.")
@@ -1070,6 +1069,6 @@ class GaussianTemplate(FactorTemplate):
             assert var_names is None
             var_names = [vt.format(**format_dict) for vt in self._var_templates]
         # TODO: remove this and find better solution
-        g = Gaussian(prec=self.prec.copy(), h_vec=self.h_vec.copy(), g_val=self.g_val, var_names=var_names)
-        g._is_vacuous = True
-        return g
+        g_val = Gaussian(prec=self.prec.copy(), h_vec=self.h_vec.copy(), g_val=self.g_val, var_names=var_names)
+        g_val._is_vacuous = True
+        return g_val

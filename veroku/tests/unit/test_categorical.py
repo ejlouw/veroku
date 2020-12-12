@@ -995,6 +995,21 @@ class TestSparseCategorical(TestCategorical):
         )
         self.assertEqual(expected_probs_table, actual_probs_table)
 
+    def test__any_scope_binary_operation_invalid_rule(self):
+        """
+        Test that the _any_scope_binary_operation raises a value error if an default rule is passed.
+        """
+        with self.assertRaises(ValueError):
+            _any_scope_binary_operation(
+                ntd_a=mock.Mock(),
+                outer_inner_cards_a=mock.Mock(),
+                ntd_b=mock.Mock(),
+                outer_inner_cards_b=mock.Mock(),
+                func=lambda a, b: a + b,
+                default=0.0,
+                default_rules="there-is-no-such-rule",
+            )
+
     def test_apply_binary_operator(self):
         """
         Test that the apply_binary_operator function returns the correct result.

@@ -1,10 +1,12 @@
 """
 A module for instantiating clusters for use in ClusterGraph objects.
 """
-
+# Standard imports
 import uuid
 import copy
 
+# Local imports
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 FIX_NON_PSD_MATRICES = False
 
 # TODO: add evidence observation functionality
@@ -177,7 +179,7 @@ class Message:
         self._receiver_id = receiver_id
         self._factor = factor
 
-    def equals(self, other, rtol=1e-05, atol=1e-05):
+    def equals(self, other, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this message equals another message.
 
@@ -243,7 +245,7 @@ class Message:
 
     def distance_from_vacuous(self):
         """
-        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous version of it.
+        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous (uniform) version of it.
 
         :return: The KL-divergence
         """

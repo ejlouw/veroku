@@ -15,6 +15,8 @@ from scipy import special
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors._factor_template import FactorTemplate
+from veroku.factors import _factor_utils
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # special operator rules
 LOG_SUBTRACT_CANCEL_RULES = {(-np.inf, operator.sub, -np.inf): -np.inf}
@@ -121,12 +123,14 @@ class Categorical(Factor):
         log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
         return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor)
 
-    def equals(self, factor, rtol=1e-5, atol=1e-5):
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
 
         :param factor: The other factor to compare to.
         :type factor: Categorical
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the comparison.
         :rtype: bool
         """
@@ -327,18 +331,6 @@ class Categorical(Factor):
         factor_copy.log_probs_tensor -= logz
         return factor_copy
 
-    @property
-    def is_vacuous(self):
-        """
-        Check if this factor is vacuous (i.e uniform).
-
-        :return: Whether the factor is vacuous or not.
-        :rtype: bool
-        """
-        if self.distance_from_vacuous() < 1e-10:
-            return True
-        return False
-
     @staticmethod
     def _raw_kld(log_p, log_q):
         """
@@ -422,13 +414,14 @@ class Categorical(Factor):
         :return: The representation string
         :rtype: str
         """
-        # TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)
         tabbed_spaced_var_names = "\t".join(self.var_names) + "\tprob\n"
         repr_str = tabbed_spaced_var_names
+        spacings = ['\t' * _factor_utils.tabs_to_cover_string(var) for var in self.var_names] + ['\n']
         for assignment in np.ndindex(self.log_probs_tensor.shape):
             prob = self.log_probs_tensor[assignment]
             prob = np.exp(prob)
-            repr_str += "\t".join(map(str, assignment)) + f"\t{prob:.4f}\n"
+            line = _factor_utils.space_assignments_and_probs(assignment, prob, spacings)
+            repr_str += line
         return repr_str
 
 

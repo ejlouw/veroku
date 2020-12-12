@@ -16,11 +16,11 @@ def get_sigma_points_array(gaussian_factor):
     assert isinstance(gaussian_factor, Gaussian), "Error: gaussian_factor is not a Gaussian factor."
     cov = gaussian_factor.get_cov()
     mean = gaussian_factor.get_mean()
-    L = np.linalg.cholesky(cov)
+    chol = np.linalg.cholesky(cov)
     dim = cov.shape[0]
     k = (dim + 0.5) ** 0.5
-    sigma_point_array_n = mean - k * L
-    sigma_point_array_p = mean + k * L
+    sigma_point_array_n = mean - k * chol
+    sigma_point_array_p = mean + k * chol
     sigma_points_array = np.concatenate([sigma_point_array_n, mean, sigma_point_array_p], axis=1)
     return sigma_points_array
 

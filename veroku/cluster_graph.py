@@ -19,7 +19,6 @@ from veroku._cg_helpers._cluster import Cluster
 import veroku._cg_helpers._animation as cg_animation
 from veroku.factors._factor_utils import get_subset_evidence
 
-
 # TODO: Optimise _pass_message.
 # TODO: Improve sepsets selection for less loopiness.
 # TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need
@@ -111,6 +110,8 @@ class ClusterGraph:
     """
     A class for building and performing inference with cluster graphs.
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, factors, evidence=None, special_evidence=None, disable_tqdm=False):
         """

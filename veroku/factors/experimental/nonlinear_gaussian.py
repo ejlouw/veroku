@@ -7,8 +7,6 @@ import operator
 import copy
 
 # Third-party imports
-from abc import ABC
-
 import numpy as np
 
 # Local imports
@@ -23,6 +21,7 @@ from veroku.factors._factor_utils import (
     format_list_elements,
 )
 from veroku.factors._factor_template import FactorTemplate
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # TODO: see that lazy evaluation (recompute joint) is done sensibly and consistently
 
@@ -34,6 +33,7 @@ class NonLinearGaussian(Factor):
     A Class for instantiating and performing operations on multivariate Gaussian mixture functions.
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         conditioning_vars,
@@ -92,6 +92,38 @@ class NonLinearGaussian(Factor):
             self.observed_evidence = {}
         else:
             self.observed_evidence = copy.deepcopy(observed_evidence)
+
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
+        """
+        Check if this factor is the same as another factor.
+
+        :param factor: The other factor to compare to.
+        :type factor: Gaussian
+        :return: The result of the comparison.
+        :rtype: bool
+        """
+        return self._joint_distribution.equals(factor, rtol=rtol, atol=atol)
+
+    def distance_from_vacuous(self):
+        """
+        NOTE: Not Implemented yet.
+        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous (uniform) version of it.
+
+        :return: The KL-divergence
+        """
+        raise NotImplementedError('This function has not been implemented yet.')
+
+    def kl_divergence(self, factor):
+        """
+        NOTE: Not Implemented yet.
+        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
+
+        :param factor: The other factor
+        :type factor: GaussianMixture
+        :return: The Kullback-Leibler divergence
+        :rtype: float
+        """
+        raise NotImplementedError('This function has not been implemented yet.')
 
     def copy(self):
         """
@@ -190,6 +222,8 @@ class NonLinearGaussian(Factor):
         """
         Recompute the joint distribution.
         """
+        # TODO: improve this function (after code coverage is completed for this class) and remove disable below.
+        # pylint: disable=too-many-locals
         observed_vars = list(self.observed_evidence.keys())
 
         conditioning_observed_vars = [var for var in observed_vars if var in self.conditioning_vars]
@@ -221,9 +255,7 @@ class NonLinearGaussian(Factor):
             return
 
         # If we are still here, there we can calculate the transformation.
-        conditioning_factor_sigma_points_array = np.expand_dims(
-            np.array([]), axis=0
-        ).T  # empty dummy for generalisation
+        conditioning_factor_sigma_points_array = np.expand_dims(np.array([]), axis=0).T  # empty dummy for generalisation
         if self.conditioning_factor is not None:
             conditioning_factor = self.conditioning_factor.copy()
             cond_factor_observed_vars = list(set(observed_vars).intersection(conditioning_factor.var_names))
@@ -378,10 +410,11 @@ class NonLinearGaussian(Factor):
         """
 
         self_copy = self.copy()
-        self_copy.observed_evidence.update({v: val for v, val in zip(vrs, values)})
+        evidence_dict = dict(zip(vrs, values))
+        self_copy.observed_evidence.update(evidence_dict)
         return self_copy
 
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Integrate out variables from this factor.
 
@@ -478,7 +511,7 @@ class NonLinearGaussianMixture(Factor):
         self.nlgs = []
         if len(factors) == 0:
             raise ValueError("received empty list of factors.")
-        self._var_names = factors[0].var_names
+        super().__init__(var_names=factors[0].var_names)
         for factor in factors:
             if not isinstance(factor, NonLinearGaussian):
                 raise TypeError(f"expected NonLinearGaussian type, received {type(factor)}.")
@@ -573,7 +606,7 @@ class NonLinearGaussianMixture(Factor):
             new_nlgs.append(nlg.reduce(vrs, values))
         return NonLinearGaussianMixture(new_nlgs)
 
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Integrate out variables from this factor.
 
@@ -634,8 +667,10 @@ class NonLinearGaussianTemplate(FactorTemplate):
 
         :param conditioning_var_templates: The list of formattable strings for the conditioning variables (i.e: ['var_a{i}_{t}', 'var_b{i}_{t}'])
         :param conditional_var_templates: The list of formattable strings for the conditional variables (i.e: ['var_c{i}_{t}', 'var_d{i}_{t}'])
-        :param conditioning_var_templates:
-        :param conditional_var_templates:
+        :param conditioning_var_templates: The formattable strings for the conditioning variables.
+        :type conditioning_var_templates: str list
+        :param conditional_var_templates: The formattable strings for the conditioning variables.
+        :type conditional_var_templates: str list
         :param callable transition_function: The function that specifies the non-linear transform. This function takes
             2 parameters, a vector-like value to be transformed and the variable names list specifying the names of the
             variable elements of the value vector (i.e transition_function = lamda x, var_names: np.square(x)).
@@ -651,26 +686,31 @@ class NonLinearGaussianTemplate(FactorTemplate):
         self.transition_function = transition_function
         self.noise_cov = noise_cov
 
-    def make_factor(self, format_dict=None, var_names=None):
+    def make_factor(self, format_dict=None, conditioning_vars=None, conditional_vars=None):
         """
         Make a factor with var_templates formatted by format_dict to create specific var names.
 
         :param format_dict: The dictionary to be used to format the var_templates strings.
         :type format_dict: str dict
+        :param conditioning_vars: The conditioning variables strings.
+        :type conditioning_vars: str list
+        :param conditional_vars: The conditioning variables strings.
+        :type conditional_vars: str list
         :return: The instantiated factor.
         :rtype: NonLinearGaussianMixture
         """
         if format_dict is not None:
-            assert var_names is None
+            assert conditioning_vars is None
+            assert conditioning_vars is None
 
             conditioning_vars = format_list_elements(self._conditioning_var_templates, format_dict)
             conditional_vars = format_list_elements(self._conditional_var_templates, format_dict)
 
-            return NonLinearGaussian(
-                conditioning_vars,
-                conditional_vars,
-                self.transition_function,
-                self.noise_cov,
-                log_weight=0.0,
-                joint_distribution=None,
-            )
+        return NonLinearGaussian(
+            conditioning_vars,
+            conditional_vars,
+            self.transition_function,
+            self.noise_cov,
+            log_weight=0.0,
+            joint_distribution=None,
+        )

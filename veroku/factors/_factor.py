@@ -5,6 +5,8 @@ This module contains an abstract parent class, defining the minimum functions th
 from abc import ABCMeta, abstractmethod
 import copy
 
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
+
 
 class Factor:
     """
@@ -44,7 +46,7 @@ class Factor:
         """
         return self._dim
 
-    def get_marginal_vars(self, vrs, keep=False):
+    def get_marginal_vars(self, vrs, keep=True):
         """
         A helper function (for marginalize) that returns the variables that should be marginalised out (keep=False)
         or kept (keep=True).
@@ -53,12 +55,34 @@ class Factor:
         :param keep: Whether these variables are to be kept or summed out.
         :return: The variables to be kept or summed out.
         """
+        if isinstance(vrs, str):
+            vrs = [vrs]
         if keep:
             return vrs.copy()
         return list(set(self.var_names) - set(vrs))
 
     @abstractmethod
-    def equals(self, factor, rtol=1e-04, atol=1e-04):
+    def distance_from_vacuous(self):
+        """
+        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous (uniform) version of it.
+
+        :return: The KL-divergence
+        """
+
+    @property
+    def is_vacuous(self):
+        """
+        Check if this factor is vacuous (i.e uniform).
+
+        :return: Whether the factor is vacuous or not.
+        :rtype: bool
+        """
+        if self.distance_from_vacuous() < 1e-10:
+            return True
+        return False
+
+    @abstractmethod
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
          An abstract function for checking if this factor is equal to another factor.
 
@@ -78,7 +102,7 @@ class Factor:
         """
 
     @abstractmethod
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         An abstract function for performing factor marginalisation that should be implemented in the base class.
 

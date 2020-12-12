@@ -1,14 +1,26 @@
+"""
+Test module for the factor_utils module.
+"""
+
 # Standard imports
 import unittest
+
+# Third-party imports
 import numpy as np
 
 # Local imports
 from veroku.factors.experimental.factorised_factor import FactorizedFactor
 from veroku.factors.gaussian import Gaussian
 
-"""
-Test module for the factor_utils module.
-"""
+
+def get_gaussian_set_a():
+    """
+    A helper function for generating a set of Gaussians for tests.
+    """
+    g_1 = Gaussian(mean=[[1.0], [2.0]], cov=[[5.0, 0.0], [0.0, 4.0]], log_weight=0.0, var_names=["a", "b"])
+    g_2 = Gaussian(mean=[[3.0], [5.0]], cov=[[1.0, 0.0], [0.0, 2.0]], log_weight=0.0, var_names=["b", "c"])
+    g_3 = Gaussian(mean=[[0.0], [3.0]], cov=[[3.0, 0.0], [0.0, 4.0]], log_weight=0.0, var_names=["d", "e"])
+    return g_1, g_2, g_3
 
 
 class TestFactorisedFactor(unittest.TestCase):
@@ -17,6 +29,9 @@ class TestFactorisedFactor(unittest.TestCase):
     """
 
     def setUp(self):
+        """
+        Run before each test.
+        """
         self.gab = Gaussian(cov=[[3, 1], [1, 2]], mean=[1, 2], log_weight=0.0, var_names=["a", "b"])
         self.gcd = Gaussian(cov=[[3, 2], [2, 4]], mean=[3, 4], log_weight=0.0, var_names=["c", "d"])
         self.gef = Gaussian(cov=[[8, 3], [3, 6]], mean=[5, 6], log_weight=0.0, var_names=["e", "f"])
@@ -26,13 +41,6 @@ class TestFactorisedFactor(unittest.TestCase):
 
         self.gab3 = Gaussian(prec=[[5, 1], [1, 2]], h_vec=[1, 2], g_val=0.0, var_names=["a", "b"])
         self.ga3 = Gaussian(prec=[[1]], h_vec=[1], g_val=0.0, var_names=["a"])
-
-        self.g_1 = Gaussian(mean=[[1.0], [2.0]], cov=[[5.0, 0.0], [0.0, 4.0]], log_weight=0.0, var_names=["a", "b"])
-        self.g_2 = Gaussian(mean=[[3.0], [5.0]], cov=[[1.0, 0.0], [0.0, 2.0]], log_weight=0.0, var_names=["b", "c"])
-        self.g_3 = Gaussian(mean=[[0.0], [3.0]], cov=[[3.0, 0.0], [0.0, 4.0]], log_weight=0.0, var_names=["d", "e"])
-
-
-
 
     def test_multiply_independent(self):
         """
@@ -142,12 +150,14 @@ class TestFactorisedFactor(unittest.TestCase):
         observed_values_1 = [1.0, 2.0]
         observed_vars_1 = ["d", "e"]
 
-        expected_g_1 = self.g_1.copy()
+        g_1, g_2, g_3 = get_gaussian_set_a()
+
+        expected_g_1 = g_1.copy()
         expected_g_1.log_weight = -3.3719970579700123
-        expected_g_2 = self.g_2.copy()
+        expected_g_2 = g_2.copy()
         expected_reduced_ff_1 = FactorizedFactor([expected_g_1, expected_g_2])
 
-        f_factor = FactorizedFactor([self.g_1, self.g_2, self.g_3])
+        f_factor = FactorizedFactor([g_1, g_2, g_3])
         actual_reduced_ff_1 = f_factor.observe(vrs=observed_vars_1, values=observed_values_1)
         self.assertTrue(expected_reduced_ff_1.equals(actual_reduced_ff_1))
 
@@ -169,7 +179,8 @@ class TestFactorisedFactor(unittest.TestCase):
             log_weight=g_2_reduced_log_weight,
             var_names=g_2_reduced_vars,
         )
+        g_1, g_2, g_3 = get_gaussian_set_a()
         expected_reduced_ff_2 = FactorizedFactor([expected_g_2_reduced_comp])
-        f_factor = FactorizedFactor([self.g_1, self.g_2, self.g_3])
+        f_factor = FactorizedFactor([g_1, g_2, g_3])
         actual_reduced_ff_2 = f_factor.reduce(vrs=observed_vars_1, values=observed_values_1)
         self.assertTrue(expected_reduced_ff_2.equals(actual_reduced_ff_2))

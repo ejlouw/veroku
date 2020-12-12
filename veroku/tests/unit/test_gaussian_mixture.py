@@ -154,11 +154,11 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the marginalize function results in the correct marginal components.
         """
         expected_marginal_components = [
-            self.gaussian_ab_1.marginalize(vrs="a"),
-            self.gaussian_ab_2.marginalize(vrs="a"),
+            self.gaussian_ab_1.marginalize(vrs="a", keep=False),
+            self.gaussian_ab_2.marginalize(vrs="a", keep=False),
         ]
         expected_gm = GaussianMixture(expected_marginal_components)
-        actual_gm = self.gaussian_mixture_ab_12.marginalize(vrs="a")
+        actual_gm = self.gaussian_mixture_ab_12.marginalize(vrs="a", keep=False)
         self.assertTrue(actual_gm.equals(expected_gm))
 
     def test_normalize(self):

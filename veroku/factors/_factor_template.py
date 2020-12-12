@@ -42,6 +42,7 @@ class FactorTemplate(ABC):
         :return: The result of the check.
         :rtype: bool
         """
+        # pylint: disable=expression-not-assigned
         try:
             if self._var_templates is not None:
                 [vt.format(**format_dict) for vt in self._var_templates]
@@ -49,5 +50,6 @@ class FactorTemplate(ABC):
                 [vt.format(**format_dict) for vt in self._conditioning_var_templates]
                 [vt.format(**format_dict) for vt in self._conditional_var_templates]
             return True
+        # pylint: enable=expression-not-assigned
         except KeyError:
             return False

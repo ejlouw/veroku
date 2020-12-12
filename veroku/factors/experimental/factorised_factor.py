@@ -4,6 +4,7 @@ A module for factorised factor functionality
 
 from veroku.factors._factor import Factor
 from veroku.factors._factor_utils import get_subset_evidence
+from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # TODO: This class in very much a work in progress. This needs to be completed. We must think especially carefully about
 #   how we multiply factors when we have special factors such as nonlinear Gaussian factors in the factorised factor.
@@ -28,7 +29,7 @@ class FactorizedFactor(Factor):
         """
         assert all([not isinstance(factor, FactorizedFactor) for factor in factors])
         factors_var_name_lists = [factor.var_names for factor in factors]
-        factors_var_name = list(set([var_name for sublist in factors_var_name_lists for var_name in sublist]))
+        factors_var_name = list({var_name for sublist in factors_var_name_lists for var_name in sublist})
         super().__init__(var_names=factors_var_name)
         self.factors = []
         for factor in factors:
@@ -164,7 +165,7 @@ class FactorizedFactor(Factor):
             factor_copy.factors[i] = factor_i.normalize()
         return factor_copy
 
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Marginalize out a subset of the variables in this factor's scope.
 
@@ -255,8 +256,8 @@ class FactorizedFactor(Factor):
         """
         observed_factor_vars_list = []
 
-        for f in self.factors:
-            observed_factor_vars = set(f.var_names).intersection(vrs_set)
+        for factor in self.factors:
+            observed_factor_vars = set(factor.var_names).intersection(vrs_set)
             observed_factor_vars_list.append(observed_factor_vars)
 
         merged_factors = []
@@ -334,12 +335,14 @@ class FactorizedFactor(Factor):
                 indices.append(i)
         return indices
 
-    def equals(self, factor):
+    def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
 
         :param factor: The other factor to compare to.
         :type factor: FactorizedFactor
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the comparison.
         :rtype: bool
         """

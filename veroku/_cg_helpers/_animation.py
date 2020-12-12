@@ -1,7 +1,6 @@
 """
 A module for animating graphviz graphs.
 """
-
 # Standard imports
 import re
 
@@ -44,50 +43,58 @@ def change_cluster_graph_edge_color(graph, node_a_name, node_b_name, new_color):
     )
 
 
-def contains_non_overlapping_substrings(substring_a, substring_b, string):
+def sub_and_super_both_in(sub_string, super_string, main_string):
+    """
+    Check if a substring and a super (contains the substring) string are both in another string in non overlapping areas.
+
+    :param sub_string: The string contained in the super-string.
+    :param super_string: The string containing the sub-string.
+    :param main_string: The main string to check the independent presence of the strings.
+    :return:
+    """
+    if sub_string not in main_string:
+        return False
+    reduced_string = main_string.replace(super_string, "")
+    if sub_string in reduced_string:
+        return True
+    return False
+
+
+def contains_non_overlapping_substrings(substring_a, substring_b, main_string):
     """
     Check that both sub-strings can be found in separate locations in strings
 
     :param substring_a: The one substring to check for.
     :param substring_b: The other substring to check for.
-    :param string: The string to check in.
+    :param main_string: The string to check in.
     :return: Result of check for independent string presence.
 
     Examples:
     >>> substring_a = "abc"
     >>> substring_b = "123"
-    >>> string = "abc123 -- def"
+    >>> main_string = "abc123 -- def"
     >>> contains_non_overlapping_substrings(substring_a, substring_b, string)
     >>> False
 
     >>> substring_a = "abc"
     >>> substring_b = "123"
-    >>> string = "abc -- 123"
+    >>> main_string = "abc -- 123"
     >>> contains_non_overlapping_substrings(substring_a, substring_b, string)
     >>> True
     """
 
     if substring_a in substring_b:
-        if substring_a not in string:
-            return False
-        string = string.replace(substring_b, "")
-        if substring_a in string:
-            return True
-        return False
+        return sub_and_super_both_in(substring_a, substring_b, main_string)
+
     if substring_b in substring_a:
-        if substring_b not in string:
-            return False
-        string = string.replace(substring_a, "")
-        if substring_b in string:
-            return True
-        return False
+        return sub_and_super_both_in(substring_b, substring_a, main_string)
     # Neither substring strings is a substring of the other, so we can remove the one and check if the other is still
     # present.
-    if substring_a in string:
-        string = string.replace(substring_a, "")
+    if substring_a in main_string:
+        reduced_string = main_string.replace(substring_a, "")
     else:
         return False
-    result = substring_b in string
+    result = substring_b in reduced_string
     return result
 
 
@@ -128,11 +135,11 @@ def change_graph_node_color(graph, node_name, new_color):
     :return:
     """
     node_found = False
-    for i, s in enumerate(graph.body):
-        if "--" not in s:  # not edge
-            if node_name in s:
+    for i, element_string in enumerate(graph.body):
+        if "--" not in element_string:  # not edge
+            if node_name in element_string:
                 graph.body[i] = re.sub(
-                    f'(\\t?"?{node_name}"?\s\[.*fillcolor=)([\S]*\s)(.*)', f"\g<1>{new_color} \g<3>", s
+                    f'(\\t?"?{node_name}"?\s\[.*fillcolor=)([\S]*\s)(.*)', f"\g<1>{new_color} \g<3>", element_string
                 )
                 node_found = True
     if not node_found:

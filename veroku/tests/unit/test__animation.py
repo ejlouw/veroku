@@ -1,7 +1,6 @@
 """
 A test module for the _animation module.
 """
-
 import unittest
 from unittest import mock
 
@@ -27,39 +26,39 @@ class TestAnimation(unittest.TestCase):
         # TODO: Consider splitting these into separate tests or simplifying the contains_non_overlapping_substrings
         #  function so that fewer tests are required.
         self.assertTrue(
-            contains_non_overlapping_substrings(substring_a="abc", substring_b="def", string="abcdef")
+            contains_non_overlapping_substrings(substring_a="abc", substring_b="def", main_string="abcdef")
         )
         self.assertTrue(
-            contains_non_overlapping_substrings(substring_a="def", substring_b="abc", string="abcdef")
+            contains_non_overlapping_substrings(substring_a="def", substring_b="abc", main_string="abcdef")
         )
 
         self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="abc", substring_b="cde", string="abcdef")
+            contains_non_overlapping_substrings(substring_a="abc", substring_b="cde", main_string="abcdef")
         )
         self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="cde", substring_b="abc", string="abcdef")
-        )
-
-        self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="abc", substring_b="ab", string="abcdef")
-        )
-        self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="ab", substring_b="abc", string="abcdef")
+            contains_non_overlapping_substrings(substring_a="cde", substring_b="abc", main_string="abcdef")
         )
 
         self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="ab", substring_b="abc", string="bcdef")
+            contains_non_overlapping_substrings(substring_a="abc", substring_b="ab", main_string="abcdef")
         )
         self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="abc", substring_b="ab", string="bcdef")
+            contains_non_overlapping_substrings(substring_a="ab", substring_b="abc", main_string="abcdef")
         )
 
         self.assertFalse(
-            contains_non_overlapping_substrings(substring_a="abc", substring_b="def", string="bcdef")
+            contains_non_overlapping_substrings(substring_a="ab", substring_b="abc", main_string="bcdef")
+        )
+        self.assertFalse(
+            contains_non_overlapping_substrings(substring_a="abc", substring_b="ab", main_string="bcdef")
+        )
+
+        self.assertFalse(
+            contains_non_overlapping_substrings(substring_a="abc", substring_b="def", main_string="bcdef")
         )
 
         self.assertTrue(
-            contains_non_overlapping_substrings(substring_a="_ssb_", substring_b="ssb", string="_ssb_ssb")
+            contains_non_overlapping_substrings(substring_a="_ssb_", substring_b="ssb", main_string="_ssb_ssb")
         )
 
     def test_change_graph_node_color(self):

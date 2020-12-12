@@ -1,10 +1,13 @@
 """
 A module containing general functions to help with factor operations and transformations.
 """
-
+# Standard imports
 import copy
+
+# Third-party imports
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 # TODO: simplify make_square_matrix and make_column vector (maybe renam to make ____ from list - there is already ...
 # TODO: ... such a function for msquare matrix). These functions do not need al tie current functionality. ...
@@ -265,10 +268,10 @@ def indexed_column_vector_operation(colvec_a, colvec_b, var_names_a, var_names_b
     assert colvec_a.shape[1] == 1, "Error: column vector array cannot have more than one column"
     assert colvec_b.shape[1] == 1, "Error: column vector array cannot have more than one column"
     assert (
-        len(var_names_a) == colvec_a.shape[0]
+            len(var_names_a) == colvec_a.shape[0]
     ), "Error: number of variables in var_names_a does not match the dimension of colvec_a."
     assert (
-        len(var_names_b) == colvec_b.shape[0]
+            len(var_names_b) == colvec_b.shape[0]
     ), "Error: number of variables in var_names_a does not match the dimension of colvec_b."
     # TODO: clean this up (also see todo in indexed_square_matrix_operation)
     if set(var_names_b) <= set(var_names_a):
@@ -312,12 +315,14 @@ def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
 
     x_mesh, y_mesh = np.meshgrid(x_space, y_space)
     xx_mesh_array = np.array([x_mesh.ravel(), y_mesh.ravel()]).T
+    # pylint: disable=not-an-iterable
     z_mesh_array = np.array([func(X) for X in xx_mesh_array])
+    # pylint: enable=not-an-iterable
     z_mesh = z_mesh_array.reshape(x_mesh.shape)
 
     if figsize is not None:
         plt.figure(figsize=figsize)
-    color_scale = plt.contourf(x_mesh, y_mesh, z_mesh, levels=30, cmap=plt.cm.viridis)
+    color_scale = plt.contourf(x_mesh, y_mesh, z_mesh, levels=30)
     plt.colorbar(color_scale, shrink=0.8, extend="both")
 
     plt.xlabel(xlabel)
@@ -329,7 +334,7 @@ def inv_matrix(mat):
     Invert matrix using the numpy.linalg.inv function and describe matrix if inversion fails.
 
     :param numpy.ndarray mat: The matrix to invert.
-    :return: The inverted matrix
+    :return: The inverted matrix.
     :rtype: numpy.ndarray
     """
     try:
@@ -351,3 +356,30 @@ def log(x_val):
         raise Warning(f"Invalid value ({x_val}) in log")
     logx = np.log(x_val)
     return logx
+
+
+def tabs_to_cover_string(string):
+    """
+     Get the number of tabs required to be at least the same length as a given string.
+     :param string: The string
+     :return: The number of tabs to cover it
+     :rtype: int
+     """
+    num_tabs = int(np.floor(len(string) / 8) + 1)
+    return num_tabs
+
+
+def space_assignments_and_probs(assignment, value, spacings):
+    """
+    Join the string representations of the assignment values and prob value, with the provided spacing.
+
+    :param list assignment: The list of assignments typically corresponding to the entry in a categorical table.
+    :param float value: The value corresponding to the assignment.
+    :param spacings: The spacing to apply between the values.
+    :return: The spaced, joined string
+    :rtype: str
+    """
+    content_stings = [str(a) for a in assignment] + [f'{value:.4f}']
+    spaced_content_stings = [c_str + space for c_str, space in zip(content_stings, spacings)]
+    spaced_content_sting = ''.join(spaced_content_stings)
+    return spaced_content_sting

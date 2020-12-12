@@ -44,6 +44,7 @@ jobs:
         run: |
           echo Checking code style
           black --check --line-length=110  veroku/
+          pylint ./veroku
 
           echo Installing Additional Dependencies
           sudo apt-get install graphviz
@@ -96,5 +97,3 @@ jobs:
           git add docs/ || :
           git commit -m 'Update documentation.' || :
           git push || :
-
-

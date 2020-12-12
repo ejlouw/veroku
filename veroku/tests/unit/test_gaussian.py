@@ -11,6 +11,7 @@ import cmath
 from mockito import when, expect, unstub, verifyNoUnwantedInteractions
 import numpy as np
 from scipy import integrate
+import seaborn as sns
 
 # Local imports
 from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gaussian, GaussianTemplate
@@ -590,7 +591,7 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         Test that the _get_complex_log_weight returns the correct value.
         """
         gaussian_ab = Gaussian(prec=[[-1.0, 0.0], [0.0, 1.0]], h_vec=[0.0, 0.0], g_val=0.0, var_names=["a", "b"])
-        actual_complex_weight = gaussian_ab.get_complex_weight()
+        actual_complex_weight = gaussian_ab._get_complex_weight()
         expected_complex_weight = cmath.exp(0.5 * cmath.log((-1.0) * (2.0 * np.pi) ** 2))
         self.assertAlmostEqual(actual_complex_weight, expected_complex_weight)
 
@@ -816,7 +817,6 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         actual_repr_string = gaussian.__repr__()
         self.assertEqual(actual_repr_string, expected_repr_string)
 
-    import seaborn as sns
     @patch.object(sns, "heatmap")
     def test_show_vis(self, sns_heatmap_mock):
         """
@@ -835,7 +835,7 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         """
         g_1 = make_random_gaussian(['a'])
         g_1._update_canform()
-        g_1.show(update_covform=True, show_canform=True)
+        g_1.show()
         _get_can_repr_str_mock.assert_called()
         _get_can_repr_str_mock.assert_called()
 

@@ -84,9 +84,10 @@ If you would like to contribute to veroku, the TODO's in the code are a good pla
  ones, but some are more complex. Another area where contributions will be valuable is in getting the experimental
  modules rounded off and writing tests for these modules. Another potential area for contribution would be the items on 
  the roadmap, although it would be best if the experimental modules are first rounded off.  In general, please remember
- to ensure that  the following guidelines are followed when contributing:
+ to ensure that the following guidelines are followed when contributing:
 </div>
 
+* The use of pylint disable statements should be reserved only for special cases and are not generally acceptable.
 * Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)	
 * Run the `black check <params> <dir>` command from the terminal (from the project root directory) to ensure that the 
     code style is correct (see the *Setup And Test* section in 
