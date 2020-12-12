@@ -35,11 +35,6 @@
   <a class="reference internal image-reference" href="_images/logo.svg"><img alt="_images/logo.svg" src="_images/logo.svg" width="600" /></a>
 <div class="section" id="welcome-to-veroku-s-documentation">
 <h1>Welcome to Veroku’s Documentation!<a class="headerlink" href="#welcome-to-veroku-s-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="disclaimer">
-<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
-<p>This project is still in the very early stages of development. Use this library at your own risk. The github repo is
-also still private, but will be made public soon.</p>
-</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>For installing through pip:</p>
@@ -52,15 +47,20 @@ also still private, but will be made public soon.</p>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
+<p>It is recommended to use a separate conda virtual environment when installing the dependencies, to avoid interfering
+with existing packages. To get started with conda environments, see the
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">installation guide</a>.
+For more information on using conda environments see
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">managing environments guide</a></p>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <div style="text-align: justify">
-Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs). PGMs
-provide a framework for performing efficient probabilistic inference with very high dimensional distributions. A typical
-example of a well-known type of PGM is the Kalman filter that can be used to obtain probabilistic estimates of a hidden
-state of a process or system, given noisy measurements. PGMs can in principle be used for any problem that involves
-uncertainty and is therefore applicable to many problems.</div><p>Veroku currently supports the following distributions:</p>
+Veroku is an open source library for building and performing inference with probabilistic graphical models (PGMs) in
+python. PGMs provide a framework for performing efficient probabilistic inference with very high dimensional
+distributions. A typical example of a well-known type of PGM is the Kalman filter that can be used to obtain
+probabilistic estimates of a hidden state of a process or system, given noisy measurements. PGMs can in principle be
+used for any problem that involves uncertainty and is therefore applicable to many problems.</div><p>Veroku currently supports the following probability distributions:</p>
 <ul class="simple">
 <li><p>Categorical (sparse and dense implementations)</p></li>
 <li><p>Gaussian</p></li>
@@ -84,19 +84,15 @@ Example notebooks:</p>
 <li><p><a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/examples/sudoku.ipynb">Sudoku</a></p></li>
 </ul>
 </div>
-<div class="section" id="future-features">
-<h2>Future Features<a class="headerlink" href="#future-features" title="Permalink to this headline">¶</a></h2>
-<p>To be added soon:</p>
-<ul class="simple">
-<li><p>More example notebooks</p></li>
-<li><p>Plate models (for efficiently specifying PGMs as modular/hierarchical templates)</p></li>
-</ul>
-<p>On the roadmap:</p>
+<div class="section" id="on-the-roadmap">
+<h2>On the Roadmap<a class="headerlink" href="#on-the-roadmap" title="Permalink to this headline">¶</a></h2>
+<p>The following distributions, models and features are on the roadmap to be added to veroku:</p>
 <ul class="simple">
 <li><p>Conditional Gaussian</p></li>
 <li><p>Dirichlet distribution</p></li>
 <li><p>Wishart distribution</p></li>
 <li><p>Normal-Wishart distribution</p></li>
+<li><p>Plate models</p></li>
 <li><p>Structure Learning</p></li>
 <li><p>Causal Inference</p></li>
 </ul>
@@ -116,14 +112,27 @@ The following additional dependencies are also required for some functionality (
 <div class="section" id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
 <div style="text-align: justify">
-If you would like to contribute to veroku, the TODO's in the code are a good place to start. There are a few very simple
- ones, but some are more complex. Another area where contributions will be valuable is in getting the experimental
- modules rounded off and writing tests for these modules. Another potential area for contribution would be the items on
- the roadmap, although it would be best if the experimental modules are first rounded off.  In general, please remember
- to ensure that the following guidelines are followed when contributing:
+If you would like to contribute to veroku, the TODO's in the code are a good place to start. There are a some very simple
+ones, but also a few more complex ones. Another area where contributions will be valuable is in the completion and
+refinement of the experimental modules and writing tests for these modules. Another potential area for contribution
+would be the items on the roadmap, although it would be best if the experimental modules are first rounded off.
+
+This project uses gitflow for branch management. Below is a summary of how to make a contribution to this project using
+the gitflow process:
+* Fork this repository to your own GitHub account.
+* Clone the forked repository to make it available locally.
+* Switch to the dev branch (`git checkout dev`) and branch of of this branch to create your new feature branch
+(`git checkout -b feature/<your-feature-name>`).
+* Make changes and add features, commit these changes when done and push the changes to your GitHub repo.
+* Create a pull request to request that your changes be added to veroku.
+
+In general, please remember to ensure that the following guidelines are followed when contributing:
 </div><ul class="simple">
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">pylint</span> <span class="pre">./veroku</span></code> from the project root to ensure that there are no code style issues (this will cause the actions
+pipeline to fail)</p></li>
 <li><p>The use of pylint disable statements should be reserved only for special cases and are not generally acceptable.</p></li>
-<li><p>Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)</p></li>
+<li><p>Add tests for any contributions ( this will also prevent the build from failing on the code coverage check).</p></li>
+<li><p>Run all tests before pushing.</p></li>
 </ul>
 </div>
 <div class="section" id="license">
