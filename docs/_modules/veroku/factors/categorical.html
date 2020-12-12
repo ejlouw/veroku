@@ -32,7 +32,11 @@
           <div class="body" role="main">
             
   <h1>Source code for veroku.factors.categorical</h1><div class="highlight"><pre>
-<span></span><span class="c1"># System imports</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for instantiating sparse tables with log probabilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Standard imports</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -45,14 +49,12 @@
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
+<span class="kn">from</span> <span class="nn">veroku.factors</span> <span class="kn">import</span> <span class="n">_factor_utils</span>
+<span class="kn">from</span> <span class="nn">veroku._constants</span> <span class="kn">import</span> <span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">DEFAULT_FACTOR_ATOL</span>
 
 <span class="c1"># special operator rules</span>
 <span class="n">LOG_SUBTRACT_CANCEL_RULES</span> <span class="o">=</span> <span class="p">{(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">}</span>
 <span class="n">LOG_SUBTRACT_KL_RULES</span> <span class="o">=</span> <span class="p">{(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span> <span class="mf">0.0</span><span class="p">}</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A module for instantiating sparse tables with log probabilities.</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># TODO: consider removing some unused functions</span>
 
@@ -113,9 +115,9 @@
             <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">probs_tensor</span><span class="p">[</span><span class="n">assignment</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
-                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">index_error</span><span class="p">:</span>
                     <span class="n">error_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;assignment </span><span class="si">{</span><span class="n">assignment</span><span class="si">}</span><span class="s2"> is not consistent with the cardinalities (</span><span class="si">{</span><span class="n">cardinalities</span><span class="si">}</span><span class="s2">) provided&quot;</span>
-                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">index_error</span>
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
                 <span class="c1"># prevents &#39;divide by zero encountered in log&#39; from displaying</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
@@ -155,12 +157,14 @@
         <span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">vars_new_order_indices</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">new_var_names_order</span><span class="p">,</span> <span class="n">log_probs_tensor</span><span class="o">=</span><span class="n">log_probs_tensor</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Categorical.equals"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.equals"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_ATOL</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if this factor is the same as another factor.</span>
 
 <span class="sd">        :param factor: The other factor to compare to.</span>
 <span class="sd">        :type factor: Categorical</span>
+<span class="sd">        :param float rtol: The relative tolerance to use for factor equality check.</span>
+<span class="sd">        :param float atol: The absolute tolerance to use for factor equality check.</span>
 <span class="sd">        :return: The result of the comparison.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -169,7 +173,7 @@
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="n">factor_copy</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">,</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">,</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -202,8 +206,8 @@
             <span class="k">return</span> <span class="n">result_tensor</span><span class="p">,</span> <span class="n">tensor_a_var_names</span>
         <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tensor_a_var_names</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">tensor_b_var_names</span><span class="p">)</span>
 
-        <span class="n">remaining_f1_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tensor_a_var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
-        <span class="n">remaining_f2_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tensor_b_var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
+        <span class="n">remaining_f1_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">tensor_a_var_names</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
+        <span class="n">remaining_f2_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">tensor_b_var_names</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
         <span class="c1"># sort according to f1_vars so that only f2_tensor can be transposed if sets are the same</span>
         <span class="n">common_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tensor_a_var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
         <span class="n">f1_vars_new_order</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor_a_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">remaining_f1_vars</span><span class="p">]</span>
@@ -214,8 +218,8 @@
         <span class="n">f1_tensor_std_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">f1_tensor_new_shape</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">f1_dim_expansion_axis</span><span class="p">)</span>
         <span class="c1">#  now f1 has var order / dim order: [[1]*num_f2_vars, rest_f1_vars_dims, common_vars]</span>
 
-        <span class="n">f2_vars_new_order</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor_b_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">remaining_f2_vars</span><span class="p">]</span>
-        <span class="n">f2_vars_new_order</span> <span class="o">+=</span> <span class="p">[</span><span class="n">tensor_b_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
+        <span class="n">f2_vars_new_order</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor_b_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">remaining_f2_vars</span><span class="p">]</span>
+        <span class="n">f2_vars_new_order</span> <span class="o">+=</span> <span class="p">[</span><span class="n">tensor_b_var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">common_vars</span><span class="p">]</span>
         <span class="n">f2_tensor_new_shape</span> <span class="o">=</span> <span class="n">tensor_b</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">f2_vars_new_order</span><span class="p">)</span>
         <span class="c1"># now f2 has var order / dim order:  [common_vars_dim, [1]*num_f2_vars]</span>
 
@@ -229,7 +233,7 @@
         <span class="n">result_tensor</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">f1_tensor_std_shape</span><span class="p">,</span> <span class="n">f2_tensor_std_shape</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result_tensor</span><span class="p">,</span> <span class="n">result_vars</span></div>
 
-<div class="viewcode-block" id="Categorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum out variables from this factor.</span>
 
@@ -321,15 +325,12 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">result_vars</span><span class="p">,</span> <span class="n">log_probs_tensor</span><span class="o">=</span><span class="n">result_tensor</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Categorical.divide"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">special_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Categorical.divide"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Divide this factor by another factor and return the result.</span>
 
 <span class="sd">        :param factor: The factor to divide by.</span>
 <span class="sd">        :type factor: Categorical</span>
-<span class="sd">        :param special_rules: Any special rules to apply for specific values of the left and right variables.</span>
-<span class="sd">            For example: {(left_var_val, right_var_val): result, ...}</span>
-<span class="sd">        :type special_rules: dict</span>
 <span class="sd">        :return: The factor quotient.</span>
 <span class="sd">        :rtype: Categorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -363,18 +364,6 @@
         <span class="n">logz</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">)</span>
         <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_tensor</span> <span class="o">-=</span> <span class="n">logz</span>
         <span class="k">return</span> <span class="n">factor_copy</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
-
-<span class="sd">        :return: Whether the factor is vacuous or not.</span>
-<span class="sd">        :rtype: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_raw_kld</span><span class="p">(</span><span class="n">log_p</span><span class="p">,</span> <span class="n">log_q</span><span class="p">):</span>
@@ -431,8 +420,8 @@
         <span class="n">uniform_log_prob</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="n">uniform_log_tensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">uniform_log_prob</span>
         <span class="n">uniform_factor</span> <span class="o">=</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="n">log_probs_tensor</span><span class="o">=</span><span class="n">uniform_log_tensor</span><span class="p">)</span>
-        <span class="n">kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">kl</span></div>
+        <span class="n">kld</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kld</span></div>
 
 <div class="viewcode-block" id="Categorical.potential"><a class="viewcode-back" href="../../../veroku.factors.categorical.html#veroku.factors.categorical.Categorical.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">assignment</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -459,13 +448,14 @@
 <span class="sd">        :return: The representation string</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)</span>
         <span class="n">tabbed_spaced_var_names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">prob</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">repr_str</span> <span class="o">=</span> <span class="n">tabbed_spaced_var_names</span>
+        <span class="n">spacings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">tabs_to_cover_string</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">assignment</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
             <span class="n">prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="p">[</span><span class="n">assignment</span><span class="p">]</span>
             <span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
-            <span class="n">repr_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">assignment</span><span class="p">))</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">prob</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">space_assignments_and_probs</span><span class="p">(</span><span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">spacings</span><span class="p">)</span>
+            <span class="n">repr_str</span> <span class="o">+=</span> <span class="n">line</span>
         <span class="k">return</span> <span class="n">repr_str</span></div>
 
 

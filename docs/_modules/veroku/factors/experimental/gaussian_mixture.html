@@ -32,7 +32,14 @@
           <div class="body" role="main">
             
   <h1>Source code for veroku.factors.experimental.gaussian_mixture</h1><div class="highlight"><pre>
-<span></span><span class="c1"># System imports</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for instantiating and performing operations on multivariate Gaussian mixture distributions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># pylint: disable=cyclic-import</span>
+<span class="c1"># pylint: disable=protected-access</span>
+
+<span class="c1"># Standard imports</span>
 <span class="kn">import</span> <span class="nn">cmath</span>
 
 <span class="c1"># Third-party imports</span>
@@ -45,16 +52,13 @@
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
 <span class="kn">from</span> <span class="nn">veroku.factors</span> <span class="kn">import</span> <span class="n">_factor_utils</span>
-<span class="kn">from</span> <span class="nn">veroku.factors.gaussian</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">import</span> <span class="nn">veroku.factors.gaussian</span> <span class="k">as</span> <span class="nn">gauss</span>
+<span class="kn">from</span> <span class="nn">veroku._constants</span> <span class="kn">import</span> <span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">DEFAULT_FACTOR_ATOL</span>
 
 <span class="c1"># TODO: confirm that the different GaussianMixture divide methods have sufficient stability and accuracy in their</span>
 <span class="c1">#  approximations.</span>
 <span class="c1"># TODO: Add tests for the divide methods.</span>
 <span class="c1"># TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="GaussianMixture"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture">[docs]</a><span class="k">class</span> <span class="nc">GaussianMixture</span><span class="p">(</span><span class="n">Factor</span><span class="p">):</span>
@@ -88,14 +92,16 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;inconsistent var_names in list of Gaussians.&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="GaussianMixture.equals"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.equals"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_ATOL</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if this Gaussian mixture is the same as another factor.</span>
+<span class="sd">        Check if this factor is the same as another factor.</span>
 
-<span class="sd">        :param factor: The factor to compare to.</span>
+<span class="sd">        :param factor: The factor to compare with.</span>
 <span class="sd">        :type factor: GaussianMixture</span>
-<span class="sd">        :return: The result of the comparison.</span>
-<span class="sd">        :rtype: bool</span>
+<span class="sd">        :param float rtol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
+<span class="sd">        :param float atol: The absolute tolerance parameter (see numpy Notes for allclose function).</span>
+<span class="sd">        :return: Result of equals comparison between self and gaussian</span>
+<span class="sd">        rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: consider adding type error here rather</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
@@ -130,8 +136,8 @@
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">component_copies</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">component_copies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">component_copies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">component_copies</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="GaussianMixture.multiply"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
@@ -144,13 +150,13 @@
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+                <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">gauss_ai</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">gauss_bi</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-                    <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_ai</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">gauss_bi</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">comp_ai</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp_bi</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+                    <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_ai</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">comp_bi</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;unsupported factor type.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
@@ -165,7 +171,7 @@
 <span class="sd">        GaussianMixtures with more than one component).</span>
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">Gaussian</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">):</span>
             <span class="n">single_gaussian</span> <span class="o">=</span> <span class="n">factor</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">factor</span><span class="o">.</span><span class="n">num_components</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -180,8 +186,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;unsupported factor type.&quot;</span><span class="p">)</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">single_gaussian</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">single_gaussian</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="GaussianMixture.reduce"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
@@ -196,11 +202,11 @@
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GaussianMixture.marginalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.marginalize"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate out variables from this Gaussian mixture.</span>
 
@@ -212,27 +218,45 @@
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 
-    <span class="c1"># pylint: disable=invalid-name</span>
-<div class="viewcode-block" id="GaussianMixture.log_potential"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.log_potential">[docs]</a>    <span class="k">def</span> <span class="nf">log_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianMixture.distance_from_vacuous"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        NOTE: Not Implemented yet.</span>
+<span class="sd">        Get the Kullback-Leibler (KL) divergence between the message factor and a vacuous (uniform) version of it.</span>
+
+<span class="sd">        :return: The KL-divergence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;This function has not been implemented yet.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GaussianMixture.kl_divergence"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.kl_divergence">[docs]</a>    <span class="k">def</span> <span class="nf">kl_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        NOTE: Not Implemented yet.</span>
+<span class="sd">        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.</span>
+
+<span class="sd">        :param factor: The other factor</span>
+<span class="sd">        :type factor: GaussianMixture</span>
+<span class="sd">        :return: The Kullback-Leibler divergence</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;This function has not been implemented yet.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GaussianMixture.log_potential"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.log_potential">[docs]</a>    <span class="k">def</span> <span class="nf">log_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log of the value of the Gaussian mixture potential at X.</span>
 
-<span class="sd">        :param x: The point to evaluate the GaussianMixture at.</span>
-<span class="sd">        :type x: vector-like</span>
+<span class="sd">        :param x_val: The point to evaluate the GaussianMixture at.</span>
+<span class="sd">        :type x_val: vector-like</span>
 <span class="sd">        :return: log of the value of the GaussianMixture potential at x.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log_potentials</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">log_potentials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">log_potentials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">))</span>
         <span class="n">total_log_potx</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total_log_potx</span></div>
-
-    <span class="c1"># pylint: enable=invalid-name</span>
 
 <div class="viewcode-block" id="GaussianMixture.potential"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -244,8 +268,8 @@
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">total_potx</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">total_potx</span> <span class="o">+=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">total_potx</span> <span class="o">+=</span> <span class="n">comp</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total_potx</span></div>
 
     <span class="k">def</span> <span class="nf">_get_means</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -255,8 +279,8 @@
 <span class="sd">        :return: the mean vectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">means</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">means</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">means</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">means</span>
 
     <span class="k">def</span> <span class="nf">_get_covs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -267,8 +291,8 @@
 <span class="sd">        :rtype: np.ndarray list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">covs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">covs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_cov</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">covs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_cov</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">covs</span>
 
     <span class="k">def</span> <span class="nf">_get_log_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -279,8 +303,8 @@
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log_weights</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">log_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">log_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">log_weights</span>
 
     <span class="k">def</span> <span class="nf">_get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -291,8 +315,8 @@
 <span class="sd">        :rtype: float list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_weight</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_weight</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">weights</span>
 
 <div class="viewcode-block" id="GaussianMixture.get_log_weight"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.get_log_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -313,10 +337,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">unnormalized_log_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">()</span>
         <span class="n">new_components</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">gauss_copy</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">gauss_copy</span><span class="o">.</span><span class="n">_add_log_weight</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">unnormalized_log_weight</span><span class="p">)</span>
-            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss_copy</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">comp_copy</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">comp_copy</span><span class="o">.</span><span class="n">_add_log_weight</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">unnormalized_log_weight</span><span class="p">)</span>
+            <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_copy</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">new_components</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
@@ -330,8 +354,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components</span>
         <span class="c1">#  are vacuous? Maybe make a contains vacuous function as well.</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">gauss</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">comp</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span>
 
@@ -362,10 +386,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x_lower_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">x_upper_candidates</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">stddev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-            <span class="n">x_lower_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">stddev</span><span class="p">)</span>
-            <span class="n">x_upper_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">stddev</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">stddev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">x_lower_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">stddev</span><span class="p">)</span>
+            <span class="n">x_upper_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">stddev</span><span class="p">)</span>
         <span class="n">x_lower</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_lower_candidates</span><span class="p">)</span>
         <span class="n">x_upper</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_upper_candidates</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">]</span>
@@ -390,11 +414,11 @@
             <span class="n">num_points</span> <span class="o">=</span> <span class="mi">200</span>
             <span class="n">x_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">num_points</span><span class="p">)</span>
             <span class="n">total_potx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_points</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
-                    <span class="n">potx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gauss</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x_series</span><span class="p">])</span>
+                    <span class="n">potx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">comp</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x_series</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">potx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gauss</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x_series</span><span class="p">])</span>
+                    <span class="n">potx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">comp</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x_series</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">show_individual_components</span><span class="p">:</span>
                     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_series</span><span class="p">,</span> <span class="n">potx</span><span class="p">)</span>
                 <span class="n">total_potx</span> <span class="o">+=</span> <span class="n">potx</span>
@@ -408,11 +432,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print the parameters of the Gaussian mixture distribution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;component &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">))</span>
-            <span class="n">gauss</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+            <span class="n">comp</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
-    <span class="c1"># pylint: disable=invalid-name</span>
 <div class="viewcode-block" id="GaussianMixture.moment_match_to_single_gaussian"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.moment_match_to_single_gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">moment_match_to_single_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the mean and covariance of the Gaussian mixture and return a Gaussian with these parameters as an</span>
@@ -423,25 +446,23 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="n">log_weights</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">wm</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span>
-            <span class="n">new_mean</span> <span class="o">+=</span> <span class="n">wm</span>
-            <span class="n">log_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">weight_mean</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span>
+            <span class="n">new_mean</span> <span class="o">+=</span> <span class="n">weight_mean</span>
+            <span class="n">log_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_log_weight</span><span class="p">())</span>
         <span class="n">log_sum_weights</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">log_weights</span><span class="p">)</span>
         <span class="n">sum_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_sum_weights</span><span class="p">)</span>
         <span class="n">new_mean</span> <span class="o">=</span> <span class="n">new_mean</span> <span class="o">/</span> <span class="n">sum_weights</span>
         <span class="n">new_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">ududT</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">udud_t</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
             <span class="p">)</span>
-            <span class="n">new_cov</span> <span class="o">+=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span> <span class="o">+</span> <span class="n">ududT</span>
+            <span class="n">new_cov</span> <span class="o">+=</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_weight</span><span class="p">()</span> <span class="o">*</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()</span> <span class="o">+</span> <span class="n">udud_t</span>
         <span class="n">new_cov</span> <span class="o">=</span> <span class="n">new_cov</span> <span class="o">/</span> <span class="n">sum_weights</span>
-        <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span>
             <span class="n">cov</span><span class="o">=</span><span class="n">new_cov</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">new_mean</span><span class="p">,</span> <span class="n">log_weight</span><span class="o">=</span><span class="n">log_sum_weights</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span>
         <span class="p">)</span></div>
-
-    <span class="c1"># pylint: enable=invalid-name</span>
 
 <div class="viewcode-block" id="GaussianMixture.argmax"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.argmax">[docs]</a>    <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -457,8 +478,8 @@
         <span class="k">def</span> <span class="nf">neg_gmm_pot</span><span class="p">(</span><span class="n">x_val</span><span class="p">):</span>
             <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">neg_gmm_pot</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BFGS&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;disp&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">neg_gmm_pot</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BFGS&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;disp&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
             <span class="n">x_local_max</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
             <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
                 <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
@@ -485,8 +506,8 @@
         <span class="k">def</span> <span class="nf">gmm_pot</span><span class="p">(</span><span class="n">x_vals</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x_vals</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">gmm_pot</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BFGS&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;disp&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">gmm_pot</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BFGS&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;disp&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
             <span class="n">x_local_min</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
             <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
                 <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
@@ -498,7 +519,6 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;could not find optimum&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">global_argmin</span>
 
-    <span class="c1"># pylint: disable=invalid-name</span>
     <span class="k">def</span> <span class="nf">_moment_match_complex_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the mean and covariance of the Gaussian mixture and return a Gaussian</span>
@@ -510,33 +530,30 @@
         <span class="c1"># TODO: check if the normal moment matching function can be replaced with this one.</span>
         <span class="n">new_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">c_weight</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_complex_weight</span><span class="p">()</span>
-            <span class="n">c_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_K</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_h</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">c_weight</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">_get_complex_weight</span><span class="p">()</span>
+            <span class="n">c_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_prec</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_h</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
             <span class="n">new_mean</span> <span class="o">+=</span> <span class="n">c_weight</span> <span class="o">*</span> <span class="n">c_mean</span>
             <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c_weight</span><span class="p">)</span>
         <span class="n">sum_weights</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
         <span class="n">new_mean</span> <span class="o">=</span> <span class="n">new_mean</span> <span class="o">/</span> <span class="n">sum_weights</span>
         <span class="n">new_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">c_weight</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_complex_weight</span><span class="p">()</span>
-            <span class="n">c_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_K</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_h</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
-            <span class="n">ududT</span> <span class="o">=</span> <span class="n">c_weight</span> <span class="o">*</span> <span class="p">(</span><span class="n">c_mean</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">c_mean</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
-            <span class="n">c_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_K</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
-            <span class="n">new_cov</span> <span class="o">+=</span> <span class="n">c_weight</span> <span class="o">*</span> <span class="n">c_cov</span> <span class="o">+</span> <span class="n">ududT</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">c_weight</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">_get_complex_weight</span><span class="p">()</span>
+            <span class="n">c_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_prec</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_h</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="n">udud_t</span> <span class="o">=</span> <span class="n">c_weight</span> <span class="o">*</span> <span class="p">(</span><span class="n">c_mean</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">c_mean</span> <span class="o">-</span> <span class="n">new_mean</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+            <span class="n">c_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_prec</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="n">new_cov</span> <span class="o">+=</span> <span class="n">c_weight</span> <span class="o">*</span> <span class="n">c_cov</span> <span class="o">+</span> <span class="n">udud_t</span>
         <span class="n">new_cov</span> <span class="o">=</span> <span class="n">new_cov</span> <span class="o">/</span> <span class="n">sum_weights</span>
 
         <span class="n">new_log_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sum_weights</span><span class="p">)</span>
 
-        <span class="n">new_K</span><span class="p">,</span> <span class="n">new_h</span><span class="p">,</span> <span class="n">new_g</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="o">.</span><span class="n">_complex_cov_form_to_real_canform</span><span class="p">(</span>
+        <span class="n">new_prec</span><span class="p">,</span> <span class="n">new_h_vec</span><span class="p">,</span> <span class="n">new_g</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="o">.</span><span class="n">_complex_cov_form_to_real_canform</span><span class="p">(</span>
             <span class="n">new_cov</span><span class="p">,</span> <span class="n">new_mean</span><span class="p">,</span> <span class="n">new_log_weight</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="n">new_K</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">new_h</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">new_g</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
-
-    <span class="c1"># pylint: enable=invalid-name</span>
+        <span class="k">return</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">prec</span><span class="o">=</span><span class="n">new_prec</span><span class="p">,</span> <span class="n">h_vec</span><span class="o">=</span><span class="n">new_h_vec</span><span class="p">,</span> <span class="n">g_val</span><span class="o">=</span><span class="n">new_g</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="c1"># pylint: disable=invalid-name</span>
     <span class="k">def</span> <span class="nf">_complex_cov_form_to_real_canform</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">log_weight</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A helper function for _moment_match_complex_gaussian.</span>
@@ -544,20 +561,16 @@
 <span class="sd">        :param cov: the (possibly complex) covariance matrix</span>
 <span class="sd">        :param mean: the (possibly complex) covariance matrix</span>
 <span class="sd">        :param log_weight: the (possibly complex) log weight</span>
-<span class="sd">        :return: the real parts of the converted canonical parameters (K, h, g)</span>
+<span class="sd">        :return: the real parts of the converted canonical parameters (prec, h_vec, g_val)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
-        <span class="n">uTKu</span> <span class="o">=</span> <span class="p">((</span><span class="n">mean</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">prec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+        <span class="n">h_vec</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">ut_k_u</span> <span class="o">=</span> <span class="p">((</span><span class="n">mean</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">prec</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
         <span class="n">log_det_term</span> <span class="o">=</span> <span class="n">cmath</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">cov</span><span class="p">))</span>
-        <span class="n">g</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">log_weight</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">uTKu</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_det_term</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">K</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">real</span>
-
-    <span class="c1"># pylint: enable=invalid-name</span>
+        <span class="n">g_val</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">log_weight</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">ut_k_u</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_det_term</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prec</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">h_vec</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">g_val</span><span class="o">.</span><span class="n">real</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="c1"># pylint: disable=invalid-name</span>
-    <span class="c1"># pylint: disable=protected-access</span>
     <span class="k">def</span> <span class="nf">_get_inverse_gaussians</span><span class="p">(</span><span class="n">gaussian_mixture_a</span><span class="p">,</span> <span class="n">gaussian_mixture_b</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A helper function for _gm_division_m1. Returns the inverse components.</span>
@@ -584,11 +597,11 @@
             <span class="n">minimum_loc</span> <span class="o">=</span> <span class="n">inverse_gaussian_mixture</span><span class="o">.</span><span class="n">_argmin</span><span class="p">()</span>
             <span class="n">minimum_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">minimum_loc</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">neg_gm_log_quotient_potential</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">neg_gm_log_quotient_potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Get the negative of the log value of the Gaussian mixture quotient (gma/gmb)</span>
 <span class="sd">            &quot;&quot;&quot;</span>
-            <span class="n">potential</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">gaussian_mixture_a</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">gaussian_mixture_b</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">potential</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">gaussian_mixture_a</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span> <span class="o">-</span> <span class="n">gaussian_mixture_b</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">x_val</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">potential</span>
 
         <span class="n">mode_locations</span> <span class="o">=</span> <span class="p">[]</span>
@@ -602,12 +615,7 @@
         <span class="n">unique_mode_locations</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">remove_duplicate_values</span><span class="p">(</span><span class="n">mode_locations</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">inverse_gaussian_mixtures</span><span class="p">,</span> <span class="n">unique_mode_locations</span>
 
-    <span class="c1"># pylint: enable=protected-access</span>
-    <span class="c1"># pylint: enable=invalid-name</span>
-
     <span class="nd">@staticmethod</span>
-    <span class="c1"># pylint: disable=invalid-name</span>
-    <span class="c1"># pylint: disable=protected-access</span>
     <span class="k">def</span> <span class="nf">_gm_division_m1</span><span class="p">(</span><span class="n">gaussian_mixture_a</span><span class="p">,</span> <span class="n">gaussian_mixture_b</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Method 1 for approximating the quotient (gma/gmb) of two Gaussian mixtures as a Gaussian mixture.</span>
@@ -629,23 +637,19 @@
         <span class="n">inv_gm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">inverse_gaussian_mixtures</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">mode_location</span> <span class="ow">in</span> <span class="n">unique_mode_locations</span><span class="p">:</span>
-            <span class="n">K_i</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="n">inv_gm</span><span class="o">.</span><span class="n">log_potential</span><span class="p">)(</span><span class="n">mode_location</span><span class="p">)</span>
+            <span class="n">prec_i</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="n">inv_gm</span><span class="o">.</span><span class="n">log_potential</span><span class="p">)(</span><span class="n">mode_location</span><span class="p">)</span>
             <span class="n">mean_i</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">make_column_vector</span><span class="p">(</span><span class="n">mode_location</span><span class="p">)</span>
-            <span class="n">h_i</span> <span class="o">=</span> <span class="n">K_i</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
+            <span class="n">h_i</span> <span class="o">=</span> <span class="n">prec_i</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
 
-            <span class="n">uTKu</span> <span class="o">=</span> <span class="p">((</span><span class="n">mean_i</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K_i</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
-            <span class="n">log_weight_i</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">K_i</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span> <span class="o">*</span> <span class="n">inv_gm</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
-            <span class="n">g_i</span> <span class="o">=</span> <span class="n">log_weight_i</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">uTKu</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">K_i</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span>
+            <span class="n">ut_k_u</span> <span class="o">=</span> <span class="p">((</span><span class="n">mean_i</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">prec_i</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
+            <span class="n">log_weight_i</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">prec_i</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span> <span class="o">*</span> <span class="n">inv_gm</span><span class="o">.</span><span class="n">log_potential</span><span class="p">(</span><span class="n">mean_i</span><span class="p">)</span>
+            <span class="n">g_i</span> <span class="o">=</span> <span class="n">log_weight_i</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">ut_k_u</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">prec_i</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span>
 
-            <span class="n">component</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="n">K_i</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">h_i</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g_i</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="n">gaussian_mixture_a</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
+            <span class="n">component</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">prec</span><span class="o">=</span><span class="n">prec_i</span><span class="p">,</span> <span class="n">h_vec</span><span class="o">=</span><span class="n">h_i</span><span class="p">,</span> <span class="n">g_val</span><span class="o">=</span><span class="n">g_i</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="n">gaussian_mixture_a</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
             <span class="n">resulting_gaussian_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">resulting_gaussian_components</span><span class="p">)</span>
 
-    <span class="c1"># pylint: enable=protected-access</span>
-    <span class="c1"># pylint: enable=invalid-name</span>
-
     <span class="nd">@staticmethod</span>
-    <span class="c1"># pylint: disable=protected-access</span>
     <span class="k">def</span> <span class="nf">_gm_division_m2</span><span class="p">(</span><span class="n">gma</span><span class="p">,</span> <span class="n">gmb</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Method 2 for approximating the quotient (gma/gmb) of two Gaussian mixtures as a Gaussian mixture.</span>
@@ -677,7 +681,7 @@
             <span class="n">inverse_gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">inverse_components</span><span class="p">)</span>
             <span class="n">inverse_gaussian_mixtures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inverse_gaussian_mixture</span><span class="p">)</span>
             <span class="n">inverse_gaussian_approx</span> <span class="o">=</span> <span class="n">inverse_gaussian_mixture</span><span class="o">.</span><span class="n">_moment_match_complex_gaussian</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="n">inverse_gaussian_approx</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="n">inverse_gaussian_approx</span><span class="o">.</span><span class="n">prec</span><span class="p">):</span>
                 <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="c1"># raise ValueError(&#39; precision is negative definite.&#39;)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: precision is negative definite.&quot;</span><span class="p">)</span>
@@ -687,9 +691,7 @@
         <span class="n">resulting_gm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">resulting_gaussian_components</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">resulting_gm</span>
 
-    <span class="c1"># pylint: enable=protected-access</span>
-
-    <span class="k">def</span> <span class="nf">_get_limits_for_2d_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="k">def</span> <span class="nf">_get_limits_for_2d_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get x and y limits which includes most of the Gaussian mixture&#39;s mass, by considering</span>
 <span class="sd">        the mean and variance of each Gaussian component.</span>
@@ -698,11 +700,11 @@
         <span class="n">x_upper_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">y_lower_candidates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">y_upper_candidates</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">gauss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
-            <span class="n">stddev_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-            <span class="n">stddev_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gauss</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="n">mean_x</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="n">mean_y</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="n">stddev_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">stddev_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">get_cov</span><span class="p">()[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">mean_x</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">mean_y</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">get_mean</span><span class="p">()[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">x_lower_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_x</span> <span class="o">-</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">stddev_x</span><span class="p">)</span>
             <span class="n">x_upper_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_x</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">stddev_x</span><span class="p">)</span>
             <span class="n">y_lower_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_y</span> <span class="o">-</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">stddev_y</span><span class="p">)</span>
@@ -713,7 +715,7 @@
         <span class="n">y_upper</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_upper_candidates</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">],</span> <span class="p">[</span><span class="n">y_lower</span><span class="p">,</span> <span class="n">y_upper</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="k">def</span> <span class="nf">_plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot a 2d Gaussian mixture potential function</span>
 

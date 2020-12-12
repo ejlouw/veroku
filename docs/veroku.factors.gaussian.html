@@ -35,9 +35,10 @@
             
   <div class="section" id="module-veroku.factors.gaussian">
 <span id="veroku-factors-gaussian-module"></span><h1>veroku.factors.gaussian module<a class="headerlink" href="#module-veroku.factors.gaussian" title="Permalink to this headline">¶</a></h1>
+<p>A module for instantiating and performing operations on multivariate Gaussian distributions.</p>
 <dl class="py class">
 <dt id="veroku.factors.gaussian.Gaussian">
-<em class="property">class </em><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">K</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cov</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">h_vec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">g_val</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating and performing operations om multivariate Gaussian distributions.</p>
 <p>General constructor that can use either covariance form or canonical form parameters to construct a
@@ -48,9 +49,9 @@ d-dimensional multivariate Gaussian object.</p>
 <li><p><strong>cov</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – The covariance matrix (or variance scalar in 1-dimensional case).</p></li>
 <li><p><strong>mean</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – The mean vector (or mean scalar in 1-dimensional case).</p></li>
 <li><p><strong>log_weight</strong> (<em>float</em>) – the log of the weight (the Gaussian function integrates to the weight value)</p></li>
-<li><p><strong>K</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – the precision matrix (or precision scalar in 1-dimensional case).</p></li>
-<li><p><strong>h</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – the h vector  (or h scalar in 1-dimensional case).</p></li>
-<li><p><strong>g</strong> (<em>float</em>) – the g parameter</p></li>
+<li><p><strong>prec</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – the precision matrix (or precision scalar in 1-dimensional case).</p></li>
+<li><p><strong>h_vec</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – the h vector  (or h scalar in 1-dimensional case).</p></li>
+<li><p><strong>g_val</strong> (<em>float</em>) – the g parameter</p></li>
 <li><p><strong>var_names</strong> (<em>str list</em>) – a list of variable names where the order of the names correspond to the order in the
 mean/covariance or K/h parameters</p></li>
 </ul>
@@ -120,34 +121,6 @@ or inf (if one is not).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.get_K">
-<code class="sig-name descname">get_K</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_K" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the K parameter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The K parameter.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dxd numpy.ndarray or float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.gaussian.Gaussian.get_complex_weight">
-<code class="sig-name descname">get_complex_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_complex_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_complex_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get (possibly complex) weight parameter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The weight parameter.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.get_cov">
 <code class="sig-name descname">get_cov</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_cov" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the covariance parameter.</p>
@@ -212,6 +185,20 @@ or inf (if one is not).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="veroku.factors.gaussian.Gaussian.get_prec">
+<code class="sig-name descname">get_prec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_prec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_prec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the precision parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The prec parameter.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dxd numpy.ndarray or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.get_weight">
 <code class="sig-name descname">get_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the weight of the distribution - the value of the integral of the (possibly unnormalized) distribution.</p>
@@ -228,7 +215,10 @@ or inf (if one is not).</p>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.is_vacuous">
 <em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if a Gaussian distribution contains no information. This is the case when the K matrix is a zero matrix.</p>
+<dd><dl class="simple">
+<dt>Check if a Gaussian distribution contains no information. This is the case when the precision matrix is a zero</dt><dd><p>matrix.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The result of the check.</p>
@@ -279,7 +269,7 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.make_vacuous">
-<em class="property">classmethod </em><code class="sig-name descname">make_vacuous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">g</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.make_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.make_vacuous" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">make_vacuous</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">g_val</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.make_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.make_vacuous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make an vacuous Gaussian distribution with a zero precision matrix and zero h vector and zero g value.
 This ‘Gaussian’ is effectively a constant function (it has infinite variance and infinite mass) with value
 exp(g).</p>
@@ -287,7 +277,7 @@ exp(g).</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
-<li><p><strong>g</strong> (<em>float</em>) – The g parameter.</p></li>
+<li><p><strong>g_val</strong> (<em>float</em>) – The g parameter.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -301,7 +291,7 @@ exp(g).</p>
 
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.marginalize">
-<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.marginalize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integrate out variables from this Gaussian.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -415,16 +405,8 @@ exp(g).</p>
 
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.show">
-<code class="sig-name descname">show</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">update_covform</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_canform</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.show" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the parameters of the Gaussian distribution</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>update_covform</strong> (<em>bool</em>) – Whether or not to update the covariance form before showing.</p></li>
-<li><p><strong>show_canform</strong> (<em>bool</em>) – Whether or not toshow the canonical form as well.</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -454,7 +436,7 @@ exp(g).</p>
 </ul>
 </dd>
 </dl>
-<p>&gt;&gt;&gt;gaussian_parameters = {‘K’: np.array([[1,0],[0,1]]),
+<p>&gt;&gt;&gt;gaussian_parameters = {‘prec’: np.array([[1,0],[0,1]]),
 &gt;&gt;&gt;                       ‘h’: np.array([[0],[1]]),
 &gt;&gt;&gt;                       ‘g’: 0}</p>
 <dl class="py method">
@@ -463,7 +445,10 @@ exp(g).</p>
 <dd><p>Make a factor with var_templates formatted by format_dict to create specific var names.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>format_dict</strong> (<em>str dict</em>) – The dictionary to be used to format the var_templates strings.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format_dict</strong> (<em>str dict</em>) – The dictionary to be used to format the var_templates strings.</p></li>
+<li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The instantiated factor.</p>
@@ -478,13 +463,13 @@ exp(g).</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian">
-<code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_linear_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a_mat</span></em>, <em class="sig-param"><span class="n">n_mat</span></em>, <em class="sig-param"><span class="n">conditioning_vars</span></em>, <em class="sig-param"><span class="n">conditional_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a linear Gaussian factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<em>Numpy array</em>) – The linear transform matrix.</p></li>
-<li><p><strong>N</strong> – The additive noise covariance matrix.</p></li>
+<li><p><strong>a_mat</strong> (<em>numpy.ndarray</em>) – The linear transform matrix.</p></li>
+<li><p><strong>n_mat</strong> (<em>numpy.ndarray</em>) – The additive noise covariance matrix.</p></li>
 <li><p><strong>conditioning_vars</strong> – The list of conditioning variables.</p></li>
 <li><p><strong>conditional_vars</strong> – The list of conditional variables.</p></li>
 </ul>
@@ -500,13 +485,13 @@ exp(g).</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_linear_gaussian_cpd_template">
-<code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_linear_gaussian_cpd_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a_mat</span></em>, <em class="sig-param"><span class="n">n_mat</span></em>, <em class="sig-param"><span class="n">conditioning_var_templates</span></em>, <em class="sig-param"><span class="n">conditional_var_templates</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_linear_gaussian_cpd_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_linear_gaussian_cpd_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a linear Gaussian factor template.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<em>Numpy array</em>) – The linear transform matrix.</p></li>
-<li><p><strong>N</strong> – The additive noise covariance matrix.</p></li>
+<li><p><strong>a_mat</strong> (<em>numpy.ndarray</em>) – The linear transform matrix.</p></li>
+<li><p><strong>n_mat</strong> (<em>numpy.ndarray</em>) – The additive noise covariance matrix.</p></li>
 <li><p><strong>conditioning_var_templates</strong> – The list of formattable strings for the conditioning variables (i.e: [‘var_a{i}_{t}’, ‘var_b{i}_{t}’])</p></li>
 <li><p><strong>conditional_var_templates</strong> – The list of formattable strings for the conditional variables (i.e: [‘var_c{i}_{t}’, ‘var_d{i}_{t}’])</p></li>
 </ul>
@@ -522,7 +507,7 @@ exp(g).</p>
 
 <dl class="py function">
 <dt id="veroku.factors.gaussian.make_random_gaussian">
-<code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">[- 10, 10]</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">[1, 10]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_random_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">mean_range</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cov_range</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#make_random_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.make_random_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
 distributions.</p>
 <dl class="field-list simple">

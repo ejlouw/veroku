@@ -35,6 +35,7 @@
             
   <div class="section" id="module-veroku.factors.categorical">
 <span id="veroku-factors-categorical-module"></span><h1>veroku.factors.categorical module<a class="headerlink" href="#module-veroku.factors.categorical" title="Permalink to this headline">¶</a></h1>
+<p>A module for instantiating sparse tables with log probabilities.</p>
 <dl class="py class">
 <dt id="veroku.factors.categorical.Categorical">
 <em class="property">class </em><code class="sig-name descname">Categorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_probs_tensor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
@@ -133,15 +134,11 @@ probability value should be zero, it makes sense to set the result of 0/0 operat
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.divide">
-<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">special_rules</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">divide</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.divide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.divide" title="Permalink to this definition">¶</a></dt>
 <dd><p>Divide this factor by another factor and return the result.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p></li>
-<li><p><strong>special_rules</strong> (<em>dict</em>) – Any special rules to apply for specific values of the left and right variables.
-For example: {(left_var_val, right_var_val): result, …}</p></li>
-</ul>
+<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The factor to divide by.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The factor quotient.</p>
@@ -154,31 +151,21 @@ For example: {(left_var_val, right_var_val): result, …}</p></li>
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.equals">
-<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.equals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">0.0001</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.equals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if this factor is the same as another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The other factor to compare to.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.categorical.Categorical" title="veroku.factors.categorical.Categorical"><em>Categorical</em></a>) – The other factor to compare to.</p></li>
+<li><p><strong>rtol</strong> (<em>float</em>) – The relative tolerance to use for factor equality check.</p></li>
+<li><p><strong>atol</strong> (<em>float</em>) – The absolute tolerance to use for factor equality check.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The result of the comparison.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="veroku.factors.categorical.Categorical.is_vacuous">
-<em class="property">property </em><code class="sig-name descname">is_vacuous</code><a class="headerlink" href="#veroku.factors.categorical.Categorical.is_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if this factor is vacuous (i.e uniform).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Whether the factor is vacuous or not.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -206,7 +193,7 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.marginalize">
-<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum out variables from this factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -387,12 +374,6 @@ is given.</p></li>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py data">
-<dt id="veroku.factors.categorical.LOG_SUBTRACT_KL_RULES">
-<code class="sig-name descname">LOG_SUBTRACT_KL_RULES</code><em class="property"> = {(-inf, &lt;built-in function sub&gt;, -inf): 0.0}</em><a class="headerlink" href="#veroku.factors.categorical.LOG_SUBTRACT_KL_RULES" title="Permalink to this definition">¶</a></dt>
-<dd><p>A module for instantiating sparse tables with log probabilities.</p>
 </dd></dl>
 
 </div>

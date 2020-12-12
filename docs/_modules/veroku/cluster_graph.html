@@ -32,27 +32,35 @@
           <div class="body" role="main">
             
   <h1>Source code for veroku.cluster_graph</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">IPython</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for building and performing inference with cluster graphs</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Standard imports</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="c1"># Third-party imports</span>
+<span class="kn">import</span> <span class="nn">IPython</span>
+<span class="kn">import</span> <span class="nn">graphviz</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.lines</span> <span class="kn">import</span> <span class="n">Line2D</span>
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">import</span> <span class="nn">graphviz</span>
 
+<span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">veroku._cg_helpers._cluster</span> <span class="kn">import</span> <span class="n">Cluster</span>
 <span class="kn">import</span> <span class="nn">veroku._cg_helpers._animation</span> <span class="k">as</span> <span class="nn">cg_animation</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_utils</span> <span class="kn">import</span> <span class="n">get_subset_evidence</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A module for building and performing inference with cluster graphs </span>
-<span class="sd">&quot;&quot;&quot;</span>
-
 
 <span class="c1"># TODO: Optimise _pass_message.</span>
 <span class="c1"># TODO: Improve sepsets selection for less loopiness.</span>
 <span class="c1"># TODO: Optimisation: messages from clusters that did not receive any new messages in the previous round, do not need</span>
 <span class="c1">#  new messages calculated.</span>
+
+<span class="c1"># pylint: disable=protected-access</span>
+
+<span class="n">DEFAULT_FIG_SIZE</span> <span class="o">=</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">_sort_almost_sorted</span><span class="p">(</span><span class="n">almost_sorted_deque</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -86,7 +94,7 @@
 <span class="sd">    :rtype factors: Factor list</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">reduced_factors</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">get_subset_evidence</span><span class="p">(</span><span class="n">all_evidence_dict</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span> <span class="n">subset_vars</span><span class="o">=</span><span class="n">factor</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vrs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -104,6 +112,7 @@
 <span class="sd">    :return: The (potentially reduced) list of factors.</span>
 <span class="sd">    :rtype: Factor list</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: Simplify this, if possible.</span>
     <span class="n">factors_absorbtion_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">factors</span><span class="p">))}</span>
     <span class="n">final_graph_cluster_factors</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># factors: possibly smaller list of factors after factors which have a scope that is a subset of another factor have</span>
@@ -113,13 +122,12 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="n">factor_product</span> <span class="o">=</span> <span class="n">factor_i</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">factor_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_j</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_product</span><span class="o">.</span><span class="n">var_names</span><span class="p">):</span>
-                            <span class="n">factor_product</span> <span class="o">=</span> <span class="n">factor_product</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor_j</span><span class="p">)</span>
-                            <span class="n">factors_absorbtion_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                            <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-                            <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">j</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_j</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor_product</span><span class="o">.</span><span class="n">var_names</span><span class="p">):</span>
+                        <span class="n">factor_product</span> <span class="o">=</span> <span class="n">factor_product</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">factor_j</span><span class="p">)</span>
+                        <span class="n">factors_absorbtion_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                        <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="n">factor_processed_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                 <span class="n">final_graph_cluster_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor_product</span><span class="p">)</span>
@@ -133,14 +141,14 @@
     <span class="k">return</span> <span class="n">final_graph_cluster_factors</span>
 
 
-<div class="viewcode-block" id="ClusterGraph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph">[docs]</a><span class="k">class</span> <span class="nc">ClusterGraph</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ClusterGraph"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph">[docs]</a><span class="k">class</span> <span class="nc">ClusterGraph</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for building and performing inference with cluster graphs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">special_evidence</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">disable_tqdm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">):</span>
+    <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">special_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disable_tqdm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a Cluster graph from a list of factors.</span>
 
@@ -158,12 +166,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: see if evidence and special_evidence can be replaced by a single variable.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_messages_passed</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span> <span class="o">=</span> <span class="n">special_evidence</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disable_tqdm</span> <span class="o">=</span> <span class="n">disable_tqdm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sync_message_passing_max_distances</span> <span class="o">=</span> <span class="p">[]</span>
-
+        <span class="k">if</span> <span class="n">special_evidence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">special_evidence</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span> <span class="o">=</span> <span class="n">special_evidence</span>
         <span class="n">all_evidence_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">special_evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">evidence_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -193,9 +203,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_graph</span><span class="p">()</span>
 
         <span class="c1"># TODO: consolidate these two, if possible</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message_passing_log_df</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message_passing_animation_frames</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">passed_messages</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_set_non_rip_sepsets_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clusters</span><span class="p">,</span> <span class="n">all_evidence_vars</span><span class="p">):</span>
@@ -271,7 +279,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClusterGraph.plot_next_messages_info_gain"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">[docs]</a>    <span class="k">def</span> <span class="nf">plot_next_messages_info_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">legend_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">]):</span>
+<div class="viewcode-block" id="ClusterGraph.plot_next_messages_info_gain"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">[docs]</a>    <span class="k">def</span> <span class="nf">plot_next_messages_info_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">legend_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the</span>
 <span class="sd">            graph.</span>
@@ -280,6 +288,8 @@
 <span class="sd">            plot legend.</span>
 <span class="sd">        :param list figsize: The matplotlib figure size.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="n">DEFAULT_FIG_SIZE</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
         <span class="n">all_paths_information_gains_with_iters</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">gmp</span><span class="o">.</span><span class="n">information_gains_with_iters</span> <span class="k">for</span> <span class="n">gmp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_message_paths</span>
@@ -296,7 +306,7 @@
             <span class="p">]</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">legend</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ClusterGraph.plot_message_convergence"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.plot_message_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">plot_message_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">]):</span>
+<div class="viewcode-block" id="ClusterGraph.plot_message_convergence"><a class="viewcode-back" href="../../veroku.cluster_graph.html#veroku.cluster_graph.ClusterGraph.plot_message_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">plot_message_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the the KL-divergence between the messages and their previous instances to indicate the message passing</span>
 <span class="sd">        convergence.</span>
@@ -304,10 +314,11 @@
 <span class="sd">        :param bool log: If True, plot the log of the KL-divergence.</span>
 <span class="sd">        :param list figsize: The matplotlib [width, height] of the figure.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="n">DEFAULT_FIG_SIZE</span>
         <span class="n">mp_max_dists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sync_message_passing_max_distances</span>
         <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
             <span class="n">mp_max_dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mp_max_dists</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">matplotlib.lines</span> <span class="kn">import</span> <span class="n">Line2D</span>
 
         <span class="c1"># here we tile an flatten to prevent the plot omission of values with inf on either side.</span>
         <span class="n">mp_max_dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">mp_max_dists</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>

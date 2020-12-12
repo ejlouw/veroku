@@ -37,8 +37,8 @@
 <h1>Welcome to Veroku’s Documentation!<a class="headerlink" href="#welcome-to-veroku-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="disclaimer">
 <h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
-<p>This project is still in the very early stages of development. Use this library at your own risk. The github repo is also still private,
-but will be made public soon.</p>
+<p>This project is still in the very early stages of development. Use this library at your own risk. The github repo is
+also still private, but will be made public soon.</p>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -93,14 +93,17 @@ Example notebooks:</p>
 </ul>
 <p>On the roadmap:</p>
 <ul class="simple">
+<li><p>Conditional Gaussian</p></li>
 <li><p>Dirichlet distribution</p></li>
 <li><p>Wishart distribution</p></li>
 <li><p>Normal-Wishart distribution</p></li>
+<li><p>Structure Learning</p></li>
+<li><p>Causal Inference</p></li>
 </ul>
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>For the python dependencies see the <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/requirements.txt">https://github.com/ejlouw/veroku/blob/master/requirements.txt</a> file.
+<p>For the python dependencies see the <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/requirements.txt">requirements</a> file.
 The following additional dependencies are also required for some functionality (these are not installed automatically</p>
 <blockquote>
 <div><p>with the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>):</p>
@@ -113,22 +116,20 @@ The following additional dependencies are also required for some functionality (
 <div class="section" id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
 <div style="text-align: justify">
-If you would like to contribute to veroku, the TODO's in the code are a good place to start.
-There are a few very simple ones, but some are more complex. Another area where
-contributions will be valuable is in getting the experimental modules rounded off
-and writing tests for these modules. Another potential area for contribution would
-be the items on the roadmap, although it would be best if the experimental modules
-are first rounded off.  In general, please remember to ensure that  the following
-guidelines are followed when contributing:
+If you would like to contribute to veroku, the TODO's in the code are a good place to start. There are a few very simple
+ ones, but some are more complex. Another area where contributions will be valuable is in getting the experimental
+ modules rounded off and writing tests for these modules. Another potential area for contribution would be the items on
+ the roadmap, although it would be best if the experimental modules are first rounded off.  In general, please remember
+ to ensure that the following guidelines are followed when contributing:
 </div><ul class="simple">
+<li><p>The use of pylint disable statements should be reserved only for special cases and are not generally acceptable.</p></li>
 <li><p>Add tests for any contributions ( this will also prevent the build from failing on the code coverage check)</p></li>
-<li><p>Run the <code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">check</span> <span class="pre">&lt;params&gt;</span> <span class="pre">&lt;dir&gt;</span></code> command from the terminal (from the project root directory) to ensure that the code style is correct (see the <em>Setup And Test</em> section in  <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/.github/workflows/main.yml">main.yml</a> for the exact command)</p></li>
-<li><p>If necessary, run the same command, but without the <code class="docutils literal notranslate"><span class="pre">check</span></code> flag in order to refactor the code. NB: please ensure that you have committed all changes prior to this, as black will automatically refactor the files.</p></li>
 </ul>
 </div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>Veroku is released under 3-Clause BSD license. You can view the license <a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
+<p>Veroku is released under a 3-Clause BSD license. You can view the license
+<a class="reference external" href="https://github.com/ejlouw/veroku/blob/master/LICENSE">here</a>.</p>
 </div>
 </div>
 <div class="section" id="documentation">

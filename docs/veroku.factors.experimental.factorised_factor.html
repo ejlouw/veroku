@@ -96,11 +96,15 @@ for a efficient and intuitive representation of independent factors (especially 
 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.equals">
-<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.equals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">equals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">0.0001</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.equals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if this factor is the same as another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor"><em>FactorizedFactor</em></a>) – The other factor to compare to.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<a class="reference internal" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor" title="veroku.factors.experimental.factorised_factor.FactorizedFactor"><em>FactorizedFactor</em></a>) – The other factor to compare to.</p></li>
+<li><p><strong>rtol</strong> (<em>float</em>) – The relative tolerance to use for factor equality check.</p></li>
+<li><p><strong>atol</strong> (<em>float</em>) – The absolute tolerance to use for factor equality check.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The result of the comparison.</p>
@@ -179,7 +183,7 @@ Reference <a class="reference external" href="https://infoscience.epfl.ch/record
 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize">
-<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">marginalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.marginalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.marginalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Marginalize out a subset of the variables in this factor’s scope.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

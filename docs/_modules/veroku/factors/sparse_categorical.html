@@ -32,24 +32,27 @@
           <div class="body" role="main">
             
   <h1>Source code for veroku.factors.sparse_categorical</h1><div class="highlight"><pre>
-<span></span><span class="c1"># System imports</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module for instantiating sparse tables with log probabilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Standard imports</span>
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">import</span> <span class="nn">time</span>
 
 <span class="c1"># Third-party imports</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">special</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
 
 <span class="c1"># Local imports</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor</span> <span class="kn">import</span> <span class="n">Factor</span>
 <span class="kn">from</span> <span class="nn">veroku.factors._factor_template</span> <span class="kn">import</span> <span class="n">FactorTemplate</span>
+<span class="kn">from</span> <span class="nn">veroku.factors</span> <span class="kn">import</span> <span class="n">_factor_utils</span>
+<span class="kn">from</span> <span class="nn">veroku._constants</span> <span class="kn">import</span> <span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">DEFAULT_FACTOR_ATOL</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A module for instantiating sparse tables with log probabilities.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># pylint: disable=protected-access</span>
 
 
 <span class="k">def</span> <span class="nf">_make_dense</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
@@ -117,7 +120,7 @@
 
 
 <span class="k">def</span> <span class="nf">_get_nested_sorted_probs</span><span class="p">(</span>
-    <span class="n">new_variables_order_outer</span><span class="p">,</span> <span class="n">new_variables_order_inner</span><span class="p">,</span> <span class="n">old_variable_order</span><span class="p">,</span> <span class="n">old_assign_probs</span>
+        <span class="n">new_variables_order_outer</span><span class="p">,</span> <span class="n">new_variables_order_inner</span><span class="p">,</span> <span class="n">old_variable_order</span><span class="p">,</span> <span class="n">old_assign_probs</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reorder variables to a new order (and sort assignments) and then convert the probs dictionary to a hierarchical</span>
@@ -153,7 +156,7 @@
         <span class="n">l1_assign</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">)])</span>
         <span class="k">if</span> <span class="n">l1_assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_assign_probs</span><span class="p">:</span>
             <span class="n">new_assign_probs</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">assign_l2</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">)</span> <span class="p">:])</span>
+        <span class="n">assign_l2</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_row_assignment</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">new_variables_order_outer</span><span class="p">):])</span>
         <span class="n">new_assign_probs</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">][</span><span class="n">assign_l2</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_prob_i</span>
     <span class="k">return</span> <span class="n">new_assign_probs</span><span class="p">,</span> <span class="n">new_variable_order</span>
 
@@ -190,8 +193,148 @@
     <span class="k">return</span> <span class="n">flattened_ntd</span>
 
 
+<span class="k">def</span> <span class="nf">_apply_any_scope_binary_opp</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span>
+                                <span class="n">ntd_b</span><span class="p">,</span>
+                                <span class="n">full_sd_a_default_sub_table</span><span class="p">,</span>
+                                <span class="n">full_sd_b_default_sub_table</span><span class="p">,</span>
+                                <span class="n">symmetric_difference_combinations</span><span class="p">,</span>
+                                <span class="n">func</span><span class="p">,</span>
+                                <span class="n">default</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a binary operation using the two nested tables, a list of all the outer assignments that need to be process</span>
+<span class="sd">     and default inner sub tables for each. This function loops through the outer assignments in the</span>
+<span class="sd">    symmetric_difference_combinations, and gets the inner sub-table for each nested distribution dictionary (if the</span>
+<span class="sd">    assignment is not present, the respective default sub-tables are used). The binary operation applied using these</span>
+<span class="sd">    sub-table pairs and the result, finally, forms a part of the resulting final table.</span>
+
+<span class="sd">    :param dict ntd_a: The one nested dictionary representing the distribution.</span>
+<span class="sd">    :param dict ntd_b: The other nested dictionary representing the distribution.</span>
+<span class="sd">    :param dict full_sd_a_default_sub_table: The default sub-table to be used for missing outer entries in ntd_a</span>
+<span class="sd">    :param dict full_sd_b_default_sub_table: The default sub-table to be used for missing outer entries in ntd_a</span>
+<span class="sd">    :param iterable symmetric_difference_combinations: The list of outer scope assignments that need to be processed.</span>
+<span class="sd">    :param func: The binary operation.</span>
+<span class="sd">    :param default: The default value for the inner dictionaries</span>
+<span class="sd">    :return: The resulting distribution dictionary.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">sd_assign_b</span> <span class="ow">in</span> <span class="n">symmetric_difference_combinations</span><span class="p">:</span>
+        <span class="n">joined_sd_assignment</span> <span class="o">=</span> <span class="n">sd_assign_a</span> <span class="o">+</span> <span class="n">sd_assign_b</span>
+
+        <span class="c1"># TODO: Add special, pre-computed result if both 0.</span>
+        <span class="n">common_vars_subtable_a</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">full_sd_a_default_sub_table</span><span class="p">)</span>
+        <span class="n">common_vars_subtable_b</span> <span class="o">=</span> <span class="n">ntd_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_b</span><span class="p">,</span> <span class="n">full_sd_b_default_sub_table</span><span class="p">)</span>
+
+        <span class="c1"># TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.</span>
+        <span class="n">subtable_result</span> <span class="o">=</span> <span class="n">_same_scope_binary_operation</span><span class="p">(</span>
+            <span class="n">common_vars_subtable_a</span><span class="p">,</span> <span class="n">common_vars_subtable_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">subtable_result</span><span class="p">:</span>
+            <span class="n">resulting_factor_table</span><span class="p">[</span><span class="n">joined_sd_assignment</span><span class="p">]</span> <span class="o">=</span> <span class="n">subtable_result</span>
+    <span class="k">return</span> <span class="n">resulting_factor_table</span>
+
+
+<span class="k">def</span> <span class="nf">_any_scope_bin_opp_none</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</span>
+<span class="sd">    This function assumes that no combination of default or non-default values is guaranteed to result in a default</span>
+<span class="sd">    value.</span>
+<span class="sd">    :param ntd_a: The one nested dictionary representing the distribution.</span>
+<span class="sd">    :param ntd_b: The other nested dictionary representing the distribution.</span>
+<span class="sd">    ::param outer_inner_cards_a: The cardinalities of the inner and outer variables respectively in ntd_a</span>
+<span class="sd">     (i.e [[2],[2,3]]).</span>
+<span class="sd">    :param outer_inner_cards_b: The cardinalities of the inner and outer variables respectively in ntd_b</span>
+<span class="sd">     (i.e [[2],[2,3]]).</span>
+<span class="sd">    :param default: The default value.</span>
+<span class="sd">    :return: The resulting distribution dictionary.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we have to check everything - any combination of {value, default_value} could result in non-default value.</span>
+    <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
+    <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
+
+    <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+    <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+    <span class="n">symmetric_difference_combinations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ntd_a_sd_assignments</span><span class="p">,</span> <span class="n">ntd_b_sd_assignments</span><span class="p">])</span>
+    <span class="c1"># Having only dense default table is not good enough, as this will still not cause the missing default values in</span>
+    <span class="c1"># the sub tables to be used to compute potentially none default result values. we therefore need to make these</span>
+    <span class="c1"># sub tables dense.</span>
+    <span class="n">ntd_a</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+    <span class="n">ntd_b</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+    <span class="n">resulting_table</span> <span class="o">=</span> <span class="n">_apply_any_scope_binary_opp</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span>
+                                                  <span class="n">ntd_b</span><span class="p">,</span>
+                                                  <span class="n">full_sd_a_default_sub_table</span><span class="p">,</span>
+                                                  <span class="n">full_sd_b_default_sub_table</span><span class="p">,</span>
+                                                  <span class="n">symmetric_difference_combinations</span><span class="p">,</span>
+                                                  <span class="n">func</span><span class="p">,</span>
+                                                  <span class="n">default</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resulting_table</span>
+
+
+<span class="k">def</span> <span class="nf">_any_scope_bin_opp_both</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</span>
+<span class="sd">    This function assumes that the result will be default only if both ntd_a and ntd_b has a default value.</span>
+<span class="sd">    :param ntd_a: The one nested dictionary representing the distribution.</span>
+<span class="sd">    :param ntd_b: The other nested dictionary representing the distribution.</span>
+<span class="sd">    :param outer_inner_cards_a: The cardinalities of the inner and outer variables respectively in ntd_a</span>
+<span class="sd">     (i.e [[2],[2,3]]).</span>
+<span class="sd">    :param outer_inner_cards_b: The cardinalities of the inner and outer variables respectively in ntd_b</span>
+<span class="sd">     (i.e [[2],[2,3]]).</span>
+<span class="sd">    :param default: The default value.</span>
+<span class="sd">    :return: The resulting distribution dictionary.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The result will only be default if the values in both ntd_a are default. This means</span>
+    <span class="c1"># that we have to extend the assignments in the symmetric_difference_combinations to</span>
+    <span class="c1"># those the full set of all possible assignments where either ntd_a is not default or</span>
+    <span class="c1"># ntd_b is not default, because we need to calculate these results explicitly.</span>
+    <span class="c1"># For example:</span>
+    <span class="c1"># ntd_a:</span>
+    <span class="c1">#    a b</span>
+    <span class="c1">#    0 0  v</span>
+    <span class="c1">#   (1 0) d</span>
+    <span class="c1"># ntd_b:</span>
+    <span class="c1">#    a c</span>
+    <span class="c1">#    0 0  v</span>
+    <span class="c1">#    1 0  v</span>
+    <span class="c1"># The full set of resulting operations would be:</span>
+    <span class="c1"># a b c</span>
+    <span class="c1"># 0 0 0 vv</span>
+    <span class="c1"># 0 0 1 vd</span>
+    <span class="c1"># 0 1 0 dv</span>
+    <span class="c1"># 0 1 1 dd = d</span>
+    <span class="c1"># 1 0 0 dv</span>
+    <span class="c1"># 1 0 1 dd = d</span>
+    <span class="c1"># 1 1 0 dv</span>
+    <span class="c1"># 1 1 1 dd = d</span>
+    <span class="c1"># But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this</span>
+    <span class="c1"># entry. We do this by adding default sub tables below.</span>
+    <span class="n">outer_assignments_a</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_a</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">outer_assignments_b</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_b</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outer_assignments_a</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">outer_assignments_b</span><span class="p">))</span>
+    <span class="c1"># TODO: replace this deepcopy with something faster</span>
+    <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ntd_a_sd_assignments</span><span class="p">)</span>
+    <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+    <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+    <span class="c1"># Calculate the symmetric_difference_combinations</span>
+    <span class="c1"># The symmetric_difference_combinations are the combinations of the sub-assignments that are not common to both</span>
+    <span class="c1"># factors. Depending on the value of default_rules, these assignments could only include assignments actually</span>
+    <span class="c1"># specified in the nested table dictionaries, or some or all of the missing assignments (if default values in</span>
+    <span class="c1"># either) table does not necessarily guarantee default results.</span>
+    <span class="n">symmetric_difference_combinations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ntd_a_sd_assignments</span><span class="p">,</span> <span class="n">ntd_b_sd_assignments</span><span class="p">])</span>
+    <span class="n">resulting_table</span> <span class="o">=</span> <span class="n">_apply_any_scope_binary_opp</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span>
+                                                  <span class="n">ntd_b</span><span class="p">,</span>
+                                                  <span class="n">full_sd_a_default_sub_table</span><span class="p">,</span>
+                                                  <span class="n">full_sd_b_default_sub_table</span><span class="p">,</span>
+                                                  <span class="n">symmetric_difference_combinations</span><span class="p">,</span>
+                                                  <span class="n">func</span><span class="p">,</span>
+                                                  <span class="n">default</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resulting_table</span>
+
+
 <span class="k">def</span> <span class="nf">_any_scope_binary_operation</span><span class="p">(</span>
-    <span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
+        <span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</span>
@@ -214,7 +357,6 @@
     <span class="c1"># TODO: this will not work for tables with the same scope, as this will mess up the nestedness(?).</span>
     <span class="c1">#  Seems like it works - confirm.</span>
 
-    <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="n">ntd_b</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="c1"># Note: sd: symmetric_difference</span>
@@ -222,81 +364,27 @@
     <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="c1"># Calculate the symmetric_difference_combinations</span>
-    <span class="c1"># The symmetric_difference_combinations are the combinations of the sub-assignments</span>
-    <span class="c1"># that are not common to both factors. Depending on the value of default_rules, these</span>
-    <span class="c1"># assignments could only include assignments actually specified in the nested table</span>
-    <span class="c1"># dictionaries, or some or all of the missing assignments (if default values in either)</span>
-    <span class="c1"># table does not necessarily guarantee default results.</span>
     <span class="k">if</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-
-        <span class="c1"># we have to check everything - any combination of {value, default_value} could result in non-default value.</span>
-        <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
-        <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
-
-        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
-
-        <span class="c1"># Having only dense default table is not good enough, as this will still not cause the missing</span>
-        <span class="c1"># default values in the sub tables to be used to compute potentially none default result values.</span>
-        <span class="c1"># we therefore need to make these sub tables dense.</span>
-        <span class="n">ntd_a</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">ntd_b</span> <span class="o">=</span> <span class="n">_make_inner_dense</span><span class="p">(</span><span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-
+        <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="n">_any_scope_bin_opp_none</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span>
+                                                         <span class="n">default</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s2">&quot;both&quot;</span><span class="p">:</span>
-        <span class="c1"># The result will only be default if the values in both ntd_a are default. This means</span>
-        <span class="c1"># that we have to extend the assignments in the symmetric_difference_combinations to</span>
-        <span class="c1"># those the full set of all possible assignments where either ntd_a is not default or</span>
-        <span class="c1"># ntd_b is not default, because we need to calculate these results explicitly.</span>
-        <span class="c1"># For example:</span>
-        <span class="c1"># ntd_a:</span>
-        <span class="c1">#    a b</span>
-        <span class="c1">#    0 0  v</span>
-        <span class="c1">#   (1 0) d</span>
-        <span class="c1"># ntd_b:</span>
-        <span class="c1">#    a c</span>
-        <span class="c1">#    0 0  v</span>
-        <span class="c1">#    1 0  v</span>
-        <span class="c1"># The full set of resulting operations would be:</span>
-        <span class="c1"># a b c</span>
-        <span class="c1"># 0 0 0 vv</span>
-        <span class="c1"># 0 0 1 vd</span>
-        <span class="c1"># 0 1 0 dv</span>
-        <span class="c1"># 0 1 1 dd = d</span>
-        <span class="c1"># 1 0 0 dv</span>
-        <span class="c1"># 1 0 1 dd = d</span>
-        <span class="c1"># 1 1 0 dv</span>
-        <span class="c1"># 1 1 1 dd = d</span>
-        <span class="c1"># But because a:1 is not in ntd_a, this will not be calculated automatically and we therefore need to add this</span>
-        <span class="c1"># entry. We do this by adding default sub tables below.</span>
-        <span class="n">outer_assignments_a</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_a</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">outer_assignments_b</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ntd_b</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">ntd_a_sd_assignments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outer_assignments_a</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">outer_assignments_b</span><span class="p">))</span>
-        <span class="c1"># TODO: replace this deepcopy with something faster</span>
-        <span class="n">ntd_b_sd_assignments</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ntd_a_sd_assignments</span><span class="p">)</span>
-
-        <span class="n">full_sd_a_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
-        <span class="n">full_sd_b_default_sub_table</span> <span class="o">=</span> <span class="n">_make_dense_default_probs_dict</span><span class="p">(</span><span class="n">outer_inner_cards_b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="p">)</span>
+        <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="n">_any_scope_bin_opp_both</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span>
+                                                         <span class="n">default</span><span class="p">)</span>
 
     <span class="c1"># TODO: This is strange - improve.</span>
     <span class="c1"># TODO: See if any performance gains are possible with &#39;left&#39; and &#39;right&#39; flags and add them if so.</span>
     <span class="k">elif</span> <span class="n">default_rules</span> <span class="o">==</span> <span class="s2">&quot;any&quot;</span><span class="p">:</span>
-        <span class="k">pass</span>  <span class="c1"># no further processing necessary</span>
-    <span class="n">symmetric_difference_combinations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ntd_a_sd_assignments</span><span class="p">,</span> <span class="n">ntd_b_sd_assignments</span><span class="p">])</span>
+        <span class="n">symmetric_difference_combinations</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ntd_a_sd_assignments</span><span class="p">,</span> <span class="n">ntd_b_sd_assignments</span><span class="p">])</span>
+        <span class="n">resulting_factor_table</span> <span class="o">=</span> <span class="n">_apply_any_scope_binary_opp</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span>
+                                                             <span class="n">ntd_b</span><span class="p">,</span>
+                                                             <span class="n">full_sd_a_default_sub_table</span><span class="p">,</span>
+                                                             <span class="n">full_sd_b_default_sub_table</span><span class="p">,</span>
+                                                             <span class="n">symmetric_difference_combinations</span><span class="p">,</span>
+                                                             <span class="n">func</span><span class="p">,</span>
+                                                             <span class="n">default</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unsupported value for </span><span class="si">{</span><span class="n">default_rules</span><span class="si">}</span><span class="s1"> default_rules&#39;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">sd_assign_b</span> <span class="ow">in</span> <span class="n">symmetric_difference_combinations</span><span class="p">:</span>
-        <span class="n">joined_sd_assignment</span> <span class="o">=</span> <span class="n">sd_assign_a</span> <span class="o">+</span> <span class="n">sd_assign_b</span>
-
-        <span class="c1"># TODO: Add special, pre-computed result if both 0.</span>
-        <span class="n">common_vars_subtable_a</span> <span class="o">=</span> <span class="n">ntd_a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_a</span><span class="p">,</span> <span class="n">full_sd_a_default_sub_table</span><span class="p">)</span>
-        <span class="n">common_vars_subtable_b</span> <span class="o">=</span> <span class="n">ntd_b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sd_assign_b</span><span class="p">,</span> <span class="n">full_sd_b_default_sub_table</span><span class="p">)</span>
-
-        <span class="c1"># TODO: extend _same_scope_binary_operation functionality to allow table completion given flag.</span>
-        <span class="n">subtable_result</span> <span class="o">=</span> <span class="n">_same_scope_binary_operation</span><span class="p">(</span>
-            <span class="n">common_vars_subtable_a</span><span class="p">,</span> <span class="n">common_vars_subtable_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">subtable_result</span><span class="p">:</span>
-            <span class="n">resulting_factor_table</span><span class="p">[</span><span class="n">joined_sd_assignment</span><span class="p">]</span> <span class="o">=</span> <span class="n">subtable_result</span>
     <span class="k">return</span> <span class="n">resulting_factor_table</span>
 
 
@@ -307,7 +395,7 @@
 <span class="sd">    :param dict table: A dictionary with the tuples of ints as keys and floats as values.</span>
 <span class="sd">    :return: The copied table.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">table_copy</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">assign</span><span class="p">]):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">table_copy</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">assign</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">assign</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="k">return</span> <span class="n">table_copy</span>
 
 
@@ -316,9 +404,7 @@
 <span class="sd">    A class for instantiating sparse tables with log probabilities.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-    <span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</span>
 
@@ -362,12 +448,14 @@
     <span class="c1">#  when probs turn to 0.</span>
     <span class="c1"># TODO: Add variable order sorting</span>
 
-    <span class="k">def</span> <span class="nf">_all_non_default_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_all_non_default_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check that all non default values in this factor are the same as the corresponding values in factor, where</span>
 <span class="sd">        the two factors have the same variable scope.</span>
 
 <span class="sd">        :param factor: The other factor</span>
+<span class="sd">        :param float rtol: The relative tolerance to use for factor equality check.</span>
+<span class="sd">        :param float atol: The absolute tolerance to use for factor equality check.</span>
 <span class="sd">        :return: The result of the check.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -380,16 +468,18 @@
                     <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">self_log_prob</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">self_log_prob</span><span class="p">,</span> <span class="n">factor_log_prob</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">self_log_prob</span><span class="p">,</span> <span class="n">factor_log_prob</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
                     <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="SparseCategorical.equals"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<div class="viewcode-block" id="SparseCategorical.equals"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_ATOL</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if this factor is the same as another factor.</span>
 
 <span class="sd">        :param factor: The other factor to compare to.</span>
 <span class="sd">        :type factor: SparseCategorical</span>
+<span class="sd">        :param float rtol: The relative tolerance to use for factor equality check.</span>
+<span class="sd">        :param float atol: The absolute tolerance to use for factor equality check.</span>
 <span class="sd">        :return: The result of the comparison.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -406,11 +496,11 @@
         <span class="c1"># factors now have same variable order</span>
 
         <span class="c1"># everywhere that self has non default values, factor has the same values.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_non_default_equal</span><span class="p">(</span><span class="n">factor_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_non_default_equal</span><span class="p">(</span><span class="n">factor_</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="c1"># TODO: improve efficiency here (there could be a lot of duplication with the above loop)</span>
         <span class="c1">#   Check the values for every non-default assignment of factor</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">factor_</span><span class="o">.</span><span class="n">_all_non_default_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">factor_</span><span class="o">.</span><span class="n">_all_non_default_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># If all possible assignments have not been checked - check that the default values are the same</span>
@@ -434,8 +524,7 @@
             <span class="n">default_log_prob</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_log_prob</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-    <span class="c1"># TODO: change back to log form</span>
-<div class="viewcode-block" id="SparseCategorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="SparseCategorical.marginalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sum out variables from this factor.</span>
 
@@ -447,7 +536,7 @@
 
         <span class="n">vars_to_keep</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_marginal_vars</span><span class="p">(</span><span class="n">vrs</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
         <span class="n">vars_to_sum_out</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vars_to_keep</span><span class="p">]</span>
-        <span class="n">nested_table</span><span class="p">,</span> <span class="n">nested_table_vars</span> <span class="o">=</span> <span class="n">_get_nested_sorted_probs</span><span class="p">(</span>
+        <span class="n">nested_table</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_get_nested_sorted_probs</span><span class="p">(</span>
             <span class="n">new_variables_order_outer</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span>
             <span class="n">new_variables_order_inner</span><span class="o">=</span><span class="n">vars_to_sum_out</span><span class="p">,</span>
             <span class="n">old_variable_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
@@ -459,8 +548,8 @@
             <span class="n">result_table</span><span class="p">[</span><span class="n">l1_assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
 
         <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vars_to_sum_out</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_sum_out</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
         <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span>
             <span class="n">var_names</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span>
@@ -476,22 +565,21 @@
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">vars_unobserved</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">]</span>
-        <span class="n">nested_table</span><span class="p">,</span> <span class="n">nested_table_vars</span> <span class="o">=</span> <span class="n">_get_nested_sorted_probs</span><span class="p">(</span>
+        <span class="n">vars_unobserved</span> <span class="o">=</span> <span class="p">[</span><span class="n">var_name</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="k">if</span> <span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">]</span>
+        <span class="n">nested_table</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_get_nested_sorted_probs</span><span class="p">(</span>
             <span class="n">new_variables_order_outer</span><span class="o">=</span><span class="n">vrs</span><span class="p">,</span>
             <span class="n">new_variables_order_inner</span><span class="o">=</span><span class="n">vars_unobserved</span><span class="p">,</span>
             <span class="n">old_variable_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
             <span class="n">old_assign_probs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">result_table</span> <span class="o">=</span> <span class="n">nested_table</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)]</span>
+        <span class="n">lp_table</span> <span class="o">=</span> <span class="n">nested_table</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)]</span>
         <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
 
-        <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span>
-            <span class="n">var_names</span><span class="o">=</span><span class="n">vars_unobserved</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span>
-        <span class="p">)</span></div>
+        <span class="n">cards</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">var_names</span> <span class="o">=</span> <span class="n">vars_unobserved</span>
+        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">lp_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_assert_consistent_cardinalities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -501,9 +589,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">:</span>
-                <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Error: inconsistent variable cardinalities: </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: inconsistent variable cardinalities: </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">error_msg</span>
 
 <div class="viewcode-block" id="SparseCategorical.multiply"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.multiply">[docs]</a>    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
@@ -529,11 +615,10 @@
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">special_divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">special_divide</span><span class="p">(</span><span class="n">val_a</span><span class="p">,</span> <span class="n">val_b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">val_a</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">val_b</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
                 <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span>
+            <span class="k">return</span> <span class="n">val_a</span> <span class="o">-</span> <span class="n">val_b</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_binary_operator</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">special_divide</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;any&quot;</span><span class="p">)</span></div>
 
@@ -588,6 +673,7 @@
 <span class="sd">        :return: The resulting factor.</span>
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">SparseCategorical</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;factor must be of SparseCategorical type but has type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_assert_consistent_cardinalities</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
@@ -675,18 +761,6 @@
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">is_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if this factor is vacuous (i.e uniform).</span>
-
-<span class="sd">        :return: Whether the factor is vacuous or not.</span>
-<span class="sd">        :rtype: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_from_vacuous</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_raw_kld</span><span class="p">(</span><span class="n">log_p</span><span class="p">,</span> <span class="n">log_q</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -704,9 +778,8 @@
                 <span class="c1"># lim_{p-&gt;0} p*log(p/q) = 0, with q = p</span>
                 <span class="c1"># So if p_i = 0, kld_i = 0</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kld_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_pi</span> <span class="o">-</span> <span class="n">log_qi</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">kld_i</span>
+            <span class="n">kld_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_pi</span> <span class="o">-</span> <span class="n">log_qi</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">kld_i</span>
 
         <span class="n">kld_factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="o">.</span><span class="n">_apply_binary_operator</span><span class="p">(</span>
             <span class="n">log_p</span><span class="p">,</span> <span class="n">log_q</span><span class="p">,</span> <span class="n">kld_from_log_elements</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
@@ -728,18 +801,18 @@
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">log_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
-        <span class="n">log_Q</span> <span class="o">=</span> <span class="n">factor</span>
+        <span class="n">log_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+        <span class="n">log_q</span> <span class="o">=</span> <span class="n">factor</span>
         <span class="k">if</span> <span class="n">normalize_factor</span><span class="p">:</span>
-            <span class="n">log_Q</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+            <span class="n">log_q</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
 
-        <span class="n">kld</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_kld</span><span class="p">(</span><span class="n">log_P</span><span class="p">,</span> <span class="n">log_Q</span><span class="p">)</span>
+        <span class="n">kld</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_kld</span><span class="p">(</span><span class="n">log_p</span><span class="p">,</span> <span class="n">log_q</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">kld</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">kld</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
                 <span class="c1">#  this is fine (numerical error)</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
-            <span class="n">kld_msg_details</span> <span class="o">=</span> <span class="s2">&quot;Categorical:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">log_P</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">factor:&quot;</span> <span class="o">+</span> <span class="n">log_Q</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+            <span class="n">kld_msg_details</span> <span class="o">=</span> <span class="s2">&quot;Categorical:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">log_p</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">factor:&quot;</span> <span class="o">+</span> <span class="n">log_q</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Negative KLD: </span><span class="si">{</span><span class="n">kld</span><span class="si">}</span><span class="s2">. Details:</span><span class="se">\n</span><span class="si">{</span><span class="n">kld_msg_details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">kld</span></div>
 
@@ -755,8 +828,8 @@
         <span class="n">cards</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">uniform_factor</span><span class="o">.</span><span class="n">var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">uniform_log_prob</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">cards</span><span class="p">))</span>
         <span class="n">uniform_factor</span><span class="o">.</span><span class="n">_apply_to_probs</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">uniform_log_prob</span><span class="p">)</span>
-        <span class="n">kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">kl</span></div>
+        <span class="n">kld</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kl_divergence</span><span class="p">(</span><span class="n">uniform_factor</span><span class="p">,</span> <span class="n">normalize_factor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kld</span></div>
 
 <div class="viewcode-block" id="SparseCategorical.potential"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.potential">[docs]</a>    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">assignment</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -779,12 +852,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log_probs_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span>
         <span class="n">var_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;assignment&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;log_prob&quot;</span><span class="p">})</span>
-        <span class="n">df</span><span class="p">[</span><span class="n">var_names</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;assignment&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;assignment&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">factor_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;assignment&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;log_prob&quot;</span><span class="p">})</span>
+        <span class="n">factor_df</span><span class="p">[</span><span class="n">var_names</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">factor_df</span><span class="p">[</span><span class="s2">&quot;assignment&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+        <span class="n">factor_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;assignment&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># Correct column order</span>
-        <span class="n">var_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;log_prob&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="n">var_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;log_prob&quot;</span><span class="p">]]</span>
+        <span class="n">var_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">factor_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;log_prob&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">factor_df</span><span class="p">[</span><span class="n">var_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;log_prob&quot;</span><span class="p">]]</span>
 
 <div class="viewcode-block" id="SparseCategorical.show"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -799,13 +872,13 @@
 <span class="sd">        :return: The representation string</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Fix spacing (assignment and probs columns are misaligned with header with long variable names)</span>
         <span class="n">tabbed_spaced_var_names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">prob</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">repr_str</span> <span class="o">=</span> <span class="n">tabbed_spaced_var_names</span>
+        <span class="n">spacings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">tabs_to_cover_string</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">log_prob</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">prob</span> <span class="o">=</span> <span class="n">log_prob</span>
-            <span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
-            <span class="n">repr_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">assignment</span><span class="p">))</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">prob</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_prob</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">space_assignments_and_probs</span><span class="p">(</span><span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">spacings</span><span class="p">)</span>
+            <span class="n">repr_str</span> <span class="o">+=</span> <span class="n">line</span>
         <span class="k">return</span> <span class="n">repr_str</span>
 
 <div class="viewcode-block" id="SparseCategorical.reorder"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.reorder">[docs]</a>    <span class="k">def</span> <span class="nf">reorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_var_names_order</span><span class="p">):</span>
@@ -843,7 +916,6 @@
 
 
 <div class="viewcode-block" id="SparseCategoricalTemplate"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate">[docs]</a><span class="k">class</span> <span class="nc">SparseCategoricalTemplate</span><span class="p">(</span><span class="n">FactorTemplate</span><span class="p">):</span>
-
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for specifying sparse categorical factor templates and creating categorical factors from these templates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -886,10 +958,8 @@
         <span class="k">if</span> <span class="n">format_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">var_names</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">vt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">format_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">vt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_templates</span><span class="p">]</span>
-        <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">)</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span>
-            <span class="n">probs_table</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">probs_table</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span>
-        <span class="p">)</span>
+        <span class="n">cards</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">)</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">probs_table</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">probs_table</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">factor</span></div></div>
 </pre></div>
 

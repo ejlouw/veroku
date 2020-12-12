@@ -34,9 +34,10 @@
             
   <div class="section" id="module-veroku.cluster_graph">
 <span id="veroku-cluster-graph-module"></span><h1>veroku.cluster_graph module<a class="headerlink" href="#module-veroku.cluster_graph" title="Permalink to this headline">¶</a></h1>
+<p>A module for building and performing inference with cluster graphs</p>
 <dl class="py class">
 <dt id="veroku.cluster_graph.ClusterGraph">
-<em class="property">class </em><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for building and performing inference with cluster graphs.</p>
 <p>Construct a Cluster graph from a list of factors.</p>
@@ -92,7 +93,7 @@ if the make_animation_gif variable was set to True when the process_graph method
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
-<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[15, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
 convergence.</p>
 <dl class="field-list simple">
@@ -107,7 +108,7 @@ convergence.</p>
 
 <dl class="py method">
 <dt id="veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">
-<code class="sig-name descname">plot_next_messages_info_gain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">legend_on</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">[15, 5]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_next_messages_info_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_next_messages_info_gain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">legend_on</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_next_messages_info_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the</dt><dd><p>graph.</p>
 </dd>
