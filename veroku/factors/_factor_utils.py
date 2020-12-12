@@ -2,14 +2,13 @@
 A module containing general functions to help with factor operations and transformations.
 """
 
+import copy
+import numpy as np
+import matplotlib.pyplot as plt
 
 # TODO: simplify make_square_matrix and make_column vector (maybe renam to make ____ from list - there is already ...
 # TODO: ... such a function for msquare matrix). These functions do not need al tie current functionality. ...
 # TODO: ... Ensure factor classes still work.
-
-import numpy as np
-import matplotlib.pyplot as plt
-import copy
 
 
 def format_list_elements(str_list, format_dict):
@@ -335,8 +334,8 @@ def inv_matrix(mat):
     """
     try:
         mat_inv = np.linalg.inv(mat)
-    except np.linalg.LinAlgError as e:
-        raise type(e)(e.args[0] + f":\n{mat}")
+    except np.linalg.LinAlgError as error:
+        raise type(error)(error.args[0] + f":\n{mat}")
     return mat_inv
 
 

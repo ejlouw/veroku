@@ -62,9 +62,12 @@ To be added soon:
 * Plate models (for efficiently specifying PGMs as modular/hierarchical templates)
 
 On the roadmap:
+* Conditional Gaussian
 * Dirichlet distribution
 * Wishart distribution
 * Normal-Wishart distribution
+* Structure Learning
+* Causal Inference
 
 ### Dependencies
 For the python dependencies see the [requirements](https://github.com/ejlouw/veroku/blob/master/requirements.txt) file.

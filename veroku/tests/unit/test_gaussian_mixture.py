@@ -2,7 +2,7 @@
 A test module for the GaussianMixture class
 """
 
-# System imports
+# Standard imports
 import unittest
 
 # Third-party imports
@@ -12,6 +12,8 @@ import mockito
 # Local imports
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+
+# pylint: disable=no-self-use
 
 
 def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
@@ -143,9 +145,9 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the multiply function fails with invalid type.
         """
         not_a_gm = mockito.mock()
-        gm = get_random_gaussian_mixture()
+        gma = get_random_gaussian_mixture()
         with self.assertRaises(TypeError):
-            gm.multiply(not_a_gm)
+            gma.multiply(not_a_gm)
 
     def test_marginalise(self):
         """
@@ -197,6 +199,7 @@ class TestGaussianMixture(unittest.TestCase):
 
         gaussian_mixture_12.cancel_method = 1
         gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
+        self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 1)
 
     def test_cancel_method_2(self):
         """

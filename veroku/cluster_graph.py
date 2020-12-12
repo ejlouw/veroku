@@ -2,17 +2,23 @@
 A module for building and performing inference with cluster graphs
 """
 
+# Standard imports
+import collections
+
+# Third-party imports
 import IPython
+import graphviz
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import networkx as nx
 import numpy as np
 from tqdm.auto import tqdm
-import graphviz
 
+# Local imports
 from veroku._cg_helpers._cluster import Cluster
 import veroku._cg_helpers._animation as cg_animation
 from veroku.factors._factor_utils import get_subset_evidence
-import matplotlib.pyplot as plt
-import collections
+
 
 # TODO: Optimise _pass_message.
 # TODO: Improve sepsets selection for less loopiness.
@@ -20,6 +26,8 @@ import collections
 #  new messages calculated.
 
 # pylint: disable=protected-access
+
+DEFAULT_FIG_SIZE = [15, 5]
 
 
 def _sort_almost_sorted(almost_sorted_deque, key):
@@ -80,13 +88,12 @@ def _absorb_subset_factors(factors):
         if not factor_processed_mask[i]:
             factor_product = factor_i.copy()
             for j, factor_j in enumerate(factors):
-                if i != j:
-                    if not factor_processed_mask[j]:
-                        if set(factor_j.var_names) < set(factor_product.var_names):
-                            factor_product = factor_product.multiply(factor_j)
-                            factors_absorbtion_dict[i].append(j)
-                            factor_processed_mask[j] = 1
-                            factor_processed_mask[i] = 1
+                if (i != j) and (not factor_processed_mask[j]):
+                    if set(factor_j.var_names) < set(factor_product.var_names):
+                        factor_product = factor_product.multiply(factor_j)
+                        factors_absorbtion_dict[i].append(j)
+                        factor_processed_mask[j] = 1
+                        factor_processed_mask[i] = 1
 
             if factor_processed_mask[i]:
                 final_graph_cluster_factors.append(factor_product)
@@ -105,9 +112,7 @@ class ClusterGraph:
     A class for building and performing inference with cluster graphs.
     """
 
-    def __init__(
-        self, factors, evidence=None, special_evidence=None, disable_tqdm=False, verbose=False, debug=False
-    ):
+    def __init__(self, factors, evidence=None, special_evidence=None, disable_tqdm=False):
         """
         Construct a Cluster graph from a list of factors.
 
@@ -126,7 +131,8 @@ class ClusterGraph:
         # TODO: see if evidence and special_evidence can be replaced by a single variable.
         self.num_messages_passed = 0
         self.disable_tqdm = disable_tqdm
-        self.verbose = verbose
+        self.verbose = False
+        self.debug = False
 
         self.sync_message_passing_max_distances = []
         if special_evidence is None:
@@ -161,9 +167,7 @@ class ClusterGraph:
         self._build_graph()
 
         # TODO: consolidate these two, if possible
-        self.message_passing_log_df = None
         self.message_passing_animation_frames = []
-        self.debug = debug
         self.passed_messages = []
 
     def _set_non_rip_sepsets_dict(self, clusters, all_evidence_vars):
@@ -239,7 +243,7 @@ class ClusterGraph:
         if self.verbose:
             print(message)
 
-    def plot_next_messages_info_gain(self, legend_on=False, figsize=[15, 5]):
+    def plot_next_messages_info_gain(self, legend_on=False, figsize=None):
         """
         Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the
             graph.
@@ -248,6 +252,8 @@ class ClusterGraph:
             plot legend.
         :param list figsize: The matplotlib figure size.
         """
+        if figsize is None:
+            figsize = DEFAULT_FIG_SIZE
         plt.figure(figsize=figsize)
         all_paths_information_gains_with_iters = [
             gmp.information_gains_with_iters for gmp in self.graph_message_paths
@@ -264,7 +270,7 @@ class ClusterGraph:
             ]
             plt.legend(legend)
 
-    def plot_message_convergence(self, log=False, figsize=[15, 5]):
+    def plot_message_convergence(self, log=False, figsize=None):
         """
         Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
         convergence.
@@ -272,10 +278,11 @@ class ClusterGraph:
         :param bool log: If True, plot the log of the KL-divergence.
         :param list figsize: The matplotlib [width, height] of the figure.
         """
+        if figsize is None:
+            figsize = DEFAULT_FIG_SIZE
         mp_max_dists = self.sync_message_passing_max_distances
         if log:
             mp_max_dists = np.log(mp_max_dists)
-        from matplotlib.lines import Line2D
 
         # here we tile an flatten to prevent the plot omission of values with inf on either side.
         mp_max_dists = np.tile(mp_max_dists, [2, 1]).flatten(order="F")

@@ -20,7 +20,7 @@ from veroku.factors._factor_template import FactorTemplate
 
 
 # pylint: disable=protected-access
-
+# pylint: disable=no-self-use
 
 def make_random_gaussian(var_names, mean_range=None, cov_range=None):
     """
@@ -481,7 +481,6 @@ class Gaussian(Factor):
         vars_to_integrate_out = list(set(self.var_names) - set(vars_to_keep))
         if self._is_vacuous:
             # TODO: check this (esp log_weight)
-            # print('Warning: marginalising vacuous Gaussian')
             return Gaussian.make_vacuous(var_names=vars_to_keep)
 
         if self.canform:

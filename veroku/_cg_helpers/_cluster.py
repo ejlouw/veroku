@@ -1,3 +1,7 @@
+"""
+A module for instantiating clusters for use in ClusterGraph objects.
+"""
+
 import uuid
 import copy
 
@@ -6,8 +10,10 @@ FIX_NON_PSD_MATRICES = False
 # TODO: add evidence observation functionality
 #   (perhaps only important for non-linear gaussian and similar approximate transformation factors)
 
+# pylint: disable=protected-access
 
-class Cluster(object):
+
+class Cluster:
     """
     A class for instantiating clusters for use in ClusterGraph objects.
     """
@@ -60,6 +66,11 @@ class Cluster(object):
 
     # TODO: merge this with add_neighbour
     def add_outward_message_path(self, outward_message_path):
+        """
+        Add an outward graph message path.
+
+        :param outward_message_path: The graph message path to add.
+        """
         self._outward_message_paths.append(outward_message_path)
 
     def make_message(self, neighbour_id):
@@ -147,7 +158,7 @@ class Cluster(object):
         return self._factor.copy()
 
 
-class Message(object):
+class Message:
 
     """
     A class for instantiating Message objects.

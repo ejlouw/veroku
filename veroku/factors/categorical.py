@@ -2,7 +2,7 @@
 A module for instantiating sparse tables with log probabilities.
 """
 
-# System imports
+# Standard imports
 import copy
 import operator
 import warnings
@@ -79,9 +79,9 @@ class Categorical(Factor):
             for assignment, prob in probs_table.items():
                 try:
                     probs_tensor[assignment] = prob
-                except IndexError:
+                except IndexError as index_error:
                     error_message = f"assignment {assignment} is not consistent with the cardinalities ({cardinalities}) provided"
-                    raise IndexError(error_message)
+                    raise IndexError(error_message) from index_error
             with warnings.catch_warnings():
                 # prevents 'divide by zero encountered in log' from displaying
                 warnings.simplefilter("ignore")
@@ -121,7 +121,7 @@ class Categorical(Factor):
         log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
         return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor)
 
-    def equals(self, factor):
+    def equals(self, factor, rtol=1e-5, atol=1e-5):
         """
         Check if this factor is the same as another factor.
 
@@ -135,7 +135,7 @@ class Categorical(Factor):
         if set(self.var_names) != set(factor.var_names):
             return False
         factor_copy = factor.reorder(self.var_names)
-        if not np.allclose(self.log_probs_tensor, factor_copy.log_probs_tensor):
+        if not np.allclose(self.log_probs_tensor, factor_copy.log_probs_tensor, rtol=rtol, atol=atol):
             return False
         return True
 
@@ -168,8 +168,8 @@ class Categorical(Factor):
             return result_tensor, tensor_a_var_names
         common_vars = set(tensor_a_var_names).intersection(tensor_b_var_names)
 
-        remaining_f1_vars = [v for v in tensor_a_var_names if v not in common_vars]
-        remaining_f2_vars = [v for v in tensor_b_var_names if v not in common_vars]
+        remaining_f1_vars = [var for var in tensor_a_var_names if var not in common_vars]
+        remaining_f2_vars = [var for var in tensor_b_var_names if var not in common_vars]
         # sort according to f1_vars so that only f2_tensor can be transposed if sets are the same
         common_vars = [v for v in tensor_a_var_names if v in common_vars]
         f1_vars_new_order = [tensor_a_var_names.index(v) for v in remaining_f1_vars]
@@ -180,8 +180,8 @@ class Categorical(Factor):
         f1_tensor_std_shape = np.expand_dims(f1_tensor_new_shape, axis=f1_dim_expansion_axis)
         #  now f1 has var order / dim order: [[1]*num_f2_vars, rest_f1_vars_dims, common_vars]
 
-        f2_vars_new_order = [tensor_b_var_names.index(v) for v in remaining_f2_vars]
-        f2_vars_new_order += [tensor_b_var_names.index(v) for v in common_vars]
+        f2_vars_new_order = [tensor_b_var_names.index(var) for var in remaining_f2_vars]
+        f2_vars_new_order += [tensor_b_var_names.index(var) for var in common_vars]
         f2_tensor_new_shape = tensor_b.transpose(f2_vars_new_order)
         # now f2 has var order / dim order:  [common_vars_dim, [1]*num_f2_vars]
 
@@ -195,7 +195,7 @@ class Categorical(Factor):
         result_tensor = func(f1_tensor_std_shape, f2_tensor_std_shape)
         return result_tensor, result_vars
 
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Sum out variables from this factor.
 
@@ -394,8 +394,8 @@ class Categorical(Factor):
         uniform_log_prob = -np.log(np.product(self.log_probs_tensor.shape))
         uniform_log_tensor = np.ones(self.log_probs_tensor.shape) * uniform_log_prob
         uniform_factor = Categorical(var_names=self.var_names, log_probs_tensor=uniform_log_tensor)
-        kl = self.kl_divergence(uniform_factor, normalize_factor=False)
-        return kl
+        kld = self.kl_divergence(uniform_factor, normalize_factor=False)
+        return kld
 
     def potential(self, vrs, assignment):
         """

@@ -1,16 +1,21 @@
 """
 A test module for the _sigma_points module.
 """
-
+# Third-party imports
 import unittest
 from mockito import when
+import numpy as np
 
+# Local imports
 from veroku.factors import _sigma_points
 from veroku.factors.gaussian import make_random_gaussian
-import numpy as np
 
 
 class TestSigmaPoints(unittest.TestCase):
+    """
+    A test class for the _sigma_points module.
+    """
+
     def setUp(self):
         """
         Run before every test.

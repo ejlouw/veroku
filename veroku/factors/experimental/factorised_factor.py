@@ -354,7 +354,7 @@ class FactorizedFactor(Factor):
         self_comps_with_cpoies_in_factor = []
         for i, self_factor_i in enumerate(self.factors):
             if i not in self_comps_with_cpoies_in_factor:
-                for j, other_factor_j in enumerate(factor.factors):
+                for other_factor_j in factor.factors:
                     if self_factor_i.equals(other_factor_j):
                         self_comps_with_cpoies_in_factor.append(i)
         if len(self_comps_with_cpoies_in_factor) == len(self.factors):

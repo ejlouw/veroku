@@ -11,6 +11,8 @@ from veroku._cg_helpers._animation import (
     change_graph_edge_color,
 )
 
+# pylint: disable=no-self-use
+
 
 class TestAnimation(unittest.TestCase):
     """

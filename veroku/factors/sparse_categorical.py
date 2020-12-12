@@ -2,15 +2,15 @@
 A module for instantiating sparse tables with log probabilities.
 """
 
-# System imports
+# Standard imports
 import copy
+import itertools
 import operator
 
 # Third-party imports
 import numpy as np
 from scipy import special
 import pandas as pd
-import itertools
 
 # Local imports
 from veroku.factors._factor import Factor
@@ -329,12 +329,14 @@ class SparseCategorical(Factor):
     #  when probs turn to 0.
     # TODO: Add variable order sorting
 
-    def _all_non_default_equal(self, factor):
+    def _all_non_default_equal(self, factor, rtol, atol):
         """
         Check that all non default values in this factor are the same as the corresponding values in factor, where
         the two factors have the same variable scope.
 
         :param factor: The other factor
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the check.
         :rtype: bool
         """
@@ -347,16 +349,18 @@ class SparseCategorical(Factor):
                     return False
             else:
                 self_log_prob = factor.log_probs_table[assign]
-                if not np.isclose(self_log_prob, factor_log_prob):
+                if not np.isclose(self_log_prob, factor_log_prob, rtol=rtol, atol=atol):
                     return False
         return True
 
-    def equals(self, factor):
+    def equals(self, factor, rtol=1e-05, atol=1e-05):
         """
         Check if this factor is the same as another factor.
 
         :param factor: The other factor to compare to.
         :type factor: SparseCategorical
+        :param float rtol: The relative tolerance to use for factor equality check.
+        :param float atol: The absolute tolerance to use for factor equality check.
         :return: The result of the comparison.
         :rtype: bool
         """
@@ -373,11 +377,11 @@ class SparseCategorical(Factor):
         # factors now have same variable order
 
         # everywhere that self has non default values, factor has the same values.
-        if not self._all_non_default_equal(factor_):
+        if not self._all_non_default_equal(factor_, rtol=rtol, atol=atol):
             return False
         # TODO: improve efficiency here (there could be a lot of duplication with the above loop)
         #   Check the values for every non-default assignment of factor
-        if not factor_._all_non_default_equal(self):
+        if not factor_._all_non_default_equal(self, rtol=rtol, atol=atol):
             return False
 
         # If all possible assignments have not been checked - check that the default values are the same
@@ -401,8 +405,7 @@ class SparseCategorical(Factor):
             default_log_prob=self.default_log_prob,
         )
 
-    # TODO: change back to log form
-    def marginalize(self, vrs, keep=False):
+    def marginalize(self, vrs, keep=True):
         """
         Sum out variables from this factor.
 
@@ -414,7 +417,7 @@ class SparseCategorical(Factor):
 
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
-        nested_table, nested_table_vars = _get_nested_sorted_probs(
+        nested_table, _ = _get_nested_sorted_probs(
             new_variables_order_outer=vars_to_keep,
             new_variables_order_inner=vars_to_sum_out,
             old_variable_order=self.var_names,
@@ -426,8 +429,8 @@ class SparseCategorical(Factor):
             result_table[l1_assign] = prob
 
         result_var_cards = copy.deepcopy(self.var_cards)
-        for v in vars_to_sum_out:
-            del result_var_cards[v]
+        for var in vars_to_sum_out:
+            del result_var_cards[var]
         cardinalities = list(result_var_cards.values())
         return SparseCategorical(
             var_names=vars_to_keep, log_probs_table=result_table, cardinalities=cardinalities
@@ -444,7 +447,7 @@ class SparseCategorical(Factor):
         """
 
         vars_unobserved = [var_name for var_name in self.var_names if var_name not in vrs]
-        nested_table, nested_table_vars = _get_nested_sorted_probs(
+        nested_table, _ = _get_nested_sorted_probs(
             new_variables_order_outer=vrs,
             new_variables_order_inner=vars_unobserved,
             old_variable_order=self.var_names,
@@ -452,8 +455,8 @@ class SparseCategorical(Factor):
         )
         result_table = nested_table[tuple(values)]
         result_var_cards = copy.deepcopy(self.var_cards)
-        for v in vrs:
-            del result_var_cards[v]
+        for var in vrs:
+            del result_var_cards[var]
 
         cardinalities = list(result_var_cards.values())
         return SparseCategorical(

@@ -2,21 +2,25 @@
 A test module for the ClusterGraph class
 """
 
+# Standard imports
 import os
 import unittest
-from mockito import unstub
 from unittest.mock import patch
-import matplotlib.pyplot as plt
 from unittest import mock
+from collections import deque
 
+# Third-party imports
+from mockito import unstub
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Local imports
 from veroku.cluster_graph import ClusterGraph, _sort_almost_sorted
 from veroku._cg_helpers._cluster import Message
-from veroku.factors.gaussian import Gaussian
-import numpy as np
-from collections import deque
-from veroku.factors.gaussian import make_random_gaussian
+from veroku.factors.gaussian import Gaussian, make_random_gaussian
 
 # pylint: disable=protected-access
+# pylint: disable=no-self-use
 
 
 def get_cg1_and_factors():
@@ -121,7 +125,8 @@ class TestClusterGraph(unittest.TestCase):
         actual_result = _sort_almost_sorted(input_deque, key=lambda x: x)
         self.assertEqual(expected_result, actual_result)
 
-    def test_correct_message_passing(self):
+    # TODO: improve this function and remove too-many-locals below
+    def test_correct_message_passing(self):  # pylint: disable=too-many-locals
         """
         Check that the correct messages are passed in the correct order.
         """
@@ -133,7 +138,7 @@ class TestClusterGraph(unittest.TestCase):
         factor_ac = Gaussian(var_names=["a", "c"], cov=[[10, 3], [3, 10]], mean=[0, 0], log_weight=0.0)
         factor_bd = Gaussian(var_names=["b", "d"], cov=[[15, 4], [4, 15]], mean=[0, 0], log_weight=0.0)
 
-        cluster_graph = ClusterGraph([factor_a, factor_ab, factor_ac, factor_bd], debug=True)
+        cluster_graph = ClusterGraph([factor_a, factor_ab, factor_ac, factor_bd])
 
         # expected messages
 
@@ -159,8 +164,8 @@ class TestClusterGraph(unittest.TestCase):
         expected_cluster_factors = [factor_abfa.copy(), factor_ac.copy(), factor_bd.copy()]
         actual_cluster_factors = [c._factor for c in cluster_graph._clusters]
 
-        def key_func(f):
-            return "".join(f.var_names)
+        def key_func(factor):
+            return "".join(factor.var_names)
 
         actual_cluster_factors = sorted(actual_cluster_factors, key=key_func)
         expected_cluster_factors = sorted(expected_cluster_factors, key=key_func)
@@ -182,6 +187,7 @@ class TestClusterGraph(unittest.TestCase):
             )
             gmp.update_next_information_gain()
 
+        cluster_graph.debug = True
         cluster_graph.process_graph(tol=0, max_iter=1)
 
         # Note
@@ -207,8 +213,8 @@ class TestClusterGraph(unittest.TestCase):
         self.cg_1.process_graph(tol=0, max_iter=2)
         # check posterior weight
         joint = self.cg1_factors[0]
-        for f in self.cg1_factors[1:]:
-            joint = joint.absorb(f)
+        for factor in self.cg1_factors[1:]:
+            joint = joint.absorb(factor)
         expected_log_weight = joint.get_log_weight()
 
         # the marginals are all marginals of the same distribution and should therefore have the same weight
@@ -217,12 +223,12 @@ class TestClusterGraph(unittest.TestCase):
         self.assertTrue(np.allclose(actual_log_weights, expected_log_weight))
 
     @mock.patch.object(plt, "legend")
-    def test_plot_next_messages_info_gain_legend(self, mock):
+    def test_plot_next_messages_info_gain_legend(self, plt_mock):
         """
         Test that the legend function is called when it should be.
         """
         self.processed_cg1.plot_next_messages_info_gain(legend_on=True)
-        mock.assert_called()
+        plt_mock.assert_called()
 
     def test_init_fail_duplicate_cluster_ids(self):
         """
@@ -278,6 +284,9 @@ class TestClusterGraph(unittest.TestCase):
 
     @patch("IPython.core.display.display")
     def test_show(self, display_mock):
+        """
+        Test that the show method calls the display function.
+        """
         self.cg_1.show()
         display_mock.assert_called()
 

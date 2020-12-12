@@ -2,7 +2,7 @@
 A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
 """
 
-# System imports
+# Standard imports
 import cmath
 
 # Third-party imports
@@ -538,11 +538,11 @@ class GaussianMixture(Factor):
             minimum_loc = inverse_gaussian_mixture._argmin()
             minimum_locations.append(minimum_loc)
 
-        def neg_gm_log_quotient_potential(x):
+        def neg_gm_log_quotient_potential(x_val):
             """
             Get the negative of the log value of the Gaussian mixture quotient (gma/gmb)
             """
-            potential = -1.0 * (gaussian_mixture_a.log_potential(x) - gaussian_mixture_b.log_potential(x))
+            potential = -1.0 * (gaussian_mixture_a.log_potential(x_val) - gaussian_mixture_b.log_potential(x_val))
             return potential
 
         mode_locations = []

@@ -2,9 +2,9 @@
 Tests for the Gaussian module.
 """
 
-# System imports
+# Standard imports
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import cmath
 
 # Third-party imports
@@ -17,19 +17,17 @@ from veroku.factors.gaussian import Gaussian, make_random_gaussian, make_std_gau
 from veroku.factors.categorical import Categorical
 from veroku.factors import _factor_utils
 
-"""
-A tests module for Gaussian class.
-"""
 
 # pylint: disable=protected-access
 # pylint: disable=too-many-public-methods
+# pylint: disable=no-self-use
 
 
 def _update_canform():
     """
     A dummy _update_canform function.
     """
-    pass
+    return
 
 
 class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
@@ -304,7 +302,8 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         actual_quotient = gaussian_a.divide(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
-        gaussian_a_reordered = Gaussian(prec=[[6.0, 2.0], [2.0, 7.0]], h_vec=[3.0, 4.0], g_val=3.0, var_names=["b", "a"])
+        gaussian_a_reordered = Gaussian(prec=[[6.0, 2.0], [2.0, 7.0]], h_vec=[3.0, 4.0], g_val=3.0,
+                                        var_names=["b", "a"])
         actual_quotient = gaussian_a_reordered.divide(gaussian_b)
 
         actual_quotient._reorder_parameters(["a", "b"])
@@ -316,27 +315,17 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         Test that the Gaussian reduce function returns the correct result.
         """
         # Note these equations where written independently from the actuall implementation.
-        # TODO: consider extending this test and hard-coding the expected parmeters
-        # TODO: Fix this test - it passes sometimes and sometimes not - something to do with the parameter order.
+        # TODO: consider extending this test and hard-coding the expected parameters
 
         kmat = np.array([[6, 2, 1], [2, 8, 3], [1, 3, 9]])
         hvec = np.array([[1], [2], [3]])
         g_val = 1.5
 
-        # The block-matrix sub-parameters
-        prec_xx = np.array([[6, 2], [2, 8]])
-        prec_xy = np.array([[1], [3]])
-        prec_yy = np.array([[9]])
-
-        h_x = np.array([[1], [2]])
-        h_y = np.array([[3]])
         z_observed = np.array([[6]])
 
-        expected_prec = prec_xx
-        expeted_h = h_x - prec_xy.dot(z_observed)
-        expected_g = (
-                g_val + h_y.transpose().dot(z_observed) - 0.5 * z_observed.transpose().dot(prec_yy).dot(z_observed)
-        )
+        expected_prec = np.array([[6, 2], [2, 8]])
+        expeted_h = np.array([[-5], [-16]])
+        expected_g = -142.5
         expected_gaussian = Gaussian(prec=expected_prec, h_vec=expeted_h, g_val=expected_g, var_names=["x", "y"])
         gaussian = Gaussian(prec=kmat, h_vec=hvec, g_val=g_val, var_names=["x", "y", "z"])
         actual_gaussian = gaussian.reduce(vrs=["z"], values=z_observed)
@@ -744,6 +733,9 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         self.assertTrue("dimensionalities" in error_msg)
 
     def test_vacuous_equals(self):
+        """
+        Test that vauous gaussians are equal.
+        """
         g_1 = Gaussian.make_vacuous(var_names=["a", "b"])
         g_2 = Gaussian.make_vacuous(var_names=["a", "b"])
         self.assertTrue(g_1.equals(g_2))

@@ -1,3 +1,7 @@
+"""
+A test module for the example notebooks.
+"""
+
 import unittest
 import sys
 import os
@@ -9,14 +13,12 @@ import matplotlib
 
 from veroku.cluster_graph import ClusterGraph
 
-"""
-A test module for the example notebooks.
-"""
-
 # pylint: disable=no-member
 # pylint: disable=no-name-in-module
 # pylint: disable=import-outside-toplevel
 # pylint: disable=unused-import
+# pylint: disable=import-error
+# pylint: disable=no-self-use
 
 
 class TestNotebooks(unittest.TestCase):
@@ -76,8 +78,8 @@ class TestNotebooks(unittest.TestCase):
 
             marginal_vars = [p.var_names for p in position_posteriors]
             joint = factors[0]
-            for f in factors[1:]:
-                joint = joint.absorb(f)
+            for factor in factors[1:]:
+                joint = joint.absorb(factor)
 
             joint = joint.reduce(vrs=list(evidence_dict.keys()), values=list(evidence_dict.values()))
             correct_marginals = []

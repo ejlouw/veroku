@@ -2,16 +2,16 @@
 Tests for the SparseLogTable module.
 """
 
-# System imports
+# Standard imports
 import unittest
 import operator
+from unittest import mock
 
 # Third-party imports
 import numpy as np
 import pandas as pd
 import mockito
 from mockito import unstub
-from unittest import mock
 
 # Local imports
 from veroku.factors.categorical import Categorical, CategoricalTemplate
@@ -24,6 +24,7 @@ from veroku.factors.sparse_categorical import (
 
 # pylint: disable=protected-access
 # pylint: disable=too-many-public-methods
+# pylint: disable=no-self-use
 
 
 def make_abc_factor_1(cat_class):
@@ -244,18 +245,18 @@ class TestCategorical(unittest.TestCase):
 
         actual_result = categorical_a.argmax()
 
-        self.assertEquals(expected_result, actual_result)
+        self.assertEqual(expected_result, actual_result)
 
     def test_kl_divergence_small_neg_works(self):
         """
         Test that the kl_divergence function does not fail on a negative KLD as a result of numerical errors.
         """
         vars_names = ["a"]
-        e = 1e-12
+        epsilon = 1e-12
         probs_table_p = {(0,): 0.2, (1,): 0.8}
         probs_tensor_p = np.array(list(probs_table_p.values()))
 
-        probs_table_q = {(0,): 0.2 + e, (1,): 0.8 - e}
+        probs_table_q = {(0,): 0.2 + epsilon, (1,): 0.8 - epsilon}
         probs_tensor_q = np.array(list(probs_table_q.values()))
 
         log_p = np.log(probs_tensor_p)
@@ -480,13 +481,13 @@ class TestCategorical(unittest.TestCase):
         vars_ex = ["a"]
         probs_ex = {(0,): 0.10, (1,): 0.26}
         expected_resulting_factor = self.cat_class(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2])
-        actual_resulting_factor = sp_table_a.marginalize(vrs=["b", "c"])
+        actual_resulting_factor = sp_table_a.marginalize(vrs=["b", "c"], keep=False)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
         vars_ex = ["c"]
         probs_ex = {(0,): 0.01 + 0.03 + 0.05 + 0.07, (1,): 0.02 + 0.04 + 0.06 + 0.08}
         expected_resulting_factor = self.cat_class(var_names=vars_ex, probs_table=probs_ex, cardinalities=[2])
-        actual_resulting_factor = sp_table_a.marginalize(vrs=["a", "b"])
+        actual_resulting_factor = sp_table_a.marginalize(vrs=["a", "b"], keep=False)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_observe_1(self):
@@ -714,9 +715,9 @@ class TestCategorical(unittest.TestCase):
         Test that the kl_divergence method returns the correct result when the two factors have different combinations
         of zeros for corresponding assignments.
         """
-        p = 0.16666666666666669
+        prob = 0.16666666666666669
         vrs = ["24", "25"]
-        probs = {(2, 5): p, (5, 2): p, (1, 5): p, (5, 1): p, (1, 2): p, (2, 1): p}
+        probs = {(2, 5): prob, (5, 2): prob, (1, 5): prob, (5, 1): prob, (1, 2): prob, (2, 1): prob}
         normalized_self = self.cat_class(var_names=vrs, probs_table=probs, cardinalities=[9, 9])
 
         probs = {(8, 1): 0.0, (6, 1): 0.0, (1, 3): 0.0, (3, 1): 0.0, (1, 2): 0.5, (2, 1): 0.5, (0, 8): 0.0}
@@ -724,12 +725,12 @@ class TestCategorical(unittest.TestCase):
         factor = self.cat_class(var_names=vrs, probs_table=probs, cardinalities=[9, 9])
         actual_kld = normalized_self.kl_divergence(factor)
         expected_kld_list = [
-            p * (np.log(p) - np.log(0)),    # (2, 5)              =inf
-            p * (np.log(p) - np.log(0)),    # (5, 2)              =inf
-            p * (np.log(p) - np.log(0)),    # (1, 5)              =inf
-            p * (np.log(p) - np.log(0)),    # (5, 1)              =inf
-            p * (np.log(p) - np.log(0.5)),  # (1, 2)              =-0.1831020481113516
-            p * (np.log(p) - np.log(0.5)),  # (2, 1)              =-0.1831020481113516
+            prob * (np.log(prob) - np.log(0)),    # (2, 5)              =inf
+            prob * (np.log(prob) - np.log(0)),    # (5, 2)              =inf
+            prob * (np.log(prob) - np.log(0)),    # (1, 5)              =inf
+            prob * (np.log(prob) - np.log(0)),    # (5, 1)              =inf
+            prob * (np.log(prob) - np.log(0.5)),  # (1, 2)              =-0.1831020481113516
+            prob * (np.log(prob) - np.log(0.5)),  # (2, 1)              =-0.1831020481113516
             0 * (np.log(1)),                # (8, 1) (both 0.0)   =0.0
             0 * (np.log(1)),                # (6, 1) (both 0.0)   =0.0
             0 * (np.log(1)),                # (1, 3) (both 0.0)   =0.0
@@ -805,9 +806,9 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the is_vacuous property is True when the factor is close to vacuous.
         """
-        e = 1e-10
+        epsilon = 1e-10
         vars_a = ["a", "b"]
-        probs_a = {(0, 0): 0.25 + e, (0, 1): 0.25, (1, 0): 0.25 - e, (1, 1): 0.25}
+        probs_a = {(0, 0): 0.25 + epsilon, (0, 1): 0.25, (1, 0): 0.25 - epsilon, (1, 1): 0.25}
         factor_a = self.cat_class(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
         self.assertTrue(factor_a.is_vacuous)
 
@@ -815,9 +816,9 @@ class TestCategorical(unittest.TestCase):
         """
         Test that the is_vacuous property is False when the factor is not close to vacuous.
         """
-        e = 0.1
+        epsilon = 0.1
         vars_a = ["a", "b"]
-        probs_a = {(0, 0): 0.25 + e, (0, 1): 0.25, (1, 0): 0.25 - e, (1, 1): 0.25}
+        probs_a = {(0, 0): 0.25 + epsilon, (0, 1): 0.25, (1, 0): 0.25 - epsilon, (1, 1): 0.25}
         factor_a = self.cat_class(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
         self.assertFalse(factor_a.is_vacuous)
 
@@ -878,7 +879,7 @@ class TestSparseCategorical(TestCategorical):
         The test class initializer.
         """
         super().__init__(*args, **kwargs)
-        self.CatClass = SparseCategorical
+        self.cat_class = SparseCategorical
 
     def test__make_dense(self):
         """
@@ -1012,26 +1013,26 @@ class TestSparseCategorical(TestCategorical):
           # (0, 1, 0): 0.5,
             (0, 1, 1): 0.4,
         }
-        ld = default_log_prob
+        def_lp = default_log_prob
 
         vars_dabc = ["d", "a", "b", "c"]
         probs_dabc = {
-            (0, 0, 0, 0): ld - ld,
-            (0, 0, 0, 1): ld - 0.2,
-            (0, 0, 1, 0): 0.3 - ld,
+            (0, 0, 0, 0): def_lp - def_lp,
+            (0, 0, 0, 1): def_lp - 0.2,
+            (0, 0, 1, 0): 0.3 - def_lp,
             (0, 0, 1, 1): 0.4 - 0.4,
-            (0, 1, 0, 0): ld - ld,
-            (0, 1, 0, 1): ld - 0.2,
-            (0, 1, 1, 0): ld - ld,
-            (0, 1, 1, 1): ld - 0.4,
-            (1, 0, 0, 0): ld - ld,
-            (1, 0, 0, 1): ld - ld,
-            (1, 0, 1, 0): 0.3 - ld,
-            (1, 0, 1, 1): 0.4 - ld,
-            (1, 1, 0, 0): ld - ld,
-            (1, 1, 0, 1): ld - ld,
-            (1, 1, 1, 0): ld - ld,
-            (1, 1, 1, 1): ld - ld,
+            (0, 1, 0, 0): def_lp - def_lp,
+            (0, 1, 0, 1): def_lp - 0.2,
+            (0, 1, 1, 0): def_lp - def_lp,
+            (0, 1, 1, 1): def_lp - 0.4,
+            (1, 0, 0, 0): def_lp - def_lp,
+            (1, 0, 0, 1): def_lp - def_lp,
+            (1, 0, 1, 0): 0.3 - def_lp,
+            (1, 0, 1, 1): 0.4 - def_lp,
+            (1, 1, 0, 0): def_lp - def_lp,
+            (1, 1, 0, 1): def_lp - def_lp,
+            (1, 1, 1, 0): def_lp - def_lp,
+            (1, 1, 1, 1): def_lp - def_lp,
         }
 
         expected_result = SparseCategorical(
@@ -1077,7 +1078,7 @@ class TestSparseCategorical(TestCategorical):
         Test that the SparseCategoricalTemplate make_factor makes the correct factor when var_templates are provided.
         """
         probs_a = {(0, 0): 0.1, (0, 1): 0.2}
-        expected_factor = self.CatClass(var_names=["a_0", "b_0"], probs_table=probs_a, cardinalities=[2, 2])
+        expected_factor = SparseCategorical(var_names=["a_0", "b_0"], probs_table=probs_a, cardinalities=[2, 2])
         template = SparseCategoricalTemplate(probs_a, cardinalities=[2, 2], var_templates=["a_{i}", "b_{i}"])
         actual_factor = template.make_factor(format_dict={"i": 0})
         self.assertTrue(actual_factor.equals(expected_factor))
@@ -1114,11 +1115,10 @@ class TestSparseCategorical(TestCategorical):
         """
         Test that the _apply_to_probs function results in the correct factor.
         """
-        def func(lp, assign):
+        def func(log_prob, assign):
             if sum(assign):
-                return lp
-            else:
-                return -np.inf
+                return log_prob
+            return -np.inf
 
         probs = {(0, 0): 0.1, (0, 1): 0.2}
         factor = SparseCategorical(var_names=["a", "b"], cardinalities=[2, 2], probs_table=probs)

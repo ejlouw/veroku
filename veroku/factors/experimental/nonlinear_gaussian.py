@@ -2,7 +2,7 @@
 A module for instantiating and performing operations on Non-linear Gaussian functions.
 """
 
-# System imports
+# Standard imports
 import operator
 import copy
 

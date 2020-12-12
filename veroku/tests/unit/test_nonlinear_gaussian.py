@@ -2,7 +2,7 @@
 Tests for the NonLinearGaussian module.
 """
 
-# System imports
+# Standard imports
 import unittest
 
 # Third-party imports
@@ -11,6 +11,21 @@ import numpy as np
 # Local imports
 from veroku.factors.gaussian import Gaussian
 from veroku.factors.experimental.nonlinear_gaussian import NonLinearGaussian
+
+
+def con_params_to_joint(conditioning_cov, conditioning_mean, a_mat, noise_cov):
+    """
+    A helper function.
+    """
+    s_xx = conditioning_cov
+    s_xy = conditioning_cov.dot(a_mat.T)
+    s_yx = a_mat.dot(conditioning_cov.T)
+    s_yy = a_mat.dot(conditioning_cov).dot(a_mat.T) + noise_cov
+    joint_cov = np.block([[s_xx, s_xy], [s_yx, s_yy]])
+    u_x = conditioning_mean
+    u_y = a_mat.dot(conditioning_mean)
+    joint_mean = np.block([[u_x], [u_y]])
+    return joint_cov, joint_mean
 
 
 class TestNonLinearGaussian(unittest.TestCase):
@@ -43,14 +58,8 @@ class TestNonLinearGaussian(unittest.TestCase):
         )
 
         # expected parameters
-        s_xx = conditioning_cov
-        s_xy = conditioning_cov.dot(a_mat.T)
-        s_yx = a_mat.dot(conditioning_cov.T)
-        s_yy = a_mat.dot(conditioning_cov).dot(a_mat.T) + noise_cov
-        expected_joint_cov = np.block([[s_xx, s_xy], [s_yx, s_yy]])
-        u_x = conditioning_mean
-        u_y = a_mat.dot(conditioning_mean)
-        expected_joint_mean = np.block([[u_x], [u_y]])
+        # TODO: Consider replacing this with hardcoded specific params.
+        expected_joint_cov, expected_joint_mean = con_params_to_joint(conditioning_cov, conditioning_mean, a_mat, noise_cov)
 
         expected_joint = Gaussian(
             cov=expected_joint_cov, mean=expected_joint_mean, log_weight=0.0, var_names=["a", "b", "c", "d"]
@@ -90,16 +99,8 @@ class TestNonLinearGaussian(unittest.TestCase):
         conditioning_gaussian = Gaussian(
             cov=conditioning_cov, mean=conditioning_mean, log_weight=0.0, var_names=["a", "b"]
         )
-        s_xx = conditioning_cov
-        s_xy = conditioning_cov.dot(a_mat.T)
-        s_yx = a_mat.dot(conditioning_cov.T)
-        s_yy = a_mat.dot(conditioning_cov).dot(a_mat.T) + noise_cov
-        joint_cov = np.block([[s_xx, s_xy], [s_yx, s_yy]])
-        np.linalg.inv(joint_cov),
-
-        u_x = conditioning_mean
-        u_y = a_mat.dot(conditioning_mean)
-        joint_mean = np.block([[u_x], [u_y]])
+        # TODO: Consider replacing this with hardcoded specific params.
+        joint_cov, joint_mean = con_params_to_joint(conditioning_cov, conditioning_mean, a_mat, noise_cov)
 
         expected_joint = Gaussian(
             cov=joint_cov, mean=joint_mean, log_weight=0.0, var_names=["a", "b", "c", "d"]
@@ -109,10 +110,6 @@ class TestNonLinearGaussian(unittest.TestCase):
         nlg_factor = nlg_factor.multiply(conditional_update_factor)
         nlg_factor = nlg_factor.multiply(conditioning_gaussian)
         conditional_update_factor.show()
-        expected_joint.show()
-        nlg_factor._recompute_joint()
-        nlg_factor.show()
-
         self.assertTrue(expected_joint.equals(nlg_factor.joint_distribution))
 
     def test_marginalise_unconditioned(self):

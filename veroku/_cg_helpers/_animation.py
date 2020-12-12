@@ -2,7 +2,7 @@
 A module for animating graphviz graphs.
 """
 
-# System imports
+# Standard imports
 import re
 
 # Third-party imports
