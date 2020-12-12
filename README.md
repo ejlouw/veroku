@@ -76,6 +76,9 @@ The following additional dependencies are also required for some functionality (
 ##### Graphviz
 See https://graphviz.org/download/ for installation instructions. 
 
+### Contributing
+If you would like to contribute to veroku, please see the [contributing guide](https://github.com/ejlouw/veroku/blob/master/contributing.md).
+
 ### License
 Veroku is released under a 3-Clause BSD license. You can view the license
 [here](https://github.com/ejlouw/veroku/blob/master/LICENSE).
