@@ -3,7 +3,7 @@ A module for computing and transforming sigma points and converting between sigm
 """
 
 import numpy as np
-from veroku.factors.gaussian import Gaussian
+import veroku.factors.gaussian as gauss
 
 
 def get_sigma_points_array(gaussian_factor):
@@ -13,7 +13,7 @@ def get_sigma_points_array(gaussian_factor):
     :param gaussian_factor: The factor
     :return: (numpy array) An array with sigma points as column vectors.
     """
-    assert isinstance(gaussian_factor, Gaussian), "Error: gaussian_factor is not a Gaussian factor."
+    assert isinstance(gaussian_factor, gauss.Gaussian), "Error: gaussian_factor is not a Gaussian factor."
     cov = gaussian_factor.get_cov()
     mean = gaussian_factor.get_mean()
     chol = np.linalg.cholesky(cov)

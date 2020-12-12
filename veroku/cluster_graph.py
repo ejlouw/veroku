@@ -78,6 +78,7 @@ def _absorb_subset_factors(factors):
     :return: The (potentially reduced) list of factors.
     :rtype: Factor list
     """
+    # TODO: Simplify this, if possible.
     factors_absorbtion_dict = {i: [] for i in range(len(factors))}
     final_graph_cluster_factors = []
     # factors: possibly smaller list of factors after factors which have a scope that is a subset of another factor have

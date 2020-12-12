@@ -1,6 +1,9 @@
 """
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+A module for instantiating and performing operations on multivariate Gaussian mixture distributions.
 """
+
+# pylint: disable=cyclic-import
+# pylint: disable=protected-access
 
 # Standard imports
 import cmath
@@ -15,15 +18,13 @@ from scipy import special
 # Local imports
 from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
-from veroku.factors.gaussian import Gaussian
+import veroku.factors.gaussian as gauss
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # TODO: confirm that the different GaussianMixture divide methods have sufficient stability and accuracy in their
 #  approximations.
 # TODO: Add tests for the divide methods.
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
-
-# pylint: disable=protected-access
 
 
 class GaussianMixture(Factor):
@@ -101,8 +102,8 @@ class GaussianMixture(Factor):
         :rtype: GaussianMixture
         """
         component_copies = []
-        for gauss in self.components:
-            component_copies.append(gauss.copy())
+        for comp in self.components:
+            component_copies.append(comp.copy())
         return GaussianMixture(component_copies)
 
     def multiply(self, factor):
@@ -115,13 +116,13 @@ class GaussianMixture(Factor):
         :rtype: GaussianMixture
         """
         new_components = []
-        if isinstance(factor, Gaussian):
-            for gauss in self.components:
-                new_components.append(gauss.multiply(factor))
+        if isinstance(factor, gauss.Gaussian):
+            for comp in self.components:
+                new_components.append(comp.multiply(factor))
         elif isinstance(factor, GaussianMixture):
-            for gauss_ai in self.components:
-                for gauss_bi in factor.components:
-                    new_components.append(gauss_ai.multiply(gauss_bi))
+            for comp_ai in self.components:
+                for comp_bi in factor.components:
+                    new_components.append(comp_ai.multiply(comp_bi))
         else:
             raise TypeError("unsupported factor type.")
         return GaussianMixture(new_components)
@@ -136,7 +137,7 @@ class GaussianMixture(Factor):
         GaussianMixtures with more than one component).
         :rtype: GaussianMixture
         """
-        if isinstance(factor, Gaussian):
+        if isinstance(factor, gauss.Gaussian):
             single_gaussian = factor
         elif isinstance(factor, GaussianMixture):
             if factor.num_components == 1:
@@ -151,8 +152,8 @@ class GaussianMixture(Factor):
         else:
             raise TypeError("unsupported factor type.")
         new_components = []
-        for gauss in self.components:
-            new_components.append(gauss.divide(single_gaussian))
+        for comp in self.components:
+            new_components.append(comp.divide(single_gaussian))
         return GaussianMixture(new_components)
 
     def reduce(self, vrs, values):
@@ -167,8 +168,8 @@ class GaussianMixture(Factor):
         :rtype: GaussianMixture
         """
         new_components = []
-        for gauss in self.components:
-            new_components.append(gauss.reduce(vrs, values))
+        for comp in self.components:
+            new_components.append(comp.reduce(vrs, values))
         return GaussianMixture(new_components)
 
     def marginalize(self, vrs, keep=True):
@@ -183,8 +184,8 @@ class GaussianMixture(Factor):
         :rtype: GaussianMixture
         """
         new_components = []
-        for gauss in self.components:
-            new_components.append(gauss.marginalize(vrs, keep))
+        for comp in self.components:
+            new_components.append(comp.marginalize(vrs, keep))
         return GaussianMixture(new_components)
 
     def distance_from_vacuous(self):
@@ -218,8 +219,8 @@ class GaussianMixture(Factor):
         :rtype: float
         """
         log_potentials = []
-        for gauss in self.components:
-            log_potentials.append(gauss.log_potential(x_val))
+        for comp in self.components:
+            log_potentials.append(comp.log_potential(x_val))
         total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
 
@@ -233,8 +234,8 @@ class GaussianMixture(Factor):
         :rtype: float
         """
         total_potx = 0.0
-        for gauss in self.components:
-            total_potx += gauss.potential(x_val)
+        for comp in self.components:
+            total_potx += comp.potential(x_val)
         return total_potx
 
     def _get_means(self):
@@ -244,8 +245,8 @@ class GaussianMixture(Factor):
         :return: the mean vectors
         """
         means = []
-        for gauss in self.components:
-            means.append(gauss.get_mean())
+        for comp in self.components:
+            means.append(comp.get_mean())
         return means
 
     def _get_covs(self):
@@ -256,8 +257,8 @@ class GaussianMixture(Factor):
         :rtype: np.ndarray list
         """
         covs = []
-        for gauss in self.components:
-            covs.append(gauss.get_cov())
+        for comp in self.components:
+            covs.append(comp.get_cov())
         return covs
 
     def _get_log_weights(self):
@@ -268,8 +269,8 @@ class GaussianMixture(Factor):
         :rtype: float
         """
         log_weights = []
-        for gauss in self.components:
-            log_weights.append(gauss.get_log_weight())
+        for comp in self.components:
+            log_weights.append(comp.get_log_weight())
         return log_weights
 
     def _get_weights(self):
@@ -280,8 +281,8 @@ class GaussianMixture(Factor):
         :rtype: float list
         """
         weights = []
-        for gauss in self.components:
-            weights.append(gauss.get_weight())
+        for comp in self.components:
+            weights.append(comp.get_weight())
         return weights
 
     def get_log_weight(self):
@@ -302,10 +303,10 @@ class GaussianMixture(Factor):
         """
         unnormalized_log_weight = self.get_log_weight()
         new_components = []
-        for gauss in self.components:
-            gauss_copy = gauss.copy()
-            gauss_copy._add_log_weight(-1.0 * unnormalized_log_weight)
-            new_components.append(gauss_copy)
+        for comp in self.components:
+            comp_copy = comp.copy()
+            comp_copy._add_log_weight(-1.0 * unnormalized_log_weight)
+            new_components.append(comp_copy)
         return GaussianMixture(new_components)
 
     @property
@@ -319,8 +320,8 @@ class GaussianMixture(Factor):
         """
         # TODO: see how this is used. Should this be true if there is one vacuous component? Or only if all components
         #  are vacuous? Maybe make a contains vacuous function as well.
-        for gauss in self.components:
-            if not gauss._is_vacuous:
+        for comp in self.components:
+            if not comp._is_vacuous:
                 return False
         return True
 
@@ -351,10 +352,10 @@ class GaussianMixture(Factor):
         """
         x_lower_candidates = []
         x_upper_candidates = []
-        for gauss in self.components:
-            stddev = np.sqrt(gauss.get_cov()[0, 0])
-            x_lower_candidates.append(gauss.get_mean()[0, 0] - 3 * stddev)
-            x_upper_candidates.append(gauss.get_mean()[0, 0] + 3 * stddev)
+        for comp in self.components:
+            stddev = np.sqrt(comp.get_cov()[0, 0])
+            x_lower_candidates.append(comp.get_mean()[0, 0] - 3 * stddev)
+            x_upper_candidates.append(comp.get_mean()[0, 0] + 3 * stddev)
         x_lower = min(x_lower_candidates)
         x_upper = max(x_upper_candidates)
         return [x_lower, x_upper]
@@ -379,11 +380,11 @@ class GaussianMixture(Factor):
             num_points = 200
             x_series = np.linspace(x_lower, x_upper, num_points)
             total_potx = np.zeros(num_points)
-            for gauss in self.components:
+            for comp in self.components:
                 if log:
-                    potx = np.array([gauss.log_potential(xi) for xi in x_series])
+                    potx = np.array([comp.log_potential(xi) for xi in x_series])
                 else:
-                    potx = np.array([gauss.potential(xi) for xi in x_series])
+                    potx = np.array([comp.potential(xi) for xi in x_series])
                 if show_individual_components:
                     plt.plot(x_series, potx)
                 total_potx += potx
@@ -397,9 +398,9 @@ class GaussianMixture(Factor):
         """
         Print the parameters of the Gaussian mixture distribution
         """
-        for i, gauss in enumerate(self.components):
+        for i, comp in enumerate(self.components):
             print("component ", i, "/", len(self.components))
-            gauss.show()
+            comp.show()
 
     def moment_match_to_single_gaussian(self):
         """
@@ -411,21 +412,21 @@ class GaussianMixture(Factor):
         """
         new_mean = np.zeros([self.dim, 1])
         log_weights = []
-        for gauss in self.components:
-            weight_mean = gauss.get_weight() * gauss.get_mean()
+        for comp in self.components:
+            weight_mean = comp.get_weight() * comp.get_mean()
             new_mean += weight_mean
-            log_weights.append(gauss.get_log_weight())
+            log_weights.append(comp.get_log_weight())
         log_sum_weights = special.logsumexp(log_weights)
         sum_weights = np.exp(log_sum_weights)
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim])
-        for gauss in self.components:
-            udud_t = gauss.get_weight() * (gauss.get_mean() - new_mean).dot(
-                (gauss.get_mean() - new_mean).transpose()
+        for comp in self.components:
+            udud_t = comp.get_weight() * (comp.get_mean() - new_mean).dot(
+                (comp.get_mean() - new_mean).transpose()
             )
-            new_cov += gauss.get_weight() * gauss.get_cov() + udud_t
+            new_cov += comp.get_weight() * comp.get_cov() + udud_t
         new_cov = new_cov / sum_weights
-        return Gaussian(
+        return gauss.Gaussian(
             cov=new_cov, mean=new_mean, log_weight=log_sum_weights, var_names=self.components[0].var_names
         )
 
@@ -443,8 +444,8 @@ class GaussianMixture(Factor):
         def neg_gmm_pot(x_val):
             return -1.0 * self.potential(x_val)
 
-        for gauss in self.components:
-            res = minimize(neg_gmm_pot, x0=gauss.get_mean(), method="BFGS", options={"disp": False})
+        for comp in self.components:
+            res = minimize(neg_gmm_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
@@ -471,8 +472,8 @@ class GaussianMixture(Factor):
         def gmm_pot(x_vals):
             return self.potential(x_vals)
 
-        for gauss in self.components:
-            res = minimize(gmm_pot, x0=gauss.get_mean(), method="BFGS", options={"disp": False})
+        for comp in self.components:
+            res = minimize(gmm_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
             x_local_min = res.x
             if res.success:
                 success = True
@@ -495,19 +496,19 @@ class GaussianMixture(Factor):
         # TODO: check if the normal moment matching function can be replaced with this one.
         new_mean = np.zeros([self.dim, 1]).astype(complex)
         weights = []
-        for gauss in self.components:
-            c_weight = gauss._get_complex_weight()
-            c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
+        for comp in self.components:
+            c_weight = comp._get_complex_weight()
+            c_mean = np.linalg.inv(comp.get_prec()).dot(comp.get_h()).astype(complex)
             new_mean += c_weight * c_mean
             weights.append(c_weight)
         sum_weights = sum(weights)
         new_mean = new_mean / sum_weights
         new_cov = np.zeros([self.dim, self.dim]).astype(complex)
-        for gauss in self.components:
-            c_weight = gauss._get_complex_weight()
-            c_mean = np.linalg.inv(gauss.get_prec()).dot(gauss.get_h()).astype(complex)
+        for comp in self.components:
+            c_weight = comp._get_complex_weight()
+            c_mean = np.linalg.inv(comp.get_prec()).dot(comp.get_h()).astype(complex)
             udud_t = c_weight * (c_mean - new_mean).dot((c_mean - new_mean).transpose())
-            c_cov = np.linalg.inv(gauss.get_prec()).astype(complex)
+            c_cov = np.linalg.inv(comp.get_prec()).astype(complex)
             new_cov += c_weight * c_cov + udud_t
         new_cov = new_cov / sum_weights
 
@@ -516,7 +517,7 @@ class GaussianMixture(Factor):
         new_prec, new_h_vec, new_g = GaussianMixture._complex_cov_form_to_real_canform(
             new_cov, new_mean, new_log_weight
         )
-        return Gaussian(prec=new_prec, h_vec=new_h_vec, g_val=new_g, var_names=self.components[0].var_names)
+        return gauss.Gaussian(prec=new_prec, h_vec=new_h_vec, g_val=new_g, var_names=self.components[0].var_names)
 
     @staticmethod
     def _complex_cov_form_to_real_canform(cov, mean, log_weight):
@@ -610,7 +611,7 @@ class GaussianMixture(Factor):
             log_weight_i = -0.5 * np.log(np.linalg.det(prec_i / (2.0 * np.pi))) * inv_gm.log_potential(mean_i)
             g_i = log_weight_i - 0.5 * ut_k_u + 0.5 * np.log(np.linalg.det(prec_i / (2.0 * np.pi)))
 
-            component = Gaussian(prec=prec_i, h_vec=h_i, g_val=g_i, var_names=gaussian_mixture_a.components[0].var_names)
+            component = gauss.Gaussian(prec=prec_i, h_vec=h_i, g_val=g_i, var_names=gaussian_mixture_a.components[0].var_names)
             resulting_gaussian_components.append(component)
         return GaussianMixture(resulting_gaussian_components)
 
@@ -665,11 +666,11 @@ class GaussianMixture(Factor):
         x_upper_candidates = []
         y_lower_candidates = []
         y_upper_candidates = []
-        for gauss in self.components:
-            stddev_x = np.sqrt(gauss.get_cov()[0, 0])
-            stddev_y = np.sqrt(gauss.get_cov()[1, 1])
-            mean_x = gauss.get_mean()[0, 0]
-            mean_y = gauss.get_mean()[1, 0]
+        for comp in self.components:
+            stddev_x = np.sqrt(comp.get_cov()[0, 0])
+            stddev_y = np.sqrt(comp.get_cov()[1, 1])
+            mean_x = comp.get_mean()[0, 0]
+            mean_y = comp.get_mean()[1, 0]
             x_lower_candidates.append(mean_x - 3.0 * stddev_x)
             x_upper_candidates.append(mean_x + 3.0 * stddev_x)
             y_lower_candidates.append(mean_y - 3.0 * stddev_y)

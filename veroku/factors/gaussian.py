@@ -1,6 +1,10 @@
 """
-A module for instantiating and performing operations on multivariate Gaussian and Gaussian mixture distributions.
+A module for instantiating and performing operations on multivariate Gaussian distributions.
 """
+
+# pylint: disable=cyclic-import
+# pylint: disable=protected-access
+# pylint: disable=no-self-use
 
 # System imports
 import cmath
@@ -18,9 +22,7 @@ from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
-
-# pylint: disable=protected-access
-# pylint: disable=no-self-use
+import veroku.factors.experimental.gaussian_mixture as gm
 
 
 def make_random_gaussian(var_names, mean_range=None, cov_range=None):
@@ -935,7 +937,7 @@ class Gaussian(Factor):
 
     def _get_limits_for_2d_plot(self):
         """
-        Get x and y limits which includes most of the Gaussian mixture's mass, by considering
+        Get x and y limits which includes most of the factors mass, by considering
         the mean and variance of each Gaussian component.
         """
         self_copy = self.copy()
@@ -949,7 +951,7 @@ class Gaussian(Factor):
     # TODO: reconcile with GaussianMixture _plot_2d
     def _plot_2d(self, log, x_lim=None, y_lim=None):
         """
-        Plot a 2d Gaussian mixture potential function
+        Plot a 2d Gaussian potential function
 
         :param log: if this is True, the log-potential will be plotted
         :param x_lim: the x limits to plot the function over (optional)
@@ -1011,7 +1013,8 @@ class Gaussian(Factor):
         :rtype: GaussianMixture
         """
         # Note this is here to prevent circular imports
-        from veroku.factors.experimental.gaussian_mixture import GaussianMixture  # pylint: disable=import-outside-toplevel
+
+        #from veroku.factors.experimental.gaussian_mixture import GaussianMixture  # pylint: disable=import-outside-toplevel
 
         if self.dim != 1:
             raise NotImplementedError("Gaussian must be one dimensional.")
@@ -1027,7 +1030,7 @@ class Gaussian(Factor):
             gaussian = Gaussian(cov=cov, mean=mean, log_weight=np.log(weight), var_names=self.var_names)
             gaussians.append(gaussian)
 
-        return GaussianMixture(gaussians)
+        return gm.GaussianMixture(gaussians)
 
 
 class GaussianTemplate(FactorTemplate):

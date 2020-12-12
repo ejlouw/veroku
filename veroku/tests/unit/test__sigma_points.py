@@ -8,7 +8,7 @@ import numpy as np
 
 # Local imports
 from veroku.factors import _sigma_points
-from veroku.factors.gaussian import make_random_gaussian
+import veroku.factors.gaussian as gauss
 
 
 class TestSigmaPoints(unittest.TestCase):
@@ -59,7 +59,7 @@ class TestSigmaPoints(unittest.TestCase):
         """
         Test that the computed sigma points are correct.
         """
-        g_1 = make_random_gaussian(var_names=["a", "b", "c"])
+        g_1 = gauss.make_random_gaussian(var_names=["a", "b", "c"])
         expected_cov = g_1.get_cov()
         expected_mean = g_1.get_mean()
         sps = _sigma_points.get_sigma_points_array(g_1)

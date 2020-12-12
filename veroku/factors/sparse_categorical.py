@@ -555,9 +555,7 @@ class SparseCategorical(Factor):
         """
         for var in self.var_names:
             if var in factor.var_cards:
-                error_msg = (
-                    f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
-                )
+                error_msg = f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
     def multiply(self, factor):
