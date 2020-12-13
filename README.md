@@ -4,6 +4,8 @@
 
 [comment]: # (doc-start)
 
+![Build Status](https://github.com/ejlouw/veroku/actions/workflows/CI_PIPELINE/badge.svg?branch=master)
+
 ### Installation
 For installing through pip:
 ```bash
