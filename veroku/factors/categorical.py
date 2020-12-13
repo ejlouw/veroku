@@ -52,16 +52,24 @@ class Categorical(Factor):
         :Example:
 
         .. code-block:: python
-
-            >>> var_names = ['rain','slip']
+            # Using the probs_table parameter
+            >>> var_names = ['a','b']
             >>> probs_table = {(0,0):0.8,
-            >>>                (0,1):0.2,
-            >>>                (1,0):0.4,
-            >>>                (1,1):0.6}
+            ...                (0,1):0.2,
+            ...                (1,0):0.4,
+            ...                (1,1):0.6}
             >>> var_cardinalities = [2,2]
-            >>> table = Categorical(log_probs_table=log_probs_table,
+            >>> table = Categorical(probs_table=probs_table,
             >>>                    var_names=var_names,
             >>>                    cardinalities=var_cardinalities)
+            # or, equivalently, using the log_probs_tensor parameter:
+            >>> var_names = ['a','b']
+            >>> log_probs_tensor = np.array([[np.log(0.8), np.log(0.2)],
+            >>>                             [np.log(0.4), np.log(0.6)]])
+            >>> var_cardinalities = [2,2]
+            >>> table = Categorical(log_probs_tensor=log_probs_tensor,
+            >>>                    var_names=var_names,
+
         """
         # TODO: add check that assignment lengths are consistent with var_names
         # TODO: add check that cardinalities are consistent with assignments
@@ -109,14 +117,24 @@ class Categorical(Factor):
         :return: The factor with new order.
 
         Example:
-            old_variable_order = [a, b]
-            new_variable_order = [b, a]
 
-            a b P(a,b)  return    b a P(a,b)
-            0 0  pa0b0            0 0  pa0b0
-            0 1  pa0b1            0 1  pa1b0
-            1 0  pa1b0            1 0  pa0b1
-            1 1  pa1b1            1 1  pa1b1
+        .. code-block:: python
+
+            >>> var_names = ['a','b']
+            >>> probs_table = {(0,0):0.1,
+            ...                (0,1):0.2,
+            ...                (1,0):0.3,
+            ...                (1,1):0.4}
+            >>> var_cardinalities = [2,2]
+            >>> table = Categorical(probs_table=probs_table,
+            >>>                    var_names=var_names,
+            >>>                    cardinalities=var_cardinalities)
+            >>> table.reorder(new_var_names_order=['b', 'a'])
+            b	a	prob
+            0	0	0.1000
+            0	1	0.3000
+            1	0	0.2000
+            1	1	0.4000
         """
         if new_var_names_order == self.var_names:
             return self.copy()
@@ -356,7 +374,7 @@ class Categorical(Factor):
         Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
-        :type factor: Gaussian
+        :type factor: Categorical
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
@@ -448,13 +466,22 @@ class CategoricalTemplate(FactorTemplate):
         :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)
         :type log_probs_tensor: numpy.ndarray
 
-        log_probs_table example:
-        {(0, 0): 0.1,
-         (0, 1): 0.3,
-         (1, 0): 0.1,
-         (1, 1): 0.5}
+        Example:
+
+        .. code-block:: python
+
+            >>> var_templates = ['a_{i}','b_{i}']
+            >>> probs_table = {(0,0):0.8,
+            ...                (0,1):0.2,
+            ...                (1,0):0.4,
+            ...                (1,1):0.6}
+            >>> cardinalities = [2,2]
+            >>> categorical_template = CategoricalTemplate(probs_table=probs_table,
+            ...                                            var_names=var_names,
+            ...                                            cardinalities=cardinalities)
+            >>> categorical_template.make_factor(format_dict={'i':0})
+
         """
-        # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)
         self.log_probs_tensor = copy.deepcopy(log_probs_tensor)
         self.cardinalities = cardinalities

@@ -302,9 +302,13 @@ def _any_scope_bin_opp_both(ntd_a, ntd_b, outer_inner_cards_a, outer_inner_cards
     return resulting_table
 
 
-def _any_scope_binary_operation(
-        ntd_a, outer_inner_cards_a, ntd_b, outer_inner_cards_b, func, default, default_rules="none"
-):
+def _any_scope_binary_operation(ntd_a,
+                                outer_inner_cards_a,
+                                ntd_b,
+                                outer_inner_cards_b,
+                                func,
+                                default,
+                                default_rules="none"):
     """
     Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.
 
@@ -375,18 +379,22 @@ class SparseCategorical(Factor):
 
     def __init__(self, var_names, cardinalities, log_probs_table=None, probs_table=None, default_log_prob=-np.inf):
         """
-        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
+
+
+        Construct a sparse categorical factor. Either log_probs_table or probs_table should be supplied.
 
         :param var_names: The variable names.
         :type var_names: str list
         :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])
         :type cardinalities: int list
         :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.
-            Missing assignments are assumed to have zero probability.
+            Missing assignments are assumed to have a probability equal to the exponential of the default_log_prob
+            parameter (exp(-inf) = 0.0 probability by default).
         :type log_probs_table: dict
         :param probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.
-            Missing assignments are assumed to have -inf log-probability (zero probability).
+            Missing assignments are assumed to have the provided default log probability (with -inf default value).
         :type probs_table: dict
+        :param default_log_prob: The default log probability that missing values are assumed to have.
 
         Example:
 
@@ -926,10 +934,13 @@ class SparseCategoricalTemplate(FactorTemplate):
 
     def make_factor(self, format_dict=None, var_names=None):
         """
-        Make a factor with var_templates formatted by format_dict to create specific var names.
+        Make a factor with var_templates formatted by format_dict to create specific var names, or using the variable
+        names provided.
 
         :param format_dict: The dictionary to be used to format the var_templates strings.
         :type format_dict: str dict
+        :param var_names: The variable names.
+        :type var_names: str list
         :return: The instantiated factor.
         :rtype: SparseCategorical
         """

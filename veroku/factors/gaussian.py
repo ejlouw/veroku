@@ -156,6 +156,16 @@ class Gaussian(Factor):
         :param var_names: a list of variable names where the order of the names correspond to the order in the
                          mean and covariance (or precision and h vector)  parameters.
         :type var_names: str list
+
+        Example:
+
+        .. code-block:: python
+
+            # Using covariance form parameters
+            >>> Gaussian(cov=[[1, 0], [0, 1]], mean=[0, 0], log_weight=0.0, var_names=["a", "b"])
+            # Using canonical form parameters
+            >>> Gaussian(prec=[[1, 0], [0, 1]], h_vec=[0, 0], g_val=0.0, var_names=["a", "b"])
+
         """
 
         super().__init__(var_names=var_names)

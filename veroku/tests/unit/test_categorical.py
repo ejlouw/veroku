@@ -146,7 +146,10 @@ class TestCategorical(unittest.TestCase):
         of variables.
         """
         vars_a = ["a", "b"]
-        probs_a = {(0, 0): 0.1, (0, 1): 0.2, (1, 0): 0.3, (1, 1): 0.4}
+        probs_a = {(0, 0): 0.1,
+                   (0, 1): 0.2,
+                   (1, 0): 0.3,
+                   (1, 1): 0.4}
         sp_table_a = self.cat_class(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
         with self.assertRaises(TypeError):
             sp_table_a.equals(self.not_a_categorical_factor)
@@ -746,26 +749,26 @@ class TestCategorical(unittest.TestCase):
         """
         vars_cab = ["c", "a", "b"]
         probs_cab = {
-            (0, 0, 0): np.exp(0.01),
-            (0, 0, 1): np.exp(0.03),
-            (0, 1, 0): np.exp(0.05),
-            (0, 1, 1): np.exp(0.07),
-            (1, 0, 0): np.exp(0.02),
-            (1, 0, 1): np.exp(0.04),
-            (1, 1, 0): np.exp(0.06),
-            (1, 1, 1): np.exp(0.08),
+            (0, 0, 0): 0.01,
+            (0, 0, 1): 0.03,
+            (0, 1, 0): 0.05,
+            (0, 1, 1): 0.07,
+            (1, 0, 0): 0.02,
+            (1, 0, 1): 0.04,
+            (1, 1, 0): 0.06,
+            (1, 1, 1): 0.08,
         }
 
         vars_abc = ["a", "b", "c"]
         probs_abc = {
-            (0, 0, 0): np.exp(0.01),
-            (0, 0, 1): np.exp(0.02),
-            (0, 1, 0): np.exp(0.03),
-            (0, 1, 1): np.exp(0.04),
-            (1, 0, 0): np.exp(0.05),
-            (1, 0, 1): np.exp(0.06),
-            (1, 1, 0): np.exp(0.07),
-            (1, 1, 1): np.exp(0.08),
+            (0, 0, 0): 0.01,
+            (0, 0, 1): 0.02,
+            (0, 1, 0): 0.03,
+            (0, 1, 1): 0.04,
+            (1, 0, 0): 0.05,
+            (1, 0, 1): 0.06,
+            (1, 1, 0): 0.07,
+            (1, 1, 1): 0.08,
         }
         expected_result = self.cat_class(var_names=vars_abc, probs_table=probs_abc, cardinalities=[2, 2, 2])
         factor_cab = self.cat_class(var_names=vars_cab, probs_table=probs_cab, cardinalities=[2, 2, 2])
