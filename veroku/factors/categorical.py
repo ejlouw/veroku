@@ -52,7 +52,8 @@ class Categorical(Factor):
         :Example:
 
         .. code-block:: python
-            # Using the probs_table parameter
+
+            >>> # Using the probs_table parameter:
             >>> var_names = ['a','b']
             >>> probs_table = {(0,0):0.8,
             ...                (0,1):0.2,
@@ -60,15 +61,15 @@ class Categorical(Factor):
             ...                (1,1):0.6}
             >>> var_cardinalities = [2,2]
             >>> table = Categorical(probs_table=probs_table,
-            >>>                    var_names=var_names,
-            >>>                    cardinalities=var_cardinalities)
-            # or, equivalently, using the log_probs_tensor parameter:
+            ...                    var_names=var_names,
+            ...                    cardinalities=var_cardinalities)
+            >>> # or, equivalently, using the log_probs_tensor parameter:
             >>> var_names = ['a','b']
             >>> log_probs_tensor = np.array([[np.log(0.8), np.log(0.2)],
-            >>>                             [np.log(0.4), np.log(0.6)]])
+            ...                             [np.log(0.4), np.log(0.6)]])
             >>> var_cardinalities = [2,2]
             >>> table = Categorical(log_probs_tensor=log_probs_tensor,
-            >>>                    var_names=var_names,
+            ...                    var_names=var_names,
 
         """
         # TODO: add check that assignment lengths are consistent with var_names
