@@ -23,7 +23,8 @@ def format_list_elements(str_list, format_dict):
     :return: A list of formatted
     :rtype: str list
 
-    Example:
+    :Example:
+
         >>> format_list_elements(['a_{i}', 'b_{i}', 'c_{i}'], {'i':0})
         ['a_0', 'b_0', 'c_0']
 

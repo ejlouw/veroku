@@ -69,7 +69,8 @@ def contains_non_overlapping_substrings(substring_a, substring_b, main_string):
     :param main_string: The string to check in.
     :return: Result of check for independent string presence.
 
-    Examples:
+    :Examples:
+
     >>> substring_a = "abc"
     >>> substring_b = "123"
     >>> main_string = "abc123 -- def"

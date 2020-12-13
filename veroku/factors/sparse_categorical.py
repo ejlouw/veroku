@@ -50,13 +50,16 @@ def _make_dense_default_probs_dict(cardinalities, default_value):
     :returns: The dense representation.
     :rtype: dict
     Example:
-    >>> _make_dense_default_probs_dict(cardinalities=[2,3], default_value=0.0)
-    {(0,0):0.0,
-    (0,1):0.0,
-    (0,2):0.0,
-    (1,0):0.0,
-    (1,1):0.0,
-    (1,2):0.0}
+
+    .. code-block:: python
+
+        >>> _make_dense_default_probs_dict(cardinalities=[2,3], default_value=0.0)
+        {(0,0):0.0,
+        (0,1):0.0,
+        (0,2):0.0,
+        (1,0):0.0,
+        (1,1):0.0,
+        (1,2):0.0}
     """
     dense_assingments = itertools.product(*[range(c) for c in cardinalities])
     dense_default_dict = dict(zip(dense_assingments, [default_value] * np.product(cardinalities)))
@@ -386,11 +389,14 @@ class SparseCategorical(Factor):
         :type probs_table: dict
 
         Example:
-            >>> var_names = ['rain','slip']
+
+        .. code-block:: python
+
+            >>> var_names = ['a','b']
             >>> probs_table = {(0,0):0.8,
-            >>>                (0,1):0.2,
-            >>>                (1,0):0.4,
-            >>>                (1,1):0.6}
+            ...                (0,1):0.2,
+            ...                (1,0):0.4,
+            ...                (1,1):0.6}
             >>> cardinalities = [2,2]
             >>> table = SparseCategorical(log_probs_table=log_probs_table,
             >>>                           var_names=var_names,
@@ -897,11 +903,21 @@ class SparseCategoricalTemplate(FactorTemplate):
         :param var_templates: A list of formattable strings.
         :type var_templates: str list
 
-        log_probs_table example:
-        {(0, 0): 0.1,
-         (0, 1): 0.3,
-         (1, 0): 0.1,
-         (1, 1): 0.5}
+        Example:
+
+        .. code-block:: python
+
+            >>> var_templates = ['a_{i}','b_{i}']
+            >>> probs_table = {(0,0):0.8,
+            ...                (0,1):0.2,
+            ...                (1,0):0.4,
+            ...                (1,1):0.6}
+            >>> cardinalities = [2,2]
+            >>> categorical_template = SparseCategoricalTemplate(log_probs_table=log_probs_table,
+            ...                                                  var_names=var_names,
+            ...                                                  cardinalities=cardinalities)
+            >>> categorical_template.make_factor(format_dict={'i':0})
+
         """
         # TODO: Complete and improve docstring.
         super().__init__(var_templates=var_templates)

@@ -49,14 +49,17 @@ class Categorical(Factor):
         :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)
         :type log_probs_tensor: numpy.ndarray
 
-        Example:
+        :Example:
+
+        .. code-block:: python
+
             >>> var_names = ['rain','slip']
             >>> probs_table = {(0,0):0.8,
             >>>                (0,1):0.2,
             >>>                (1,0):0.4,
             >>>                (1,1):0.6}
-            >>>var_cardinalities = [2,2]
-            >>>table = Categorical(log_probs_table=log_probs_table,
+            >>> var_cardinalities = [2,2]
+            >>> table = Categorical(log_probs_table=log_probs_table,
             >>>                    var_names=var_names,
             >>>                    cardinalities=var_cardinalities)
         """

@@ -141,20 +141,20 @@ class Gaussian(Factor):
         General constructor that can use either covariance form or canonical form parameters to construct a
         d-dimensional multivariate Gaussian object.
 
-        :param cov: The covariance matrix (or variance scalar in 1-dimensional case).
+        :param cov: (covariance form) The covariance matrix (or variance scalar in 1-dimensional case).
         :type cov: dxd numpy.ndarray or float
-        :param mean: The mean vector (or mean scalar in 1-dimensional case).
+        :param mean: (covariance form) The mean vector (or mean scalar in 1-dimensional case).
         :type mean: dx1 numpy.ndarray or float
-        :param log_weight: the log of the weight (the Gaussian function integrates to the weight value)
+        :param log_weight: (covariance form) The log of the weight (the Gaussian function integrates to the weight value)
         :type log_weight: float
-        :param prec: the precision matrix (or precision scalar in 1-dimensional case).
+        :param prec: (canonical form) The precision matrix (or precision scalar in 1-dimensional case).
         :type prec: dxd numpy.ndarray or float
-        :param h_vec: the h vector  (or h scalar in 1-dimensional case).
+        :param h_vec: (canonical form) The h vector  (or h scalar in 1-dimensional case).
         :type h_vec: dx1 numpy.ndarray or float
-        :param g_val: the g parameter
+        :param g_val: (canonical form) The g parameter.
         :type g_val: float
         :param var_names: a list of variable names where the order of the names correspond to the order in the
-                         mean/covariance or K/h parameters
+                         mean and covariance (or precision and h vector)  parameters.
         :type var_names: str list
         """
 
