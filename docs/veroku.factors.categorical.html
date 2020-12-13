@@ -54,21 +54,20 @@ is given.</p></li>
 <li><p><strong>log_probs_tensor</strong> (<em>numpy.ndarray</em>) – A dense tensor representation of the log distribution (not required if probs_table is given)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
 </dl>
-<dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rain&#39;</span><span class="p">,</span><span class="s1">&#39;slip&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rain&#39;</span><span class="p">,</span><span class="s1">&#39;slip&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.2</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.4</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.6</span><span class="p">}</span>
-<span class="go">&gt;&gt;&gt;var_cardinalities = [2,2]</span>
-<span class="go">&gt;&gt;&gt;table = Categorical(log_probs_table=log_probs_table,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">var_cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">log_probs_table</span><span class="o">=</span><span class="n">log_probs_table</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                   <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                   <span class="n">cardinalities</span><span class="o">=</span><span class="n">var_cardinalities</span><span class="p">)</span>
 </pre></div>
 </div>
-</dd>
-</dl>
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.argmax" title="Permalink to this definition">¶</a></dt>

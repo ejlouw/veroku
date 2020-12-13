@@ -83,14 +83,17 @@
 <span class="sd">        :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)</span>
 <span class="sd">        :type log_probs_tensor: numpy.ndarray</span>
 
-<span class="sd">        Example:</span>
+<span class="sd">        :Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
 <span class="sd">            &gt;&gt;&gt; var_names = [&#39;rain&#39;,&#39;slip&#39;]</span>
 <span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
 <span class="sd">            &gt;&gt;&gt;                (0,1):0.2,</span>
 <span class="sd">            &gt;&gt;&gt;                (1,0):0.4,</span>
 <span class="sd">            &gt;&gt;&gt;                (1,1):0.6}</span>
-<span class="sd">            &gt;&gt;&gt;var_cardinalities = [2,2]</span>
-<span class="sd">            &gt;&gt;&gt;table = Categorical(log_probs_table=log_probs_table,</span>
+<span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt; table = Categorical(log_probs_table=log_probs_table,</span>
 <span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
 <span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
 <span class="sd">        &quot;&quot;&quot;</span>

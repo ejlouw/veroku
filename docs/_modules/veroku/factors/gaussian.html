@@ -175,20 +175,20 @@
 <span class="sd">        General constructor that can use either covariance form or canonical form parameters to construct a</span>
 <span class="sd">        d-dimensional multivariate Gaussian object.</span>
 
-<span class="sd">        :param cov: The covariance matrix (or variance scalar in 1-dimensional case).</span>
+<span class="sd">        :param cov: (covariance form) The covariance matrix (or variance scalar in 1-dimensional case).</span>
 <span class="sd">        :type cov: dxd numpy.ndarray or float</span>
-<span class="sd">        :param mean: The mean vector (or mean scalar in 1-dimensional case).</span>
+<span class="sd">        :param mean: (covariance form) The mean vector (or mean scalar in 1-dimensional case).</span>
 <span class="sd">        :type mean: dx1 numpy.ndarray or float</span>
-<span class="sd">        :param log_weight: the log of the weight (the Gaussian function integrates to the weight value)</span>
+<span class="sd">        :param log_weight: (covariance form) The log of the weight (the Gaussian function integrates to the weight value)</span>
 <span class="sd">        :type log_weight: float</span>
-<span class="sd">        :param prec: the precision matrix (or precision scalar in 1-dimensional case).</span>
+<span class="sd">        :param prec: (canonical form) The precision matrix (or precision scalar in 1-dimensional case).</span>
 <span class="sd">        :type prec: dxd numpy.ndarray or float</span>
-<span class="sd">        :param h_vec: the h vector  (or h scalar in 1-dimensional case).</span>
+<span class="sd">        :param h_vec: (canonical form) The h vector  (or h scalar in 1-dimensional case).</span>
 <span class="sd">        :type h_vec: dx1 numpy.ndarray or float</span>
-<span class="sd">        :param g_val: the g parameter</span>
+<span class="sd">        :param g_val: (canonical form) The g parameter.</span>
 <span class="sd">        :type g_val: float</span>
 <span class="sd">        :param var_names: a list of variable names where the order of the names correspond to the order in the</span>
-<span class="sd">                         mean/covariance or K/h parameters</span>
+<span class="sd">                         mean and covariance (or precision and h vector)  parameters.</span>
 <span class="sd">        :type var_names: str list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 

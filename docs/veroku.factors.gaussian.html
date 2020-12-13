@@ -46,14 +46,14 @@ d-dimensional multivariate Gaussian object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cov</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – The covariance matrix (or variance scalar in 1-dimensional case).</p></li>
-<li><p><strong>mean</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – The mean vector (or mean scalar in 1-dimensional case).</p></li>
-<li><p><strong>log_weight</strong> (<em>float</em>) – the log of the weight (the Gaussian function integrates to the weight value)</p></li>
-<li><p><strong>prec</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – the precision matrix (or precision scalar in 1-dimensional case).</p></li>
-<li><p><strong>h_vec</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – the h vector  (or h scalar in 1-dimensional case).</p></li>
-<li><p><strong>g_val</strong> (<em>float</em>) – the g parameter</p></li>
+<li><p><strong>cov</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – (covariance form) The covariance matrix (or variance scalar in 1-dimensional case).</p></li>
+<li><p><strong>mean</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – (covariance form) The mean vector (or mean scalar in 1-dimensional case).</p></li>
+<li><p><strong>log_weight</strong> (<em>float</em>) – (covariance form) The log of the weight (the Gaussian function integrates to the weight value)</p></li>
+<li><p><strong>prec</strong> (<em>dxd numpy.ndarray</em><em> or </em><em>float</em>) – (canonical form) The precision matrix (or precision scalar in 1-dimensional case).</p></li>
+<li><p><strong>h_vec</strong> (<em>dx1 numpy.ndarray</em><em> or </em><em>float</em>) – (canonical form) The h vector  (or h scalar in 1-dimensional case).</p></li>
+<li><p><strong>g_val</strong> (<em>float</em>) – (canonical form) The g parameter.</p></li>
 <li><p><strong>var_names</strong> (<em>str list</em>) – a list of variable names where the order of the names correspond to the order in the
-mean/covariance or K/h parameters</p></li>
+mean and covariance (or precision and h vector)  parameters.</p></li>
 </ul>
 </dd>
 </dl>
