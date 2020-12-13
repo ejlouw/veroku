@@ -57,6 +57,25 @@ is given.</p></li>
 <dt class="field-even">Example</dt>
 <dd class="field-even"><p></p></dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using the probs_table parameter:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.6</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">var_cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">probs_table</span><span class="o">=</span><span class="n">probs_table</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">cardinalities</span><span class="o">=</span><span class="n">var_cardinalities</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or, equivalently, using the log_probs_tensor parameter:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)],</span>
+<span class="gp">... </span>                            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">var_cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">Categorical</span><span class="p">(</span><span class="n">log_probs_tensor</span><span class="o">=</span><span class="n">log_probs_tensor</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.argmax">
 <code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.argmax" title="Permalink to this definition">¶</a></dt>

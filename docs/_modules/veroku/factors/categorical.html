@@ -86,7 +86,8 @@
 <span class="sd">        :Example:</span>
 
 <span class="sd">        .. code-block:: python</span>
-<span class="sd">            # Using the probs_table parameter</span>
+
+<span class="sd">            &gt;&gt;&gt; # Using the probs_table parameter:</span>
 <span class="sd">            &gt;&gt;&gt; var_names = [&#39;a&#39;,&#39;b&#39;]</span>
 <span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
 <span class="sd">            ...                (0,1):0.2,</span>
@@ -94,15 +95,15 @@
 <span class="sd">            ...                (1,1):0.6}</span>
 <span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
 <span class="sd">            &gt;&gt;&gt; table = Categorical(probs_table=probs_table,</span>
-<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
-<span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
-<span class="sd">            # or, equivalently, using the log_probs_tensor parameter:</span>
+<span class="sd">            ...                    var_names=var_names,</span>
+<span class="sd">            ...                    cardinalities=var_cardinalities)</span>
+<span class="sd">            &gt;&gt;&gt; # or, equivalently, using the log_probs_tensor parameter:</span>
 <span class="sd">            &gt;&gt;&gt; var_names = [&#39;a&#39;,&#39;b&#39;]</span>
 <span class="sd">            &gt;&gt;&gt; log_probs_tensor = np.array([[np.log(0.8), np.log(0.2)],</span>
-<span class="sd">            &gt;&gt;&gt;                             [np.log(0.4), np.log(0.6)]])</span>
+<span class="sd">            ...                             [np.log(0.4), np.log(0.6)]])</span>
 <span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
 <span class="sd">            &gt;&gt;&gt; table = Categorical(log_probs_tensor=log_probs_tensor,</span>
-<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
+<span class="sd">            ...                    var_names=var_names,</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: add check that assignment lengths are consistent with var_names</span>
