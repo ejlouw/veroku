@@ -190,6 +190,16 @@
 <span class="sd">        :param var_names: a list of variable names where the order of the names correspond to the order in the</span>
 <span class="sd">                         mean and covariance (or precision and h vector)  parameters.</span>
 <span class="sd">        :type var_names: str list</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # Using covariance form parameters</span>
+<span class="sd">            &gt;&gt;&gt; Gaussian(cov=[[1, 0], [0, 1]], mean=[0, 0], log_weight=0.0, var_names=[&quot;a&quot;, &quot;b&quot;])</span>
+<span class="sd">            # Using canonical form parameters</span>
+<span class="sd">            &gt;&gt;&gt; Gaussian(prec=[[1, 0], [0, 1]], h_vec=[0, 0], g_val=0.0, var_names=[&quot;a&quot;, &quot;b&quot;])</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">)</span>

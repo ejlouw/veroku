@@ -86,16 +86,24 @@
 <span class="sd">        :Example:</span>
 
 <span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            &gt;&gt;&gt; var_names = [&#39;rain&#39;,&#39;slip&#39;]</span>
+<span class="sd">            # Using the probs_table parameter</span>
+<span class="sd">            &gt;&gt;&gt; var_names = [&#39;a&#39;,&#39;b&#39;]</span>
 <span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
-<span class="sd">            &gt;&gt;&gt;                (0,1):0.2,</span>
-<span class="sd">            &gt;&gt;&gt;                (1,0):0.4,</span>
-<span class="sd">            &gt;&gt;&gt;                (1,1):0.6}</span>
+<span class="sd">            ...                (0,1):0.2,</span>
+<span class="sd">            ...                (1,0):0.4,</span>
+<span class="sd">            ...                (1,1):0.6}</span>
 <span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
-<span class="sd">            &gt;&gt;&gt; table = Categorical(log_probs_table=log_probs_table,</span>
+<span class="sd">            &gt;&gt;&gt; table = Categorical(probs_table=probs_table,</span>
 <span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
 <span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
+<span class="sd">            # or, equivalently, using the log_probs_tensor parameter:</span>
+<span class="sd">            &gt;&gt;&gt; var_names = [&#39;a&#39;,&#39;b&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; log_probs_tensor = np.array([[np.log(0.8), np.log(0.2)],</span>
+<span class="sd">            &gt;&gt;&gt;                             [np.log(0.4), np.log(0.6)]])</span>
+<span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt; table = Categorical(log_probs_tensor=log_probs_tensor,</span>
+<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: add check that assignment lengths are consistent with var_names</span>
         <span class="c1"># TODO: add check that cardinalities are consistent with assignments</span>
@@ -143,14 +151,24 @@
 <span class="sd">        :return: The factor with new order.</span>
 
 <span class="sd">        Example:</span>
-<span class="sd">            old_variable_order = [a, b]</span>
-<span class="sd">            new_variable_order = [b, a]</span>
 
-<span class="sd">            a b P(a,b)  return    b a P(a,b)</span>
-<span class="sd">            0 0  pa0b0            0 0  pa0b0</span>
-<span class="sd">            0 1  pa0b1            0 1  pa1b0</span>
-<span class="sd">            1 0  pa1b0            1 0  pa0b1</span>
-<span class="sd">            1 1  pa1b1            1 1  pa1b1</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt;&gt; var_names = [&#39;a&#39;,&#39;b&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.1,</span>
+<span class="sd">            ...                (0,1):0.2,</span>
+<span class="sd">            ...                (1,0):0.3,</span>
+<span class="sd">            ...                (1,1):0.4}</span>
+<span class="sd">            &gt;&gt;&gt; var_cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt; table = Categorical(probs_table=probs_table,</span>
+<span class="sd">            &gt;&gt;&gt;                    var_names=var_names,</span>
+<span class="sd">            &gt;&gt;&gt;                    cardinalities=var_cardinalities)</span>
+<span class="sd">            &gt;&gt;&gt; table.reorder(new_var_names_order=[&#39;b&#39;, &#39;a&#39;])</span>
+<span class="sd">            b	a	prob</span>
+<span class="sd">            0	0	0.1000</span>
+<span class="sd">            0	1	0.3000</span>
+<span class="sd">            1	0	0.2000</span>
+<span class="sd">            1	1	0.4000</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">new_var_names_order</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -390,7 +408,7 @@
 <span class="sd">        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.</span>
 
 <span class="sd">        :param factor: The other factor</span>
-<span class="sd">        :type factor: Gaussian</span>
+<span class="sd">        :type factor: Categorical</span>
 <span class="sd">        :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.</span>
 <span class="sd">        :type normalize_factor: bool</span>
 <span class="sd">        :return: The Kullback-Leibler divergence</span>
@@ -482,13 +500,22 @@
 <span class="sd">        :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)</span>
 <span class="sd">        :type log_probs_tensor: numpy.ndarray</span>
 
-<span class="sd">        log_probs_table example:</span>
-<span class="sd">        {(0, 0): 0.1,</span>
-<span class="sd">         (0, 1): 0.3,</span>
-<span class="sd">         (1, 0): 0.1,</span>
-<span class="sd">         (1, 1): 0.5}</span>
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            &gt;&gt;&gt; var_templates = [&#39;a_{i}&#39;,&#39;b_{i}&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; probs_table = {(0,0):0.8,</span>
+<span class="sd">            ...                (0,1):0.2,</span>
+<span class="sd">            ...                (1,0):0.4,</span>
+<span class="sd">            ...                (1,1):0.6}</span>
+<span class="sd">            &gt;&gt;&gt; cardinalities = [2,2]</span>
+<span class="sd">            &gt;&gt;&gt; categorical_template = CategoricalTemplate(probs_table=probs_table,</span>
+<span class="sd">            ...                                            var_names=var_names,</span>
+<span class="sd">            ...                                            cardinalities=cardinalities)</span>
+<span class="sd">            &gt;&gt;&gt; categorical_template.make_factor(format_dict={&#39;i&#39;:0})</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: Complete and improve docstring.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_templates</span><span class="o">=</span><span class="n">var_templates</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">log_probs_tensor</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">cardinalities</span>

@@ -41,16 +41,18 @@
 <em class="property">class </em><code class="sig-name descname">SparseCategorical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_names</span></em>, <em class="sig-param"><span class="n">cardinalities</span></em>, <em class="sig-param"><span class="n">log_probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">probs_table</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_log_prob</span><span class="o">=</span><span class="default_value">- inf</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategorical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">veroku.factors._factor.Factor</span></code></p>
 <p>A class for instantiating sparse tables with log probabilities.</p>
-<p>Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</p>
+<p>Construct a sparse categorical factor. Either log_probs_table or probs_table should be supplied.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
 <li><p><strong>cardinalities</strong> (<em>int list</em>) – The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])</p></li>
 <li><p><strong>log_probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and probabilities as values.
-Missing assignments are assumed to have zero probability.</p></li>
+Missing assignments are assumed to have a probability equal to the exponential of the default_log_prob
+parameter (exp(-inf) = 0.0 probability by default).</p></li>
 <li><p><strong>probs_table</strong> (<em>dict</em>) – A dictionary with assignments (tuples) as keys and log probabilities as values.
-Missing assignments are assumed to have -inf log-probability (zero probability).</p></li>
+Missing assignments are assumed to have the provided default log probability (with -inf default value).</p></li>
+<li><p><strong>default_log_prob</strong> – The default log probability that missing values are assumed to have.</p></li>
 </ul>
 </dd>
 </dl>
@@ -333,10 +335,14 @@ new_variable_order = [b, a]</p>
 <dl class="py method">
 <dt id="veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor">
 <code class="sig-name descname">make_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">var_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/sparse_categorical.html#SparseCategoricalTemplate.make_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a factor with var_templates formatted by format_dict to create specific var names.</p>
+<dd><p>Make a factor with var_templates formatted by format_dict to create specific var names, or using the variable
+names provided.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>format_dict</strong> (<em>str dict</em>) – The dictionary to be used to format the var_templates strings.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format_dict</strong> (<em>str dict</em>) – The dictionary to be used to format the var_templates strings.</p></li>
+<li><p><strong>var_names</strong> (<em>str list</em>) – The variable names.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The instantiated factor.</p>

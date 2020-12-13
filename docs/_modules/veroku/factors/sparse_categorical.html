@@ -336,9 +336,13 @@
     <span class="k">return</span> <span class="n">resulting_table</span>
 
 
-<span class="k">def</span> <span class="nf">_any_scope_binary_operation</span><span class="p">(</span>
-        <span class="n">ntd_a</span><span class="p">,</span> <span class="n">outer_inner_cards_a</span><span class="p">,</span> <span class="n">ntd_b</span><span class="p">,</span> <span class="n">outer_inner_cards_b</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
-<span class="p">):</span>
+<span class="k">def</span> <span class="nf">_any_scope_binary_operation</span><span class="p">(</span><span class="n">ntd_a</span><span class="p">,</span>
+                                <span class="n">outer_inner_cards_a</span><span class="p">,</span>
+                                <span class="n">ntd_b</span><span class="p">,</span>
+                                <span class="n">outer_inner_cards_b</span><span class="p">,</span>
+                                <span class="n">func</span><span class="p">,</span>
+                                <span class="n">default</span><span class="p">,</span>
+                                <span class="n">default_rules</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply a binary operation between categorical tables that have the same, disjoint or overlapping variable scopes.</span>
 
@@ -409,18 +413,22 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">cardinalities</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probs_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.</span>
+
+
+<span class="sd">        Construct a sparse categorical factor. Either log_probs_table or probs_table should be supplied.</span>
 
 <span class="sd">        :param var_names: The variable names.</span>
 <span class="sd">        :type var_names: str list</span>
 <span class="sd">        :param cardinalities: The cardinalities of the variables (i.e, for three binrary variables: [2,2,2])</span>
 <span class="sd">        :type cardinalities: int list</span>
 <span class="sd">        :param log_probs_table: A dictionary with assignments (tuples) as keys and probabilities as values.</span>
-<span class="sd">            Missing assignments are assumed to have zero probability.</span>
+<span class="sd">            Missing assignments are assumed to have a probability equal to the exponential of the default_log_prob</span>
+<span class="sd">            parameter (exp(-inf) = 0.0 probability by default).</span>
 <span class="sd">        :type log_probs_table: dict</span>
 <span class="sd">        :param probs_table: A dictionary with assignments (tuples) as keys and log probabilities as values.</span>
-<span class="sd">            Missing assignments are assumed to have -inf log-probability (zero probability).</span>
+<span class="sd">            Missing assignments are assumed to have the provided default log probability (with -inf default value).</span>
 <span class="sd">        :type probs_table: dict</span>
+<span class="sd">        :param default_log_prob: The default log probability that missing values are assumed to have.</span>
 
 <span class="sd">        Example:</span>
 
@@ -960,10 +968,13 @@
 
 <div class="viewcode-block" id="SparseCategoricalTemplate.make_factor"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategoricalTemplate.make_factor">[docs]</a>    <span class="k">def</span> <span class="nf">make_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Make a factor with var_templates formatted by format_dict to create specific var names.</span>
+<span class="sd">        Make a factor with var_templates formatted by format_dict to create specific var names, or using the variable</span>
+<span class="sd">        names provided.</span>
 
 <span class="sd">        :param format_dict: The dictionary to be used to format the var_templates strings.</span>
 <span class="sd">        :type format_dict: str dict</span>
+<span class="sd">        :param var_names: The variable names.</span>
+<span class="sd">        :type var_names: str list</span>
 <span class="sd">        :return: The instantiated factor.</span>
 <span class="sd">        :rtype: SparseCategorical</span>
 <span class="sd">        &quot;&quot;&quot;</span>
