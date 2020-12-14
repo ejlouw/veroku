@@ -392,6 +392,7 @@
     <span class="k">def</span> <span class="nf">_cov_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check is the cov matrix has or can be calculated (i.e the precision matrix is not singular).</span>
+
 <span class="sd">        :return: The result of the check.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -430,6 +431,7 @@
 <div class="viewcode-block" id="Gaussian.get_log_weight"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.get_log_weight">[docs]</a>    <span class="k">def</span> <span class="nf">get_log_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the log weight parameter.</span>
+
 <span class="sd">        :return: The log_weight parameter.</span>
 <span class="sd">        :rtype: numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -736,12 +738,12 @@
 <div class="viewcode-block" id="Gaussian.distance_from_vacuous"><a class="viewcode-back" href="../../../veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</span>
-<span class="sd">        Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)</span>
-<span class="sd">        or inf (if one is not).</span>
 
 <span class="sd">        :return: The KL divergence.</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#  Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)</span>
+        <span class="c1">#        or inf (if one is not).</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_vacuous</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span></div>
@@ -1055,10 +1057,6 @@
 <span class="sd">        :return: The split Gaussian Mixture.</span>
 <span class="sd">        :rtype: GaussianMixture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note this is here to prevent circular imports</span>
-
-        <span class="c1">#from veroku.factors.experimental.gaussian_mixture import GaussianMixture  # pylint: disable=import-outside-toplevel</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Gaussian must be one dimensional.&quot;</span><span class="p">)</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">]</span>

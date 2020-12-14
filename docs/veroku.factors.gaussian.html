@@ -81,9 +81,7 @@ mean and covariance (or precision and h vector)  parameters.</p></li>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.distance_from_vacuous">
 <code class="sig-name descname">distance_from_vacuous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.distance_from_vacuous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.distance_from_vacuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
-Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)
-or inf (if one is not).</p>
+<dd><p>Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The KL divergence.</p>
@@ -172,9 +170,15 @@ or inf (if one is not).</p>
 <dl class="py method">
 <dt id="veroku.factors.gaussian.Gaussian.get_log_weight">
 <code class="sig-name descname">get_log_weight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/gaussian.html#Gaussian.get_log_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.gaussian.Gaussian.get_log_weight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the log weight parameter.
-:return: The log_weight parameter.
-:rtype: numpy.ndarray</p>
+<dd><p>Get the log weight parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The log_weight parameter.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
