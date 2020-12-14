@@ -47,7 +47,7 @@ and is, therefore, still in the factors.experimental sub-package.
 
 <div style="text-align: justify">
 These distributions can be used as factors to represent a factorised distribution. These factors can be used, together
-with the `cluster_graph` module to automatically create valid cluster graphs. Inference can be performed in these graphs
+with the <code>cluster_graph</code> module to automatically create valid cluster graphs. Inference can be performed in these graphs
 using message passing algorithms. Currently only the LBU (Loopy Belief Update) message-passing algorithm is supported.
 </div>
 

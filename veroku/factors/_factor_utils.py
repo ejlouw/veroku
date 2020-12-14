@@ -130,10 +130,8 @@ def list_to_square_matrix(matrix_like_object):
                 raise ValueError("cannot make square matrix from one dimensional list.")
             if len(element) != len_list:
                 raise ValueError("cannot make square matrix from different length lists.")
-            # if isinstance(element[0], list):
-            #    raise ValueError('cannot make square matrix from 3d list')
         matrix = np.array(matrix_like_object)
-    # len_list == 1:
+    # len_list is equal to 1
     elif isinstance(matrix_like_object[0], (int, float)):
         # matrix_like_object = [float or int]
         matrix = np.array([matrix_like_object])
@@ -203,11 +201,9 @@ def indexed_square_matrix_operation(mat_a, mat_b, var_names_a, var_names_b, oper
     assert len(mat_b.shape) == 2, "Error: matrix needs to be 2 dimensional"
     assert mat_a.shape[0] == mat_a.shape[1], "Error: matrix needs to be square"
     assert mat_b.shape[0] == mat_b.shape[1], "Error: matrix needs to be square"
-    var_names_len_error_msg = (
-        "The number of variables in var_names_{aorb} does not match the dimensions of mat_{aorb}."
-    )
-    assert len(var_names_a) == mat_a.shape[0], var_names_len_error_msg.format(aorb="a")
-    assert len(var_names_b) == mat_b.shape[0], var_names_len_error_msg.format(aorb="b")
+    num_vars_error_msg = "The number of variables in var_names_{aorb} does not match the dimensions of mat_{aorb}."
+    assert len(var_names_a) == mat_a.shape[0], num_vars_error_msg.format(aorb="a")
+    assert len(var_names_b) == mat_b.shape[0], num_vars_error_msg.format(aorb="b")
 
     # TODO: clean this up (also see todo in indexed_column_vector_operation)
     if set(var_names_b) <= set(var_names_a):
@@ -362,6 +358,7 @@ def log(x_val):
 def tabs_to_cover_string(string):
     """
      Get the number of tabs required to be at least the same length as a given string.
+
      :param string: The string
      :return: The number of tabs to cover it
      :rtype: int

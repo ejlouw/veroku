@@ -358,6 +358,7 @@ class Gaussian(Factor):
     def _cov_exists(self):
         """
         Check is the cov matrix has or can be calculated (i.e the precision matrix is not singular).
+
         :return: The result of the check.
         :rtype: bool
         """
@@ -396,6 +397,7 @@ class Gaussian(Factor):
     def get_log_weight(self):
         """
         Get the log weight parameter.
+
         :return: The log_weight parameter.
         :rtype: numpy.ndarray
         """
@@ -702,12 +704,12 @@ class Gaussian(Factor):
     def distance_from_vacuous(self):
         """
         Get the Kullback-Leibler (KL) divergence between this factor and a uniform copy of it.
-        Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)
-        or inf (if one is not).
 
         :return: The KL divergence.
         :rtype: float
         """
+        #  Note: here it does not matter if we take KL(P||Q) or KL(Q||P) the result is either 0.0 (if both are vacuous)
+        #        or inf (if one is not).
         if self._is_vacuous:
             return 0.0
         return float("inf")
@@ -1021,10 +1023,6 @@ class Gaussian(Factor):
         :return: The split Gaussian Mixture.
         :rtype: GaussianMixture
         """
-        # Note this is here to prevent circular imports
-
-        #from veroku.factors.experimental.gaussian_mixture import GaussianMixture  # pylint: disable=import-outside-toplevel
-
         if self.dim != 1:
             raise NotImplementedError("Gaussian must be one dimensional.")
         weights = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
