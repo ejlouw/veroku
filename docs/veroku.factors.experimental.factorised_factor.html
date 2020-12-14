@@ -166,11 +166,10 @@ for a efficient and intuitive representation of independent factors (especially 
 <dl class="py method">
 <dt id="veroku.factors.experimental.factorised_factor.FactorizedFactor.kl_divergence">
 <code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/factorised_factor.html#FactorizedFactor.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.experimental.factorised_factor.FactorizedFactor.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
-Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
+<dd><p>Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>factor</strong> (<a class="reference internal" href="veroku.factors.gaussian.html#veroku.factors.gaussian.Gaussian" title="veroku.factors.gaussian.Gaussian"><em>Gaussian</em></a>) – The other factor</p>
+<dd class="field-odd"><p><strong>factor</strong> (<em>Factor</em>) – The other factor</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The Kullback-Leibler divergence</p>

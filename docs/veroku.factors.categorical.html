@@ -180,8 +180,8 @@ probability value should be zero, it makes sense to set the result of 0/0 operat
 <dl class="py method">
 <dt id="veroku.factors.categorical.Categorical.kl_divergence">
 <code class="sig-name descname">kl_divergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">normalize_factor</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/categorical.html#Categorical.kl_divergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.factors.categorical.Categorical.kl_divergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and another factor.
-Reference <a class="reference external" href="https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf">https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf</a>, page 1.</p>
+<dd><p>Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and
+another factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -364,8 +364,9 @@ is given.</p></li>
 <li><p><strong>log_probs_tensor</strong> (<em>numpy.ndarray</em>) – A dense tensor representation of the log distribution (not required if probs_table is given)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
 </dl>
-<p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">var_templates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a_</span><span class="si">{i}</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;b_</span><span class="si">{i}</span><span class="s1">&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">probs_table</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span><span class="mf">0.8</span><span class="p">,</span>
 <span class="gp">... </span>               <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span><span class="mf">0.2</span><span class="p">,</span>
