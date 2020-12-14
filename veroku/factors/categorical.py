@@ -371,8 +371,8 @@ class Categorical(Factor):
 
     def kl_divergence(self, factor, normalize_factor=True):
         """
-        Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and another factor.
-        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
+        Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and
+        another factor.
 
         :param factor: The other factor
         :type factor: Categorical
@@ -467,7 +467,7 @@ class CategoricalTemplate(FactorTemplate):
         :param log_probs_tensor: A dense tensor representation of the log distribution (not required if probs_table is given)
         :type log_probs_tensor: numpy.ndarray
 
-        Example:
+        :Example:
 
         .. code-block:: python
 

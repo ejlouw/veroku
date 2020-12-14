@@ -396,7 +396,7 @@ class SparseCategorical(Factor):
         :type probs_table: dict
         :param default_log_prob: The default log probability that missing values are assumed to have.
 
-        Example:
+        :Example:
 
         .. code-block:: python
 
@@ -746,8 +746,8 @@ class SparseCategorical(Factor):
         """
         Get the raw numerically calculated kld (which could result in numerical errors causing negative KLDs).
 
-        :param log_p: The log_p tensor
-        :param log_q:
+        :param log_p: The log probability distribution tensor of distribution P.
+        :param log_q: The log probability distribution tensor of distribution Q.
         :return: The KL-divergence
         :rtype: float
         """
@@ -771,11 +771,11 @@ class SparseCategorical(Factor):
 
     def kl_divergence(self, factor, normalize_factor=True):
         """
-        Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another factor.
-        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
+        Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another
+        factor.
 
         :param factor: The other factor
-        :type factor: Gaussian
+        :type factor: SparseCategorical
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence

@@ -715,7 +715,6 @@ class Gaussian(Factor):
     def kl_divergence(self, factor, normalize_factor=True):
         """
         Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
-        Reference https://infoscience.epfl.ch/record/174055/files/durrieuThiranKelly_kldiv_icassp2012_R1.pdf, page 1.
 
         :param factor: The other factor
         :type factor: Gaussian
