@@ -15,7 +15,7 @@ m2r2==0.2.7
 matplotlib==3.3.3
 seaborn==0.11.0
 graphviz==0.10.1
-Pillow==7.1.0
+Pillow==8.1.0
 
 # misc
 ipython==7.5.0
