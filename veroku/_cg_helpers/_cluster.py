@@ -93,6 +93,10 @@ class Cluster:
         if neighbour_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[neighbour_id]
             message_factor = message_factor.cancel(prev_received_message_factor)
+        # Normalising here can cause incorrect convergence with discrete distributions
+        # TODO: investigate this.
+        #message_factor = message_factor.normalize()
+
         message = Message(factor=message_factor, sender_id=self.cluster_id, receiver_id=neighbour_id)
         return message
 

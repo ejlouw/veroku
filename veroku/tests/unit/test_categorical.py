@@ -921,6 +921,29 @@ class TestSparseCategorical(TestCategorical):
 
         self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
 
+    def test_marginalise_keep_all_swapped(self):
+        # error recreation
+        var_names = ["card4",
+                     "card3",
+                     "card2"]
+        probs_table = {
+            (0, 0, 0): 0.9,
+            (1, 1, 0): 0.6,
+            (2, 2, 1): 0.2,
+            (3, 1, 1): 0.7,
+            (3, 2, 0): 0.5,
+            (3, 2, 1): 0.8}
+
+        cardinalities = [4, 3, 2]
+
+        vars_to_keep = ['card2', 'card3', 'card4']
+        sc = SparseCategorical(var_names=var_names,
+                               cardinalities=cardinalities,
+                               probs_table=probs_table)
+        rsc = sc.marginalize(vars_to_keep)
+        self.assertTrue(rsc.cardinalities == [2, 3, 4])
+        self.assertTrue(rsc.var_cards == {'card2':2, 'card3':3, 'card4':4})
+
     def test_equals_false_non_defaults_not_close(self):
         """
         Test that the equals method returns false when the all the non-default values are the same, but the default

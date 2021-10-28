@@ -429,6 +429,17 @@ class Categorical(Factor):
         """
         print(self.__repr__())
 
+    @property
+    def dense_distribution_array(self):
+        distribution_list = []
+
+        for assignment in np.ndindex(self.log_probs_tensor.shape):
+            log_prob = self.log_probs_tensor[assignment]
+            prob = np.exp(log_prob)
+            distribution_list.append(list(assignment) + [prob])
+        distribution_array = np.array(distribution_list)
+        return distribution_array
+
     def __repr__(self):
         """
         Get the string representation for the factor.

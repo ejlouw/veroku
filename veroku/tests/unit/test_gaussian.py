@@ -42,6 +42,9 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         """
         np.random.seed(0)
 
+    def test_init(self):
+        Gaussian(mean=[2, 2], cov=[[2, 1], [1, 6]], log_weight=0.0, var_names=['a', 'b'])
+
     def test_random_gaussians_differ(self):
         """
         Test that random Gaussians generated sequentially are different.

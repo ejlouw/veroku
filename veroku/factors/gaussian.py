@@ -167,7 +167,8 @@ class Gaussian(Factor):
             >>> Gaussian(prec=[[1, 0], [0, 1]], h_vec=[0, 0], g_val=0.0, var_names=["a", "b"])
 
         """
-
+        if var_names is None:
+           raise ValueError("var_names not provided.")
         super().__init__(var_names=var_names)
         self._is_vacuous = False
         if all(v is None for v in [prec, h_vec, g_val]):

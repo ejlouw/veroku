@@ -31,8 +31,8 @@ def _make_dense(factor):
     :rtype: SparseCategorical
     """
     factor_copy = factor.copy()
-    dense_assingments = itertools.product(*[range(factor_copy.var_cards[v]) for v in factor_copy.var_names])
-    for assign in dense_assingments:
+    dense_assignments = itertools.product(*[range(factor_copy.var_cards[v]) for v in factor_copy.var_names])
+    for assign in dense_assignments:
         if assign not in factor_copy.log_probs_table:
             factor_copy.log_probs_table[assign] = factor_copy.default_log_prob
     return factor_copy
@@ -530,10 +530,14 @@ class SparseCategorical(Factor):
         result_var_cards = copy.deepcopy(self.var_cards)
         for var in vars_to_sum_out:
             del result_var_cards[var]
-        cardinalities = list(result_var_cards.values())
-        return SparseCategorical(
+
+        cardinalities = [self.var_cards[v] for v in vars_to_keep]
+
+        resulting_factor = SparseCategorical(
             var_names=vars_to_keep, log_probs_table=result_table, cardinalities=cardinalities
         )
+
+        return resulting_factor
 
     def reduce(self, vrs, values):
         """
@@ -559,7 +563,9 @@ class SparseCategorical(Factor):
 
         cards = list(result_var_cards.values())
         var_names = vars_unobserved
-        return SparseCategorical(var_names=var_names, log_probs_table=lp_table, cardinalities=cards)
+        resulting_factor = SparseCategorical(var_names=var_names, log_probs_table=lp_table, cardinalities=cards)
+
+        return resulting_factor
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -704,15 +710,18 @@ class SparseCategorical(Factor):
         )
         flattened_result_table = _flatten_ntd(result_ntd)
         result_var_names = remaining_a_vars + remaining_b_vars + intersection_vars
+
         result_var_cards = {**self.var_cards, **factor.var_cards}
+
         result_cardinalities = [result_var_cards[v] for v in result_var_names]
         result_default_log_prob = operator_function(default_log_prob, default_log_prob)
-        return SparseCategorical(
+        resulting_factor = SparseCategorical(
             var_names=result_var_names,
             log_probs_table=flattened_result_table,
             cardinalities=result_cardinalities,
-            default_log_prob=result_default_log_prob,
-        )
+            default_log_prob=result_default_log_prob)
+
+        return resulting_factor
 
     def normalize(self):
         """
@@ -823,6 +832,12 @@ class SparseCategorical(Factor):
         var_names_order_assignments = tuple([assignment[i] for i in vrs_to_var_names_indices])
         return np.exp(self.log_probs_table[var_names_order_assignments])
 
+    @property
+    def dense_distribution_array(self):
+        dense_log_probs_table = _make_dense(self).log_probs_table
+        distribution_array = np.array([list(a) + [np.exp(log_prob)] for a, log_prob in dense_log_probs_table.items()])
+        return distribution_array
+
     def _to_df(self):
         """
         Convert the factor to a dataframe representation.
@@ -880,7 +895,6 @@ class SparseCategorical(Factor):
             1 0  pa1b0            1 0  pa0b1
             1 1  pa1b1            1 1  pa1b1
         """
-
         new_order_indices = [self.var_names.index(var) for var in new_var_names_order]
         new_log_probs_table = dict()
         for assignment, value in self.log_probs_table.items():
