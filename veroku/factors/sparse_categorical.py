@@ -834,6 +834,9 @@ class SparseCategorical(Factor):
 
     @property
     def dense_distribution_array(self):
+        """
+        An array containing all the discrete assignments and the corresponding probabilities.
+        """
         dense_log_probs_table = _make_dense(self).log_probs_table
         distribution_array = np.array([list(a) + [np.exp(log_prob)] for a, log_prob in dense_log_probs_table.items()])
         return distribution_array

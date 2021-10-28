@@ -431,6 +431,9 @@ class Categorical(Factor):
 
     @property
     def dense_distribution_array(self):
+        """
+        An array containing all the discrete assignments and the corresponding probabilities.
+        """
         distribution_list = []
 
         for assignment in np.ndindex(self.log_probs_tensor.shape):

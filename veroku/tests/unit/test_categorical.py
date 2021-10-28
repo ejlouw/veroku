@@ -922,6 +922,10 @@ class TestSparseCategorical(TestCategorical):
         self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
 
     def test_marginalise_keep_all_swapped(self):
+        """
+        Test that the cardinality order is correct after doing a mock marginalisation (and swopping
+        variables).
+        """
         # error recreation
         var_names = ["card4",
                      "card3",
@@ -937,12 +941,12 @@ class TestSparseCategorical(TestCategorical):
         cardinalities = [4, 3, 2]
 
         vars_to_keep = ['card2', 'card3', 'card4']
-        sc = SparseCategorical(var_names=var_names,
+        categorical = SparseCategorical(var_names=var_names,
                                cardinalities=cardinalities,
                                probs_table=probs_table)
-        rsc = sc.marginalize(vars_to_keep)
-        self.assertTrue(rsc.cardinalities == [2, 3, 4])
-        self.assertTrue(rsc.var_cards == {'card2':2, 'card3':3, 'card4':4})
+        marginal = categorical.marginalize(vars_to_keep)
+        self.assertTrue(marginal.cardinalities == [2, 3, 4])
+        self.assertTrue(marginal.var_cards == {'card2':2, 'card3':3, 'card4':4})
 
     def test_equals_false_non_defaults_not_close(self):
         """
