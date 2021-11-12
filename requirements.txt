@@ -7,7 +7,7 @@ black==20.8b1
 pylint==2.6.0
 
 # documentation
-Sphinx==3.2.1
+Sphinx==4.3.0
 autodoc==0.5.0
 m2r2==0.2.7
 
