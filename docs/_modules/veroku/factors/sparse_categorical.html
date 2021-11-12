@@ -6,13 +6,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>veroku.factors.sparse_categorical &#8212; veroku 0.0.14 documentation</title>
-    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -65,8 +64,8 @@
 <span class="sd">    :rtype: SparseCategorical</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">factor_copy</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">dense_assingments</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">factor_copy</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">var_names</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">assign</span> <span class="ow">in</span> <span class="n">dense_assingments</span><span class="p">:</span>
+    <span class="n">dense_assignments</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">factor_copy</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">var_names</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">assign</span> <span class="ow">in</span> <span class="n">dense_assignments</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">assign</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">:</span>
             <span class="n">factor_copy</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">assign</span><span class="p">]</span> <span class="o">=</span> <span class="n">factor_copy</span><span class="o">.</span><span class="n">default_log_prob</span>
     <span class="k">return</span> <span class="n">factor_copy</span>
@@ -564,10 +563,14 @@
         <span class="n">result_var_cards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_sum_out</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">result_var_cards</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-        <span class="n">cardinalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span>
+
+        <span class="n">cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vars_to_keep</span><span class="p">]</span>
+
+        <span class="n">resulting_factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span>
             <span class="n">var_names</span><span class="o">=</span><span class="n">vars_to_keep</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">result_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cardinalities</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resulting_factor</span></div>
 
 <div class="viewcode-block" id="SparseCategorical.reduce"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vrs</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -593,7 +596,9 @@
 
         <span class="n">cards</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_var_cards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">var_names</span> <span class="o">=</span> <span class="n">vars_unobserved</span>
-        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">lp_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span></div>
+        <span class="n">resulting_factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span> <span class="n">log_probs_table</span><span class="o">=</span><span class="n">lp_table</span><span class="p">,</span> <span class="n">cardinalities</span><span class="o">=</span><span class="n">cards</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resulting_factor</span></div>
 
     <span class="k">def</span> <span class="nf">_assert_consistent_cardinalities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -738,15 +743,18 @@
         <span class="p">)</span>
         <span class="n">flattened_result_table</span> <span class="o">=</span> <span class="n">_flatten_ntd</span><span class="p">(</span><span class="n">result_ntd</span><span class="p">)</span>
         <span class="n">result_var_names</span> <span class="o">=</span> <span class="n">remaining_a_vars</span> <span class="o">+</span> <span class="n">remaining_b_vars</span> <span class="o">+</span> <span class="n">intersection_vars</span>
+
         <span class="n">result_var_cards</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">var_cards</span><span class="p">,</span> <span class="o">**</span><span class="n">factor</span><span class="o">.</span><span class="n">var_cards</span><span class="p">}</span>
+
         <span class="n">result_cardinalities</span> <span class="o">=</span> <span class="p">[</span><span class="n">result_var_cards</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result_var_names</span><span class="p">]</span>
         <span class="n">result_default_log_prob</span> <span class="o">=</span> <span class="n">operator_function</span><span class="p">(</span><span class="n">default_log_prob</span><span class="p">,</span> <span class="n">default_log_prob</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">SparseCategorical</span><span class="p">(</span>
+        <span class="n">resulting_factor</span> <span class="o">=</span> <span class="n">SparseCategorical</span><span class="p">(</span>
             <span class="n">var_names</span><span class="o">=</span><span class="n">result_var_names</span><span class="p">,</span>
             <span class="n">log_probs_table</span><span class="o">=</span><span class="n">flattened_result_table</span><span class="p">,</span>
             <span class="n">cardinalities</span><span class="o">=</span><span class="n">result_cardinalities</span><span class="p">,</span>
-            <span class="n">default_log_prob</span><span class="o">=</span><span class="n">result_default_log_prob</span><span class="p">,</span>
-        <span class="p">)</span>
+            <span class="n">default_log_prob</span><span class="o">=</span><span class="n">result_default_log_prob</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resulting_factor</span>
 
 <div class="viewcode-block" id="SparseCategorical.normalize"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -827,7 +835,9 @@
                 <span class="c1">#  this is fine (numerical error)</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
             <span class="n">kld_msg_details</span> <span class="o">=</span> <span class="s2">&quot;Categorical:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">log_p</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">factor:&quot;</span> <span class="o">+</span> <span class="n">log_q</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Negative KLD: </span><span class="si">{</span><span class="n">kld</span><span class="si">}</span><span class="s2">. Details:</span><span class="se">\n</span><span class="si">{</span><span class="n">kld_msg_details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Negative KLD: </span><span class="si">{</span><span class="n">kld</span><span class="si">}</span><span class="s2">. Details:</span><span class="se">\n</span><span class="si">{</span><span class="n">kld_msg_details</span><span class="si">}</span><span class="s2">. &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;weights: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">factor</span><span class="o">.</span><span class="n">weight</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">kld</span></div>
 
 <div class="viewcode-block" id="SparseCategorical.distance_from_vacuous"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.distance_from_vacuous">[docs]</a>    <span class="k">def</span> <span class="nf">distance_from_vacuous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -856,6 +866,24 @@
         <span class="n">vrs_to_var_names_indices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vrs</span><span class="p">]</span>
         <span class="n">var_names_order_assignments</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">assignment</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vrs_to_var_names_indices</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="p">[</span><span class="n">var_names_order_assignments</span><span class="p">])</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dense_distribution_array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An array containing all the discrete assignments and the corresponding probabilities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dense_log_probs_table</span> <span class="o">=</span> <span class="n">_make_dense</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">log_probs_table</span>
+        <span class="n">distribution_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_prob</span><span class="p">)]</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">log_prob</span> <span class="ow">in</span> <span class="n">dense_log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">return</span> <span class="n">distribution_array</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An array containing all the discrete assignments and the corresponding probabilities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log_weight</span> <span class="o">=</span> <span class="n">special</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="n">weight_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_weight</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">weight_</span>
 
     <span class="k">def</span> <span class="nf">_to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -893,6 +921,7 @@
             <span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_prob</span><span class="p">)</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">_factor_utils</span><span class="o">.</span><span class="n">space_assignments_and_probs</span><span class="p">(</span><span class="n">assignment</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">spacings</span><span class="p">)</span>
             <span class="n">repr_str</span> <span class="o">+=</span> <span class="n">line</span>
+        <span class="c1">#repr_str += f&quot;\nweight = {self.weight}\n\n  &quot;</span>
         <span class="k">return</span> <span class="n">repr_str</span>
 
 <div class="viewcode-block" id="SparseCategorical.reorder"><a class="viewcode-back" href="../../../veroku.factors.sparse_categorical.html#veroku.factors.sparse_categorical.SparseCategorical.reorder">[docs]</a>    <span class="k">def</span> <span class="nf">reorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_var_names_order</span><span class="p">):</span>
@@ -914,7 +943,6 @@
 <span class="sd">            1 0  pa1b0            1 0  pa0b1</span>
 <span class="sd">            1 1  pa1b1            1 1  pa1b1</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">new_order_indices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">new_var_names_order</span><span class="p">]</span>
         <span class="n">new_log_probs_table</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">assignment</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1006,7 +1034,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules.html">veroku</a></li>
 </ul>
@@ -1024,7 +1052,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -1046,7 +1074,7 @@
       &copy;2020, EJ Louw.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

@@ -4,15 +4,15 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>veroku.cluster_graph module &#8212; veroku 0.0.14 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="veroku.factors.sparse_categorical module" href="veroku.factors.sparse_categorical.html" />
@@ -32,12 +32,12 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-veroku.cluster_graph">
+  <section id="module-veroku.cluster_graph">
 <span id="veroku-cluster-graph-module"></span><h1>veroku.cluster_graph module<a class="headerlink" href="#module-veroku.cluster_graph" title="Permalink to this headline">¶</a></h1>
 <p>A module for building and performing inference with cluster graphs</p>
 <dl class="py class">
-<dt id="veroku.cluster_graph.ClusterGraph">
-<em class="property">class </em><code class="sig-name descname">ClusterGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factors</span></em>, <em class="sig-param"><span class="n">evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">special_evidence</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disable_tqdm</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ClusterGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">special_evidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class for building and performing inference with cluster graphs.</p>
 <p>Construct a Cluster graph from a list of factors.</p>
@@ -58,8 +58,8 @@ non-linear Gaussian to be iteratively refined. Example: {‘a’: 2, ‘b’:1}<
 <p>processing.
 :param debug:</p>
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_marginal">
-<code class="sig-name descname">get_marginal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vrs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_marginal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_marginal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.get_marginal">
+<span class="sig-name descname"><span class="pre">get_marginal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_marginal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_marginal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search the graph for a specific variable and get that variables marginal (posterior marginal if process_graph
 has been run previously).</p>
 <dl class="field-list simple">
@@ -73,15 +73,15 @@ has been run previously).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.get_posterior_joint">
-<code class="sig-name descname">get_posterior_joint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_posterior_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_posterior_joint" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.get_posterior_joint">
+<span class="sig-name descname"><span class="pre">get_posterior_joint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.get_posterior_joint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.get_posterior_joint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the posterior joint distribution. This function is only intended to be used as a research / debugging tool
 for small networks.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif">
-<code class="sig-name descname">make_message_passing_animation_gif</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">'graph_animation.gif'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.make_message_passing_animation_gif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif">
+<span class="sig-name descname"><span class="pre">make_message_passing_animation_gif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'graph_animation.gif'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.make_message_passing_animation_gif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.make_message_passing_animation_gif" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make message passing animation and save a GIF of the animation to file. Note that this function will only work
 if the make_animation_gif variable was set to True when the process_graph method was called.</p>
 <dl class="field-list simple">
@@ -92,8 +92,8 @@ if the make_animation_gif variable was set to True when the process_graph method
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
-<code class="sig-name descname">plot_message_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.plot_message_convergence">
+<span class="sig-name descname"><span class="pre">plot_message_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_message_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_message_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the the KL-divergence between the messages and their previous instances to indicate the message passing
 convergence.</p>
 <dl class="field-list simple">
@@ -107,8 +107,8 @@ convergence.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">
-<code class="sig-name descname">plot_next_messages_info_gain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">legend_on</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_next_messages_info_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain">
+<span class="sig-name descname"><span class="pre">plot_next_messages_info_gain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">legend_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.plot_next_messages_info_gain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.plot_next_messages_info_gain" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Plot the information gained by a receiving new messages over sebsequent iterations for all message paths in the</dt><dd><p>graph.</p>
 </dd>
@@ -125,8 +125,8 @@ plot legend.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.process_graph">
-<code class="sig-name descname">process_graph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">50</span></em>, <em class="sig-param"><span class="n">make_animation_gif</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.process_graph">
+<span class="sig-name descname"><span class="pre">process_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_animation_gif</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.process_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.process_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform synchronous message passing until convergence (or maximum iterations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -144,8 +144,8 @@ be used only with very small (&gt;50 cluster) graphs.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.save_graph_image">
-<code class="sig-name descname">save_graph_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.save_graph_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.save_graph_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.save_graph_image">
+<span class="sig-name descname"><span class="pre">save_graph_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.save_graph_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.save_graph_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save image of the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -155,14 +155,14 @@ be used only with very small (&gt;50 cluster) graphs.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="veroku.cluster_graph.ClusterGraph.show">
-<code class="sig-name descname">show</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.show" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="veroku.cluster_graph.ClusterGraph.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/cluster_graph.html#ClusterGraph.show"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.cluster_graph.ClusterGraph.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show the cluster graph.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
           </div>
@@ -181,7 +181,7 @@ be used only with very small (&gt;50 cluster) graphs.</p></li>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">veroku</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="veroku.html">veroku package</a><ul class="current">
@@ -213,7 +213,7 @@ be used only with very small (&gt;50 cluster) graphs.</p></li>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -235,7 +235,7 @@ be used only with very small (&gt;50 cluster) graphs.</p></li>
       &copy;2020, EJ Louw.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
