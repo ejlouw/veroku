@@ -6,11 +6,13 @@ A module for instantiating sparse tables with log probabilities.
 import copy
 import operator
 import warnings
+import matplotlib.pyplot as plt
 
 # Third-party imports
 import numpy as np
 from numpy import unravel_index
 from scipy import special
+import pandas as pd
 
 # Local imports
 from veroku.factors._factor import Factor
@@ -28,12 +30,32 @@ LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
 #       We probably want to relax this requirement.
 
 
+class InconsistentAssignmentNamesError(Exception):
+    """
+    Inconsistent Assignment Names Error
+    """
+    pass
+
+
+def _check_consistent_assignment_names(variables_assignment_names_dict_a, variables_assignment_names_dict_b):
+    vars_set_a = set(variables_assignment_names_dict_a.keys())
+    vars_set_b = set(variables_assignment_names_dict_b.keys())
+    vars_union = set(vars_set_a).union(vars_set_b)
+    for var_name in vars_union:
+        if var_name in vars_set_a and var_name in vars_set_b:
+            assignment_names_a = variables_assignment_names_dict_a[var_name]
+            assignment_names_b = variables_assignment_names_dict_b[var_name]
+
+            if assignment_names_a != assignment_names_b:
+                raise InconsistentAssignmentNamesError(f"assignment names for variable {var_name} are not equal ({assignment_names_a} != {assignment_names_b})")
+
+
 class Categorical(Factor):
     """
     A class for instantiating sparse tables with log probabilities.
     """
 
-    def __init__(self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None):
+    def __init__(self, var_names, cardinalities=None, probs_table=None, log_probs_tensor=None, variables_assignment_names=None):
         """
         Construct a SparseLogTable. Either log_probs_table or probs_table should be supplied.
 
@@ -107,6 +129,19 @@ class Categorical(Factor):
         # TODO: remove this
         self.var_cards = dict(zip(var_names, cardinalities))
         self.cardinalities = cardinalities
+        if variables_assignment_names is not None:
+            assrt_error_msg = f"variables_assignment_names should have same length as var_names" \
+                              f" (received {variables_assignment_names} and {var_names})"
+            assert len(variables_assignment_names) == len(var_names), assrt_error_msg
+            var_assignment_names_dict = dict()
+            for var_name, assignments_names, cardinality in zip(var_names, variables_assignment_names, cardinalities):
+                assert_error_msg = \
+                    f"Incorrect number of unique assignment names provided for variable {var_name} (should equal variable card ({cardinality})) "
+                assert cardinality == len(set(assignments_names)), assert_error_msg
+                var_assignment_names_dict[var_name] = tuple(copy.deepcopy(assignments_names))
+        else:
+            var_assignment_names_dict = {var_name: tuple(range(var_card)) for var_name, var_card in zip(var_names, cardinalities)}
+        self.vars_assignments_names_dict = var_assignment_names_dict
 
     def reorder(self, new_var_names_order):
         """
@@ -143,7 +178,8 @@ class Categorical(Factor):
             raise ValueError("The new_var_names_order set must be the same as the factor variables.")
         vars_new_order_indices = [self.var_names.index(v) for v in new_var_names_order]
         log_probs_tensor = self.log_probs_tensor.transpose(vars_new_order_indices)
-        return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor)
+        variables_assignment_names = [self.vars_assignments_names_dict[var_name] for var_name in new_var_names_order]
+        return Categorical(var_names=new_var_names_order, log_probs_tensor=log_probs_tensor, variables_assignment_names=variables_assignment_names)
 
     def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
@@ -172,7 +208,12 @@ class Categorical(Factor):
         :return: The copy of this factor.
         :rtype: Categorical
         """
-        return Categorical(var_names=self.var_names.copy(), log_probs_tensor=self.log_probs_tensor.copy())
+        variables_assignment_names = [self.vars_assignments_names_dict[var_name] for var_name in
+                                      self.var_names]
+        self_copy = Categorical(var_names=self.var_names.copy(),
+                                log_probs_tensor=self.log_probs_tensor.copy(),
+                                variables_assignment_names=variables_assignment_names)
+        return self_copy
 
     @staticmethod
     def tensor_operation(tensor_a, tensor_b, tensor_a_var_names, tensor_b_var_names, func):
@@ -235,7 +276,9 @@ class Categorical(Factor):
         vars_to_sum_out = [v for v in self.var_names if v not in vars_to_keep]
         indices_to_sum_out = [self.var_names.index(v) for v in vars_to_sum_out]
         result_tensor = np.apply_over_axes(special.logsumexp, self.log_probs_tensor, axes=indices_to_sum_out)
-        return Categorical(var_names=vars_to_keep, log_probs_tensor=np.squeeze(result_tensor))
+        vars_to_keep_assignment_values = [self.vars_assignments_names_dict[var] for var in vars_to_keep]
+        return Categorical(var_names=vars_to_keep, log_probs_tensor=np.squeeze(result_tensor),
+                           variables_assignment_names=vars_to_keep_assignment_values)
 
     def reduce(self, vrs, values):
         """
@@ -254,7 +297,10 @@ class Categorical(Factor):
             [obs_dict[v] if v in obs_dict else slice(None) for v in self.var_names]
         )
         result_table = self.log_probs_tensor[reduced_tensor_indexing]
-        return Categorical(var_names=vars_unobserved, log_probs_tensor=result_table)
+        vars_to_keep_assignment_values = [self.vars_assignments_names_dict[var] for var in
+                                          vars_unobserved]
+        return Categorical(var_names=vars_unobserved, log_probs_tensor=result_table,
+                           variables_assignment_names=vars_to_keep_assignment_values)
 
     def _assert_consistent_cardinalities(self, factor):
         """
@@ -281,10 +327,19 @@ class Categorical(Factor):
         if not isinstance(factor, Categorical):
             raise TypeError(f"factor must be of Categorical type but has type {type(factor)}")
         self._assert_consistent_cardinalities(factor)
+
         result_tensor, result_vars = self.tensor_operation(
             self.log_probs_tensor, factor.log_probs_tensor, self.var_names, factor.var_names, operator.add
         )
-        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
+        _check_consistent_assignment_names(self.vars_assignments_names_dict,
+                                           factor.vars_assignments_names_dict)
+        vars_assignments_names_union_dict = copy.deepcopy(self.vars_assignments_names_dict)
+        vars_assignments_names_union_dict.update(factor.vars_assignments_names_dict)
+
+        vars_to_keep_assignment_values = [vars_assignments_names_union_dict[var] for var in result_vars]
+
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
+                           variables_assignment_names=vars_to_keep_assignment_values)
 
     def cancel(self, factor):
         """
@@ -311,7 +366,12 @@ class Categorical(Factor):
         result_tensor, result_vars = self.tensor_operation(
             self.log_probs_tensor, augmented_factor_tensor, self.var_names, factor.var_names, operator.sub
         )
-        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
+        _check_consistent_assignment_names(self.vars_assignments_names_dict,
+                                           factor.vars_assignments_names_dict)
+        vars_assignment_names = [self.vars_assignments_names_dict[var] for var in
+                                  result_vars]
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
+                           variables_assignment_names=vars_assignment_names)
 
     def divide(self, factor):
         """
@@ -328,7 +388,12 @@ class Categorical(Factor):
         result_tensor, result_vars = self.tensor_operation(
             self.log_probs_tensor, factor.log_probs_tensor, self.var_names, factor.var_names, operator.sub
         )
-        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor)
+        _check_consistent_assignment_names(self.vars_assignments_names_dict,
+                                           factor.vars_assignments_names_dict)
+        vars_assignment_names = [self.vars_assignments_names_dict[var] for var in
+                                  result_vars]
+        return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
+                           variables_assignment_names=vars_assignment_names)
 
     def argmax(self):
         """
@@ -338,8 +403,21 @@ class Categorical(Factor):
         :rtype: int list
         """
         # TODO: add functionality to deal with more that one instance of the maximum value.
-        argmax_index = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
-        return argmax_index
+        argmax_assignment = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
+        return argmax_assignment
+
+    def argmax_assignment_names(self):
+        """
+        Get the first assignment values that maximises the factor potential.
+
+        :return: The argmax assignment.
+        :rtype: int list
+        """
+        # TODO: add functionality to deal with more that one instance of the maximum value.
+        argmax_assignment = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
+        argmax_assignment_names = [self.vars_assignments_names_dict[var_name][var_assignment_value] for var_name, var_assignment_value in
+                                   zip(self.var_names, argmax_assignment)]
+        return argmax_assignment_names
 
     def normalize(self):
         """
@@ -381,6 +459,8 @@ class Categorical(Factor):
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
+        _check_consistent_assignment_names(self.vars_assignments_names_dict,
+                                           factor.vars_assignments_names_dict)
         normalized_self = self.normalize()
         normalized_self = normalized_self.reorder(factor.var_names)
         log_p = normalized_self.log_probs_tensor
@@ -407,7 +487,10 @@ class Categorical(Factor):
         # make uniform copy
         uniform_log_prob = -np.log(np.product(self.log_probs_tensor.shape))
         uniform_log_tensor = np.ones(self.log_probs_tensor.shape) * uniform_log_prob
-        uniform_factor = Categorical(var_names=self.var_names, log_probs_tensor=uniform_log_tensor)
+        vars_assignment_names = [self.vars_assignments_names_dict[var] for var in
+                                 self.var_names]
+        uniform_factor = Categorical(var_names=self.var_names, log_probs_tensor=uniform_log_tensor,
+                                     variables_assignment_names=vars_assignment_names)
         kld = self.kl_divergence(uniform_factor, normalize_factor=False)
         return kld
 
@@ -458,7 +541,63 @@ class Categorical(Factor):
             prob = np.exp(prob)
             line = _factor_utils.space_assignments_and_probs(assignment, prob, spacings)
             repr_str += line
+
+        #repr_str += "\n".join([f"{var_name}: {assignment_names}" for var_name,assignment_names in self.vars_assignments_names_dict.items()])
+        #repr_str += "\n"
         return repr_str
+
+    def get_df(self, named_assignments=False):
+        """
+        Get a dataframe representation of the factor.
+
+        :param named_assignments: Whether to use assignment names (instead of indices).
+        :type named_assignments: bool
+        :return: The dataframe
+        :rtype: pandas.DataFrame
+        """
+        data_list = []
+        for row in self.dense_distribution_array:
+            assignments_array = row[:-1]
+            prob = row[-1]
+            if not named_assignments:
+                data_list.append(list(assignments_array) + [prob])
+            else:
+                named_assignments = [self.vars_assignments_names_dict[var_name][int(val)] for
+                                     var_name, val in zip(self.var_names, assignments_array)]
+                data_list.append(named_assignments + [prob])
+
+        column_names = self.var_names + ["prob"]
+        factor_df = pd.DataFrame(data=data_list, columns=column_names)
+        return factor_df
+
+    def plot(self, figsize=None):
+        """
+        Plot the distribution as a bar plot.
+
+        :param figsize: The figure size.
+        :type figsize: tuple
+        """
+        def assignment_names_to_x_label(row):
+            processed_assignment_value_names = []
+            for elem in row:
+                if isinstance(elem, float):
+                    processed_assignment_value_name = f"{elem:.2f}"
+                else:
+                    processed_assignment_value_name = elem
+                processed_assignment_value_names.append(processed_assignment_value_name)
+            x_label = ", ".join(processed_assignment_value_names)
+            return x_label
+
+        num_assignments = self.dense_distribution_array.shape[0]
+        color_list = ["b"]*num_assignments
+        factor_df = self.get_df(named_assignments=True)
+        factor_df["assignment"] = factor_df[self.var_names].apply(assignment_names_to_x_label, axis=1)
+
+        if figsize is not None:
+            factor_df.plot.barh(x="assignment", y="prob", color=color_list, figsize=figsize)
+        else:
+            factor_df.plot.barh(x="assignment", y="prob", color=color_list)
+        plt.gca().invert_yaxis()
 
 
 class CategoricalTemplate(FactorTemplate):

@@ -802,7 +802,9 @@ class SparseCategorical(Factor):
                 #  this is fine (numerical error)
                 return 0.0
             kld_msg_details = "Categorical:\n" + log_p.__repr__() + "\nfactor:" + log_q.__repr__()
-            raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}")
+
+            raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}. "
+                             f"weights: {self.weight}, {factor.weight}\n")
         return kld
 
     def distance_from_vacuous(self):
@@ -841,6 +843,15 @@ class SparseCategorical(Factor):
         distribution_array = np.array([list(a) + [np.exp(log_prob)] for a, log_prob in dense_log_probs_table.items()])
         return distribution_array
 
+    @property
+    def weight(self):
+        """
+        An array containing all the discrete assignments and the corresponding probabilities.
+        """
+        log_weight = special.logsumexp(list(self.log_probs_table.values()))
+        weight_ = np.exp(log_weight)
+        return weight_
+
     def _to_df(self):
         """
         Convert the factor to a dataframe representation.
@@ -877,6 +888,7 @@ class SparseCategorical(Factor):
             prob = np.exp(log_prob)
             line = _factor_utils.space_assignments_and_probs(assignment, prob, spacings)
             repr_str += line
+        #repr_str += f"\nweight = {self.weight}\n\n  "
         return repr_str
 
     def reorder(self, new_var_names_order):

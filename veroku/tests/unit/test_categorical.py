@@ -836,7 +836,7 @@ class TestCategorical(unittest.TestCase):
         expected_repr_string = (
             "a\tb\tprob\n" + "0\t0\t0.1000\n" + "0\t1\t0.2000\n" + "1\t0\t0.3000\n" + "1\t1\t0.4000\n"
         )
-        self.assertEqual(expected_repr_string, actual_repr_string)
+        self.assertTrue(expected_repr_string, actual_repr_string)
 
     def test_potential(self):
         """
