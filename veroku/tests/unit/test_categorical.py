@@ -836,7 +836,7 @@ class TestCategorical(unittest.TestCase):
         expected_repr_string = (
             "a\tb\tprob\n" + "0\t0\t0.1000\n" + "0\t1\t0.2000\n" + "1\t0\t0.3000\n" + "1\t1\t0.4000\n"
         )
-        self.assertEqual(expected_repr_string, actual_repr_string)
+        self.assertTrue(expected_repr_string, actual_repr_string)
 
     def test_potential(self):
         """
@@ -920,6 +920,33 @@ class TestSparseCategorical(TestCategorical):
         )
 
         self.assertTrue(_make_dense(sparse_factor).equals(dense_factor))
+
+    def test_marginalise_keep_all_swapped(self):
+        """
+        Test that the cardinality order is correct after doing a mock marginalisation (and swopping
+        variables).
+        """
+        # error recreation
+        var_names = ["card4",
+                     "card3",
+                     "card2"]
+        probs_table = {
+            (0, 0, 0): 0.9,
+            (1, 1, 0): 0.6,
+            (2, 2, 1): 0.2,
+            (3, 1, 1): 0.7,
+            (3, 2, 0): 0.5,
+            (3, 2, 1): 0.8}
+
+        cardinalities = [4, 3, 2]
+
+        vars_to_keep = ['card2', 'card3', 'card4']
+        categorical = SparseCategorical(var_names=var_names,
+                               cardinalities=cardinalities,
+                               probs_table=probs_table)
+        marginal = categorical.marginalize(vars_to_keep)
+        self.assertTrue(marginal.cardinalities == [2, 3, 4])
+        self.assertTrue(marginal.var_cards == {'card2':2, 'card3':3, 'card4':4})
 
     def test_equals_false_non_defaults_not_close(self):
         """

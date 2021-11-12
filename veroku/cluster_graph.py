@@ -456,6 +456,7 @@ class ClusterGraph:
             self.graph_message_paths = collections.deque(
                 sorted(self.graph_message_paths, key=key_func, reverse=True)
             )
+            # TODO: test this:
             # self.graph_message_paths = _sort_almost_sorted(self.graph_message_paths, key=key_func)
 
             max_next_information_gain = self.graph_message_paths[0].next_information_gain
