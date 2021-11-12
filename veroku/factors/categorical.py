@@ -30,11 +30,13 @@ LOG_SUBTRACT_KL_RULES = {(-np.inf, operator.sub, -np.inf): 0.0}
 #       We probably want to relax this requirement.
 
 
+# pylint: disable=W0107
 class InconsistentAssignmentNamesError(Exception):
     """
     Inconsistent Assignment Names Error
     """
     pass
+# pylint: enable=W0107
 
 
 def _check_consistent_assignment_names(variables_assignment_names_dict_a, variables_assignment_names_dict_b):
