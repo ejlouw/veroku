@@ -477,7 +477,7 @@ class ClusterGraph:
         """
         The factors of the messages passed in the last iteration of message passing.
         """
-        return [gmp.previously_sent_message.factor for gmp in self.graph_message_paths]
+        return [gmp.previously_sent_message.non_truncated_factor for gmp in self.graph_message_paths]
 
     def make_message_passing_animation_gif(self, filename="graph_animation.gif"):
         """

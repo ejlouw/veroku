@@ -263,7 +263,7 @@ class Message:
         :param message: The other message of which the factor will be used to compare to this message's factor.
         :return: The KL-divergence
         """
-        distance = self.factor.kl_divergence(message.factor)
+        distance = self.factor.kl_divergence(message.non_truncated_factor)
         return distance
 
     @property

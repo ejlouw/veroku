@@ -816,6 +816,7 @@ class Gaussian(Factor):
             )
         raise Exception("Gaussian is neither in canonical form nor in covariance form?")
 
+    #  TODO: consider changing this to the (vars, values) convention used in the discrete clasess.
     def potential(self, x_val):
         """
         Get the value of the Gaussian potential at x_val.

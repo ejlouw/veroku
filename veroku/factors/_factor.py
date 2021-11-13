@@ -143,7 +143,7 @@ class Factor:
     def cancel(self, factor):
         """
         (Alias for divide by default - but can differ in certain cases) An abstract function for performing factor
-        division (or division-like operarations - see Categorical cancel for example) that can be implemented in the
+        division (or division-like operations - see Categorical cancel for example) that can be implemented in the
         base class.
 
         :param factor: The factor to be divided by.
@@ -172,6 +172,8 @@ class Factor:
         :return: The reduced factor.
         """
         return self.reduce(vrs, values)
+
+    # TODO: add potential abstract method and enforce common interface.
 
     @abstractmethod
     def normalize(self):
