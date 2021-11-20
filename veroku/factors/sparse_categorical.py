@@ -421,7 +421,7 @@ class SparseCategorical(Factor):
             log_probs_table = {assignment: np.log(prob) for assignment, prob in probs_table.items()}
         self.log_probs_table = _fast_copy_probs_table(log_probs_table)
         self.var_cards = dict(zip(var_names, cardinalities))
-        self.cardinalities = cardinalities
+        self.cardinalities = copy.deepcopy(cardinalities)
         self.default_log_prob = default_log_prob
 
     # TODO: Improve this to take missing assignments into account. Alternatively: add functionality to sparsify factor
@@ -440,15 +440,15 @@ class SparseCategorical(Factor):
         :rtype: bool
         """
 
-        for assign, factor_log_prob in self.log_probs_table.items():
+        for assign, self_log_prob in self.log_probs_table.items():
 
             if assign not in factor.log_probs_table:
                 # TODO: make this `not is_close` and simplify this method
-                if factor_log_prob != factor.default_log_prob:
+                if self_log_prob != factor.default_log_prob:
                     return False
             else:
-                self_log_prob = factor.log_probs_table[assign]
-                if not np.isclose(self_log_prob, factor_log_prob, rtol=rtol, atol=atol):
+                other_factor_log_prob = factor.log_probs_table[assign]
+                if not np.isclose(other_factor_log_prob, self_log_prob, rtol=rtol, atol=atol):
                     return False
         return True
 
@@ -497,6 +497,7 @@ class SparseCategorical(Factor):
         :return: The copy of this factor.
         :rtype: SparseCategorical
         """
+        # TODO: see if these copy calls can be removed
         return SparseCategorical(
             var_names=self.var_names.copy(),
             log_probs_table=_fast_copy_probs_table(self.log_probs_table),

@@ -686,13 +686,17 @@ class Gaussian(Factor):
         """
         observed_vec = _factor_utils.make_column_vector(values)
 
-        assert isinstance(vrs, list)  # just to future-proof interface
+        assert isinstance(vrs, list), f"{vrs} expected to be of type list, got type ({type(vrs)})."  # just to future-proof interface
         assert set(vrs) <= set(self._var_names), "observed variables must a be subset of the gaussian variables."
 
         unobserved_vars = list(set(self._var_names) - set(vrs))
         unobserved_vars.sort()  # the above operations seems to return inconsistent orderings
         observed_indices = [self._var_names.index(v) for v in vrs]
         unobserved_indices = [self._var_names.index(v) for v in unobserved_vars]
+
+        if len(observed_indices) == self.dim:
+            self._reorder_parameters(vrs)
+            return self.potential(values)
 
         prec_reduced, h_reduced, g_reduced = self._get_observation_reduced_canonical_vars(
             observed_indices=observed_indices,

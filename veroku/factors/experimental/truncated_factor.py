@@ -10,7 +10,7 @@ from veroku.factors._factor import Factor
 import copy
 from scipy.integrate import quad
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
-
+from veroku.factors.experimental.gaussian_mixture import GaussianMixture
 
 def get_supports_intersection(support_bounds_a, support_bounds_b):
     result_support_start = max(support_bounds_a[0], support_bounds_b[0])
@@ -24,8 +24,11 @@ def get_supports_intersection(support_bounds_a, support_bounds_b):
 class NonOverLappingSupportsError(Exception):
     pass
 
+class IntegrationError(Exception):
+    pass
 
 #TODO: correct docstrings
+
 
 class Truncated1DFactor(Factor):
 
@@ -38,17 +41,11 @@ class Truncated1DFactor(Factor):
         self.non_truncated_factor = non_truncated_factor.copy()
         self.weight = 1.0
         if normalize:
-            self.normalize()
+            self.normalize(inplace=True)
 
         if len(non_truncated_factor.var_names) > 1:
             raise ValueError("Truncated1DFactor only supports 1 dimensional distributions")
         super().__init__(var_names=non_truncated_factor.var_names)
-
-    def get_integral(self):
-        integral_over_bounds = self.weight * quad(self.non_truncated_factor.potential,
-                                                  a=self.support_bounds[0],
-                                                  b=self.support_bounds[1])
-        return integral_over_bounds
 
     @property
     def var_names(self):
@@ -101,8 +98,7 @@ class Truncated1DFactor(Factor):
 
         :return: a copy of the factor
         """
-        return Truncated1DFactor(var_names=self.var_names,
-                                 non_truncated_factor=self.non_truncated_factor.copy(),
+        return Truncated1DFactor(non_truncated_factor=self.non_truncated_factor,
                                  support_bounds=self.support_bounds,
                                  normalize=False)
 
@@ -192,17 +188,35 @@ class Truncated1DFactor(Factor):
         :type x_val: numpy.ndarray
         :return: The value of the Gaussian potential at x_val.
         """
-        x = x_val[0]
+        if isinstance(x_val, np.ndarray):
+            assert x_val.shape == (1) or x_val.shape == (1,1)
+            x = x_val.ravel()[0]
+        else:
+            x = x_val  # assume int or float type
         if self.is_within_supports(x):
-            return self.non_truncated_factor.potential(x)
+            return self.weight*self.non_truncated_factor.potential(x)
         return 0.0
 
-    def normalize(self):
+    def get_integral(self):
+        unweighted_integral_over_bounds, abs_error = quad(self.non_truncated_factor.potential,
+                                                      a=self.support_bounds[0],
+                                                      b=self.support_bounds[1])
+        integration_percentage_error = abs_error/unweighted_integral_over_bounds
+        if integration_percentage_error > 0.01:
+            raise IntegrationError(f"Large integration error ({integration_percentage_error})")
+        integral_over_bounds = self.weight * unweighted_integral_over_bounds
+        return integral_over_bounds
+
+    def normalize(self, inplace=False):
         """
         An abstract function for performing factor normalization that should be implemented in the base class.
 
         :return: The normalized factor.
         """
+        if not inplace:
+            return Truncated1DFactor(non_truncated_factor=self.non_truncated_factor.copy(),
+                                     support_bounds=self.support_bounds,
+                                     normalize=True)
         self.weight = 1.0 / self.get_integral()
 
     def show(self):
@@ -221,8 +235,11 @@ class Truncated1DFactor(Factor):
         xs = np.concatenate((xs_zero_0, xs_supported, xs_zero_1))
         p_zero_0 = xs_zero_0 * 0
         p_zero_1 = xs_zero_1 * 0
-        p_supported = np.array([self.non_truncated_factor.potential(x) for x in xs_supported])
+        p_supported = np.array([self.weight*self.non_truncated_factor.potential(x) for x in xs_supported])
         p = np.concatenate((p_zero_0, p_supported, p_zero_1))
         plt.plot(xs, p)
 
-
+    def __add__(self, other):
+        # TODO: replace Gaussian mixture with general mixture class here
+        return GaussianMixture(self.copy(), other.copy())
+# TODO: add KLD and distance from vacuous methods

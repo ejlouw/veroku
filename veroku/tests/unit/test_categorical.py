@@ -745,7 +745,7 @@ class TestCategorical(unittest.TestCase):
 
     def test__reorder(self):
         """
-        Test that the reorder function reorders teh assignments properly.
+        Test that the reorder function reorders the assignments properly.
         """
         vars_cab = ["c", "a", "b"]
         probs_cab = {

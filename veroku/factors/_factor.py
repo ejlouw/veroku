@@ -22,7 +22,7 @@ class Factor:
         if len(set(var_names)) != len(var_names):
             raise ValueError("duplicate variables in var_names: ", var_names)
 
-        self._var_names = var_names
+        self._var_names = copy.deepcopy(var_names)
         if not isinstance(var_names, list):
             self._var_names = [var_names]
 
@@ -205,7 +205,7 @@ class Factor:
         """
         return self.multiply(other)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         """
         Divide this factor with another factor.
 
