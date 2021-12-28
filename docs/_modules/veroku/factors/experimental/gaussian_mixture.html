@@ -91,6 +91,27 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;inconsistent var_names in list of Gaussians.&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names0</span><span class="p">)</span>
 
+<div class="viewcode-block" id="GaussianMixture.from_sklearn_gmm"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.from_sklearn_gmm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_sklearn_gmm</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gmm</span><span class="p">,</span> <span class="n">var_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract the Gaussian mixture parameters from a learned sklearn Gaussian Mixture Model and</span>
+<span class="sd">        construct an equivalent Gaussian mixture object.</span>
+
+<span class="sd">        :param gmm: The Gaussian mixture model</span>
+<span class="sd">        :type gmm: sklearn.mixture._bayesian_mixture.BayesianGaussianMixture</span>
+<span class="sd">        :param var_names: The feature/variable names.</span>
+<span class="sd">        :type var_names: str list</span>
+<span class="sd">        :return: The Gaussian mixture.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gaussian_components</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gmm</span><span class="o">.</span><span class="n">means_</span><span class="p">,</span> <span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span><span class="p">,</span> <span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span><span class="p">):</span>
+            <span class="n">gaussian</span> <span class="o">=</span> <span class="n">gauss</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+                                      <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+                                      <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span>
+                                      <span class="n">log_weight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">weight</span><span class="p">))</span>
+            <span class="n">gaussian_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gaussian</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">gaussian_components</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="GaussianMixture.equals"><a class="viewcode-back" href="../../../../veroku.factors.experimental.gaussian_mixture.html#veroku.factors.experimental.gaussian_mixture.GaussianMixture.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">DEFAULT_FACTOR_ATOL</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if this factor is the same as another factor.</span>

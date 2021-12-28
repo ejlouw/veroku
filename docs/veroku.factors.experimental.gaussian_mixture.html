@@ -134,6 +134,24 @@ Get the Kullback-Leibler (KL) divergence between the message factor and a vacuou
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="veroku.factors.experimental.gaussian_mixture.GaussianMixture.from_sklearn_gmm">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_sklearn_gmm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gmm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/gaussian_mixture.html#GaussianMixture.from_sklearn_gmm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.factors.experimental.gaussian_mixture.GaussianMixture.from_sklearn_gmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the Gaussian mixture parameters from a learned sklearn Gaussian Mixture Model and
+construct an equivalent Gaussian mixture object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gmm</strong> (<em>sklearn.mixture._bayesian_mixture.BayesianGaussianMixture</em>) – The Gaussian mixture model</p></li>
+<li><p><strong>var_names</strong> (<em>str list</em>) – The feature/variable names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Gaussian mixture.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="veroku.factors.experimental.gaussian_mixture.GaussianMixture.get_component">
 <span class="sig-name descname"><span class="pre">get_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/veroku/factors/experimental/gaussian_mixture.html#GaussianMixture.get_component"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#veroku.factors.experimental.gaussian_mixture.GaussianMixture.get_component" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the Gaussian component at an index.</p>
