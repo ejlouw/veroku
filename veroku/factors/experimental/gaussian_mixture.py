@@ -209,7 +209,7 @@ class GaussianMixture(Factor):
         """
         raise NotImplementedError('This function has not been implemented yet.')
 
-    def log_potential(self, x_val):
+    def log_potential(self, x_val, vrs=None):
         """
         Get the log of the value of the Gaussian mixture potential at X.
 
@@ -220,7 +220,7 @@ class GaussianMixture(Factor):
         """
         log_potentials = []
         for comp in self.components:
-            log_potentials.append(comp.log_potential(x_val))
+            log_potentials.append(comp.log_potential(x_val=x_val, vrs=vrs))
         total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
 
