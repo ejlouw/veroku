@@ -58,6 +58,27 @@ class GaussianMixture(Factor):
                 raise ValueError("inconsistent var_names in list of Gaussians.")
         super().__init__(var_names=var_names0)
 
+    @classmethod
+    def from_sklearn_gmm(cls, gmm, var_names):
+        """
+        Extract the Gaussian mixture parameters from a learned sklearn Gaussian Mixture Model and
+        construct an equivalent Gaussian mixture object.
+
+        :param gmm: The Gaussian mixture model
+        :type gmm: sklearn.mixture._bayesian_mixture.BayesianGaussianMixture
+        :param var_names: The feature/variable names.
+        :type var_names: str list
+        :return: The Gaussian mixture.
+        """
+        gaussian_components = []
+        for mean, cov, weight in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+            gaussian = gauss.Gaussian(var_names=var_names,
+                                      mean=mean,
+                                      cov=cov,
+                                      log_weight=np.log(weight))
+            gaussian_components.append(gaussian)
+        return cls(gaussian_components)
+
     def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
