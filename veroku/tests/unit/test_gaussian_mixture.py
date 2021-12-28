@@ -9,7 +9,6 @@ from collections import namedtuple
 # Third-party imports
 import numpy as np
 import mockito
-from sklearn.mixture import BayesianGaussianMixture as BayesianGaussianMixtureModel
 
 # Local imports
 from veroku.factors.gaussian import Gaussian
@@ -217,6 +216,9 @@ class TestGaussianMixture(unittest.TestCase):
         self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 9)
 
     def test_from_sklearn_gmm(self):
+        """
+        Test that the from_sklearn constructor works as expected.
+        """
         DummyGMM = namedtuple("dummy_gmm", ["means_", "covariances_", "weights_"])
         mean0 = [0, 0]
         mean1 = [0, 1]
@@ -238,5 +240,5 @@ class TestGaussianMixture(unittest.TestCase):
                                log_weight=np.log(weight1))
         expected_gm = GaussianMixture([expected_g0, expected_g1])
 
-        gm = GaussianMixture.from_sklearn_gmm(dummy_gmm, var_names=["a", "b"])
-        assert expected_gm.equals(gm)
+        actual_gm = GaussianMixture.from_sklearn_gmm(dummy_gmm, var_names=["a", "b"])
+        assert expected_gm.equals(actual_gm )
