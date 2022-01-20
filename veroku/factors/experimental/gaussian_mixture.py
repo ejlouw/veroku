@@ -58,6 +58,27 @@ class GaussianMixture(Factor):
                 raise ValueError("inconsistent var_names in list of Gaussians.")
         super().__init__(var_names=var_names0)
 
+    @classmethod
+    def from_sklearn_gmm(cls, gmm, var_names):
+        """
+        Extract the Gaussian mixture parameters from a learned sklearn Gaussian Mixture Model and
+        construct an equivalent Gaussian mixture object.
+
+        :param gmm: The Gaussian mixture model
+        :type gmm: sklearn.mixture._bayesian_mixture.BayesianGaussianMixture
+        :param var_names: The feature/variable names.
+        :type var_names: str list
+        :return: The Gaussian mixture.
+        """
+        gaussian_components = []
+        for mean, cov, weight in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+            gaussian = gauss.Gaussian(var_names=var_names,
+                                      mean=mean,
+                                      cov=cov,
+                                      log_weight=np.log(weight))
+            gaussian_components.append(gaussian)
+        return cls(gaussian_components)
+
     def equals(self, factor, rtol=DEFAULT_FACTOR_RTOL, atol=DEFAULT_FACTOR_ATOL):
         """
         Check if this factor is the same as another factor.
@@ -209,7 +230,7 @@ class GaussianMixture(Factor):
         """
         raise NotImplementedError('This function has not been implemented yet.')
 
-    def log_potential(self, x_val):
+    def log_potential(self, x_val, vrs=None):
         """
         Get the log of the value of the Gaussian mixture potential at X.
 
@@ -220,7 +241,7 @@ class GaussianMixture(Factor):
         """
         log_potentials = []
         for comp in self.components:
-            log_potentials.append(comp.log_potential(x_val))
+            log_potentials.append(comp.log_potential(x_val=x_val, vrs=vrs))
         total_log_potx = special.logsumexp(log_potentials)
         return total_log_potx
 
@@ -441,11 +462,11 @@ class GaussianMixture(Factor):
         global_argmax = None
         success = False
 
-        def neg_gmm_pot(x_val):
-            return -1.0 * self.potential(x_val)
+        def neg_gmm_log_pot(x_val):
+            return -1.0 * self.log_potential(x_val)
 
         for comp in self.components:
-            res = minimize(neg_gmm_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
+            res = minimize(neg_gmm_log_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
