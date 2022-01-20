@@ -4,6 +4,7 @@ A test module for the GaussianMixture class
 
 # Standard imports
 import unittest
+from collections import namedtuple
 
 # Third-party imports
 import numpy as np
@@ -213,3 +214,31 @@ class TestGaussianMixture(unittest.TestCase):
         gaussian_mixture_12.cancel_method = 2
         gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
         self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 9)
+
+    def test_from_sklearn_gmm(self):
+        """
+        Test that the from_sklearn constructor works as expected.
+        """
+        DummyGMM = namedtuple("dummy_gmm", ["means_", "covariances_", "weights_"])
+        mean0 = [0, 0]
+        mean1 = [0, 1]
+        cov0 = [[1, 0], [0, 1]]
+        cov1 = [[3, 1], [1, 2]]
+        weight0, weight1 = 0.7, 0.3
+        var_names = ["a", "b"]
+        dummy_gmm = DummyGMM(means_=[mean0, mean1],
+                             covariances_=[cov0, cov1],
+                             weights_=[weight0, weight1])
+
+        expected_g0 = Gaussian(var_names=var_names,
+                               mean=mean0,
+                               cov=cov0,
+                               log_weight=np.log(weight0))
+        expected_g1 = Gaussian(var_names=var_names,
+                               mean=mean1,
+                               cov=cov1,
+                               log_weight=np.log(weight1))
+        expected_gm = GaussianMixture([expected_g0, expected_g1])
+
+        actual_gm = GaussianMixture.from_sklearn_gmm(dummy_gmm, var_names=["a", "b"])
+        assert expected_gm.equals(actual_gm )
