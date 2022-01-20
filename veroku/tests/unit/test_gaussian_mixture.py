@@ -241,4 +241,4 @@ class TestGaussianMixture(unittest.TestCase):
         expected_gm = GaussianMixture([expected_g0, expected_g1])
 
         actual_gm = GaussianMixture.from_sklearn_gmm(dummy_gmm, var_names=["a", "b"])
-        assert expected_gm.equals(actual_gm )
+        assert expected_gm.equals(actual_gm)

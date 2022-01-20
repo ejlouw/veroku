@@ -462,11 +462,11 @@ class GaussianMixture(Factor):
         global_argmax = None
         success = False
 
-        def neg_gmm_pot(x_val):
-            return -1.0 * self.potential(x_val)
+        def neg_gmm_log_pot(x_val):
+            return -1.0 * self.log_potential(x_val)
 
         for comp in self.components:
-            res = minimize(neg_gmm_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
+            res = minimize(neg_gmm_log_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
