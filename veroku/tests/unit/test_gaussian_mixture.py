@@ -251,11 +251,11 @@ class TestGaussianMixture(unittest.TestCase):
         np.random.seed(0)
         gaussian_list = [
             Gaussian(mean=[3, 2], cov=[[5, 2], [2, 3]], log_weight=0, var_names=['a', 'b'])]
-        gm = GaussianMixture(gaussian_list)
-        samples = gm.sample(10000)
+        gaussian_mixture = GaussianMixture(gaussian_list)
+        samples = gaussian_mixture.sample(10000)
         recovered_cov = np.cov(samples)
         recovered_mean = np.mean(samples, axis=1).reshape(2, 1)
-        expected_cov = gm.components[0].get_cov()
-        expected_mean = gm.components[0].get_mean()
+        expected_cov = gaussian_mixture.components[0].get_cov()
+        expected_mean = gaussian_mixture.components[0].get_mean()
         assert np.allclose(recovered_cov, expected_cov, rtol=0.02, atol=0.1)
         assert np.allclose(recovered_mean, expected_mean, rtol=0.02, atol=0.1)
