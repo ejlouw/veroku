@@ -360,9 +360,10 @@ class GaussianMixture(Factor):
             range(len(weights)), size=num_samples, p=weights / np.sum(weights)
         )
         samples = []
+        # TODO: make this more efficient.
         for comp_index in component_choice_samples:
-            samples.append(self.components[comp_index].sample(1)[0])
-        return np.array(samples)
+            samples.append(self.components[comp_index].sample(1))
+        return np.concatenate(samples, axis=1)
 
     def _get_sensible_xlim(self):
         """
