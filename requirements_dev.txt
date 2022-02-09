@@ -1,3 +1,9 @@
+# documentation
+Sphinx>=4.3.0,<5.0.0
+autodoc>=0.5.0,<1.0.0
+m2r2>=0.2.7,<1.0.0
+
+# development
 coverage==5.3
 mockito==1.2.2
 mock==4.0.2
