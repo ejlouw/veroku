@@ -273,7 +273,7 @@ class TestCategorical(unittest.TestCase):
         expected_kld = 0.0
         actual_kld = categorical_p.kl_divergence(categorical_q)
 
-        self.assertEqual(actual_kld, expected_kld)
+        self.assertAlmostEqual(actual_kld, expected_kld, places=6)
 
     def test_kl_divergence_large_neg_fails(self):
         """
@@ -847,7 +847,7 @@ class TestCategorical(unittest.TestCase):
         factor_a = self.cat_class(var_names=vars_a, probs_table=probs_a, cardinalities=[2, 2])
         actual_potential = factor_a.potential(["a", "b"], [0, 1])
         expected_potential = 0.2
-        self.assertEqual(actual_potential, expected_potential)
+        self.assertAlmostEqual(actual_potential, expected_potential, places=6)
 
     def test_template_var_names(self):
         """

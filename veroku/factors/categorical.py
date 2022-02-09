@@ -404,6 +404,8 @@ class Categorical(Factor):
         :return: The argmax assignment.
         :rtype: int list
         """
+        # TODO: add vrs (to specify order)
+
         # TODO: add functionality to deal with more that one instance of the maximum value.
         argmax_assignment = unravel_index(self.log_probs_tensor.argmax(), self.log_probs_tensor.shape)
         return argmax_assignment
