@@ -437,6 +437,8 @@
 <span class="sd">        :return: The argmax assignment.</span>
 <span class="sd">        :rtype: int list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: add vrs (to specify order)</span>
+
         <span class="c1"># TODO: add functionality to deal with more that one instance of the maximum value.</span>
         <span class="n">argmax_assignment</span> <span class="o">=</span> <span class="n">unravel_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">argmax</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">argmax_assignment</span></div>
@@ -752,7 +754,7 @@
       &copy;2020, EJ Louw.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
