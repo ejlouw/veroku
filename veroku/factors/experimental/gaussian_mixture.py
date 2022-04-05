@@ -26,8 +26,13 @@ from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 # TODO: Add tests for the divide methods.
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
+
 class OptimizationFailedError(Exception):
+    """
+    Optimisation failed.
+    """
     pass
+
 
 class GaussianMixture(Factor):
     """
