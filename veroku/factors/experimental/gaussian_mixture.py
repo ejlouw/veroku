@@ -27,6 +27,15 @@ from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
 
+# pylint: disable=W0107
+class OptimizationFailedError(Exception):
+    """
+    Optimisation failed.
+    """
+    pass
+# pylint: enable=W0107
+
+
 class GaussianMixture(Factor):
     """
     A Class for instantiating and performing operations on multivariate Gaussian mixture functions.
@@ -50,7 +59,7 @@ class GaussianMixture(Factor):
         self.cancel_method = cancel_method
         self.components = [gaussian.copy() for gaussian in factors]
         self.num_components = len(factors)
-
+        self.optimization_alg = "Nelder-Mead"
         var_names0 = factors[0].var_names
 
         for component in self.components:
@@ -467,7 +476,10 @@ class GaussianMixture(Factor):
             return -1.0 * self.log_potential(x_val)
 
         for comp in self.components:
-            res = minimize(neg_gmm_log_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
+            res = minimize(neg_gmm_log_pot,
+                           x0=comp.get_mean(),
+                           method=self.optimization_alg,
+                           options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
@@ -476,7 +488,7 @@ class GaussianMixture(Factor):
                     global_maximum_potential = local_maximum_potential
                     global_argmax = x_local_max
         if not success:
-            raise Exception("could not find optimum")
+            raise OptimizationFailedError("Could not find optimum")
         return global_argmax
 
     def _argmin(self):
