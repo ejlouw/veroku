@@ -259,3 +259,18 @@ class TestGaussianMixture(unittest.TestCase):
         expected_mean = gaussian_mixture.components[0].get_mean()
         assert np.allclose(recovered_cov, expected_cov, rtol=0.02, atol=0.1)
         assert np.allclose(recovered_mean, expected_mean, rtol=0.02, atol=0.1)
+
+    def test_argmax(self):
+        """
+        Test argmax method returns the correct result.
+        """
+        np.random.seed(0)
+        gaussian_list = [
+            Gaussian(mean=[3, 2], cov=[[5, 2], [2, 3]], log_weight=0.0, var_names=['a', 'b']),
+            Gaussian(mean=[3, 2], cov=[[2, 1], [1, 2]], log_weight=0.0, var_names=['a', 'b']),
+            Gaussian(mean=[6, 7], cov=[[6, 1], [1, 6]], log_weight=-1.0, var_names=['a', 'b'])]
+        gaussian_mixture = GaussianMixture(gaussian_list)
+        expected_argmax = np.array([3, 2])
+        actual_argmax = gaussian_mixture.argmax()
+
+        assert np.allclose(expected_argmax, actual_argmax, rtol=0.02, atol=0.1)

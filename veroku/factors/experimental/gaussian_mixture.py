@@ -50,7 +50,7 @@ class GaussianMixture(Factor):
         self.cancel_method = cancel_method
         self.components = [gaussian.copy() for gaussian in factors]
         self.num_components = len(factors)
-
+        self.optimization_alg = "Nelder-Mead"
         var_names0 = factors[0].var_names
 
         for component in self.components:
@@ -467,7 +467,10 @@ class GaussianMixture(Factor):
             return -1.0 * self.log_potential(x_val)
 
         for comp in self.components:
-            res = minimize(neg_gmm_log_pot, x0=comp.get_mean(), method="BFGS", options={"disp": False})
+            res = minimize(neg_gmm_log_pot,
+                           x0=comp.get_mean(),
+                           method=self.optimization_alg,
+                           options={"disp": False})
             x_local_max = res.x
             if res.success:
                 success = True
