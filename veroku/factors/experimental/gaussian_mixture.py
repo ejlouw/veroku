@@ -27,11 +27,13 @@ from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
 
+# pylint: disable=W0107
 class OptimizationFailedError(Exception):
     """
     Optimisation failed.
     """
     pass
+# pylint: enable=W0107
 
 
 class GaussianMixture(Factor):
