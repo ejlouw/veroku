@@ -26,6 +26,8 @@ from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 # TODO: Add tests for the divide methods.
 # TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
 
+class OptimizationFailedError(Exception):
+    pass
 
 class GaussianMixture(Factor):
     """
@@ -479,7 +481,7 @@ class GaussianMixture(Factor):
                     global_maximum_potential = local_maximum_potential
                     global_argmax = x_local_max
         if not success:
-            raise Exception("could not find optimum")
+            raise OptimizationFailedError("Could not find optimum")
         return global_argmax
 
     def _argmin(self):
