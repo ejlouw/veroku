@@ -667,7 +667,7 @@ class GaussianMixture(Factor):
         :returns: An approximation of the quotient function as a Gaussian mixture
         :rtype: GaussianMixture
         """
-        # TODO: add check for dimensions that are not devided by
+        # TODO: add check for dimensions that are not divided by
         #       - the variances in these will not change (if this makes sense)
 
         inverse_gaussian_mixtures = []

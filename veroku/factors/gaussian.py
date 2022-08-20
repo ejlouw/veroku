@@ -27,8 +27,8 @@ import veroku.factors.experimental.gaussian_mixture as gm
 
 def make_random_gaussian(var_names, mean_range=None, cov_range=None):
     """
-    Make a d dimensional random Gaussian by independently sampling the mean and covariance parameters from uniform
-    distributions.
+    Make a d dimensional random Gaussian by independently sampling the mean and covariance
+    parameters from uniform distributions.
 
     :param var_names: The variable name of the factor
     :type var_names: str list
