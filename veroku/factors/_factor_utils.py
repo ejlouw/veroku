@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 # TODO: simplify make_square_matrix and make_column vector (maybe renam to make ____ from list - there is already ...
 # TODO: ... such a function for msquare matrix). These functions do not need al tie current functionality. ...
 # TODO: ... Ensure factor classes still work.
+from scipy.special import gamma
 
 
 def format_list_elements(str_list, format_dict):
@@ -381,3 +382,12 @@ def space_assignments_and_probs(assignment, value, spacings):
     spaced_content_stings = [c_str + space for c_str, space in zip(content_stings, spacings)]
     spaced_content_sting = ''.join(spaced_content_stings)
     return spaced_content_sting
+
+
+def beta_func(alphas):
+    Ba = np.prod([gamma(alpha_i) for alpha_i in alphas]) / gamma(np.sum(alphas))
+    return Ba
+
+
+def di_gamma_func(x):
+    return np.log(x) - 1/(2*x)

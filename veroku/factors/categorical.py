@@ -397,6 +397,13 @@ class Categorical(Factor):
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
                            variables_assignment_names=vars_assignment_names)
 
+    def sample(self, num_samples):
+        probs = self.dense_distribution_array[:, -1]
+        assignment_indices = range(self.dense_distribution_array.shape[0])
+        assignment_index_sample = np.random.choice(a=assignment_indices, size=num_samples, p=probs)
+        samples = self.dense_distribution_array[assignment_index_sample, :-1]
+        return samples
+
     def argmax(self):
         """
         Get the first assignment (vector value) that maximises the factor potential.
@@ -574,17 +581,20 @@ class Categorical(Factor):
         factor_df = pd.DataFrame(data=data_list, columns=column_names)
         return factor_df
 
-    def plot(self, figsize=None):
+    def plot(self, color_index=0, label="", ax=None):
         """
         Plot the distribution as a bar plot.
 
         :param figsize: The figure size.
         :type figsize: tuple
         """
+        if ax is None:
+            fig, ax = plt.subplots()
+
         def assignment_names_to_x_label(row):
             processed_assignment_value_names = []
             for elem in row:
-                if isinstance(elem, float):
+                if isinstance(elem, float) or isinstance(elem, int):
                     processed_assignment_value_name = f"{elem:.2f}"
                 else:
                     processed_assignment_value_name = elem
@@ -593,15 +603,17 @@ class Categorical(Factor):
             return x_label
 
         num_assignments = self.dense_distribution_array.shape[0]
-        color_list = ["b"]*num_assignments
+
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colors = prop_cycle.by_key()['color']
+
+        color_list = colors[color_index:color_index+1]*num_assignments
         factor_df = self.get_df(named_assignments=True)
         factor_df["assignment"] = factor_df[self.var_names].apply(assignment_names_to_x_label, axis=1)
+        ax.invert_yaxis()
+        return factor_df.plot.barh(x="assignment", y="prob", color=color_list, label=label, alpha=0.5, ax=ax)
 
-        if figsize is not None:
-            factor_df.plot.barh(x="assignment", y="prob", color=color_list, figsize=figsize)
-        else:
-            factor_df.plot.barh(x="assignment", y="prob", color=color_list)
-        plt.gca().invert_yaxis()
+
 
 
 class CategoricalTemplate(FactorTemplate):
