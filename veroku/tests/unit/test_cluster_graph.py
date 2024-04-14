@@ -264,6 +264,7 @@ class TestClusterGraph(unittest.TestCase):
         cg2_processed.plot_message_convergence(log=True)
         mock_plot.assert_called()
 
+
     @patch("builtins.print")
     def test__conditional_print_called(self, print_mock):
         """

@@ -203,7 +203,7 @@ class Factor:
         """
         return self.multiply(other)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         """
         Divide this factor with another factor.
 
@@ -229,3 +229,4 @@ class Factor:
         :return: The inverse equality result.
         """
         return not self.__eq__(other)
+

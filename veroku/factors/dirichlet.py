@@ -85,11 +85,11 @@ class Dirichlet(Factor):
         if not normalize_factor:
             raise NotImplementedError()
         sum_alpha_pi = np.sum(self.alphas)
-        term_a = np.log(gamma(np.sum(self.alphas))/gamma(np.sum(factor.alphas)))
-        term_b = np.sum([np.log(gamma(alpha_qi)/gamma(alpha_pi)) for alpha_pi, alpha_qi in zip(self.alphas, factor.alphas)])
-        term_c = np.sum([(alpha_pi - alpha_qi)*(
+        term_a = np.log(gamma(np.sum(self.alphas)) / gamma(np.sum(factor.alpha_vec)))
+        term_b = np.sum([np.log(gamma(alpha_qi)/gamma(alpha_pi)) for alpha_pi, alpha_qi in zip(self.alphas, factor.alpha_vec)])
+        term_c = np.sum([(alpha_pi - alpha_qi) * (
                     di_gamma_func(alpha_pi) - di_gamma_func(sum_alpha_pi))
-                         for alpha_pi, alpha_qi in zip(self.alphas, factor.alphas)])
+                         for alpha_pi, alpha_qi in zip(self.alphas, factor.alpha_vec)])
         KL_pq = term_a + term_b + term_c
         return KL_pq
 

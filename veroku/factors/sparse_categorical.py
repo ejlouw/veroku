@@ -130,21 +130,21 @@ def _get_nested_sorted_probs(
     return new_assign_probs, new_variable_order
 
 
-def _same_scope_binary_operation(probs_table_a, pribs_table_b, func, default):
+def _same_scope_binary_operation(probs_table_a, probs_table_b, func, default):
     """
     Apply a mathematical operation between the two factors with the same variable scope.
     NB: this function assumes that the variables corresponding to the keys in the two different dicts have the same
      order.
 
     :param dict probs_table_a: The probs dictionary for factor (typically sub factor) A.
-    :param dict pribs_table_b: The probs dictionary for factor (typically sub factor) B.
+    :param dict probs_table_b: The probs dictionary for factor (typically sub factor) B.
     """
     result_common_sub_dict = dict()
-    all_common_assignments = set([*probs_table_a.keys()] + [*pribs_table_b.keys()])
+    all_common_assignments = set([*probs_table_a.keys()] + [*probs_table_b.keys()])
     new_default = func(default, default)
     for assignment in all_common_assignments:
         a_val = probs_table_a.get(assignment, default)
-        b_val = pribs_table_b.get(assignment, default)
+        b_val = probs_table_b.get(assignment, default)
         r_val = func(a_val, b_val)
         if r_val != new_default:
             result_common_sub_dict[assignment] = r_val

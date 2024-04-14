@@ -294,6 +294,21 @@ def indexed_column_vector_operation(colvec_a, colvec_b, var_names_a, var_names_b
     return new_vector, new_vars
 
 
+def buffer_limits(limits, buffer_factor, cap_to_limits=None):
+    limits = list(limits)
+    assert len(limits) == 2
+    sorted_limits = list(sorted(limits))
+    assert sorted_limits == limits
+    buffer = abs((limits[1] - limits[0]) * buffer_factor)
+    buffered_limits = [limits[0] - buffer, limits[1] + buffer]
+    if cap_to_limits is not None:
+        if buffered_limits[0] < cap_to_limits[0]:
+            buffered_limits[0] = cap_to_limits[0]
+        if buffered_limits[1] > cap_to_limits[1]:
+            buffered_limits[1] = cap_to_limits[1]
+    return buffered_limits
+
+
 def plot_2d(func, xlim, ylim, xlabel, ylabel, figsize=None):  # pragma: no cover
     """
     Plot a 2d function, with specific x limits and y limits.
@@ -391,3 +406,6 @@ def beta_func(alphas):
 
 def di_gamma_func(x):
     return np.log(x) - 1/(2*x)
+
+
+

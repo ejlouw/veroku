@@ -23,6 +23,7 @@ from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 import veroku.factors.experimental.gaussian_mixture as gm
+from veroku.factors.constant_factor import ConstantFactor
 
 
 def make_random_gaussian(var_names, mean_range=None, cov_range=None):
@@ -501,7 +502,8 @@ class Gaussian(Factor):
         h_vec = h_x - prec_xy_inv_prec_yy @ h_y
         log_det_2pi_inv_prec_yy = np.log(np.linalg.det(2.0 * np.pi * inv_prec_yy))
         g_val = self.g_val + 0.5 * (h_y.T @ inv_prec_yy @ h_y + log_det_2pi_inv_prec_yy)
-        return Gaussian(prec=prec, h_vec=h_vec, g_val=g_val, var_names=vars_to_keep)
+        marginal = Gaussian(prec=prec, h_vec=h_vec, g_val=g_val, var_names=vars_to_keep)
+        return marginal
 
     def marginalize(self, vrs, keep=True):
         """
@@ -515,23 +517,28 @@ class Gaussian(Factor):
         :rtype: Gaussian
         """
         vars_to_keep = super().get_marginal_vars(vrs, keep)
+        if vars_to_keep == self.var_names:
+            return self.copy()
+        if len(vars_to_keep) == 0:
+            log_weight = self.get_log_weight()
+            return ConstantFactor(log_constant_value=log_weight)
         vars_to_integrate_out = list(set(self.var_names) - set(vars_to_keep))
         if self._is_vacuous:
-            # TODO: check this (esp log_weight)
             return Gaussian.make_vacuous(var_names=vars_to_keep)
-
         if self.canform:
             return self._canform_marginalise(vars_to_keep, vars_to_integrate_out)
-
         assert self.covform
         indices_to_keep = [self._var_names.index(variable) for variable in vars_to_keep]
         marginal_var_names = vars_to_keep.copy()
-
         marginal_cov = self.cov[np.ix_(indices_to_keep, indices_to_keep)]
         marginal_mean = self.mean[np.ix_(indices_to_keep, [0])]
-        return Gaussian(
-            cov=marginal_cov, mean=marginal_mean, log_weight=self.log_weight, var_names=marginal_var_names
+        marginal = Gaussian(
+            cov=marginal_cov,
+            mean=marginal_mean,
+            log_weight=self.log_weight,
+            var_names=marginal_var_names
         )
+        return marginal
 
     def _destroy_canform(self):
         """
@@ -591,6 +598,10 @@ class Gaussian(Factor):
         """
         # if isinstance(factor, NonLinearGaussian):
         #    return factor.multiply(self)
+        # TODO: rather use general factor multiplier here
+        if isinstance(factor, ConstantFactor):
+            return ConstantFactor.multiply(self)
+
         return self._absorb_or_cancel(factor, operator.add)
 
     def divide(self, factor):
