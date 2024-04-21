@@ -59,7 +59,8 @@ class Factor:
             vrs = [vrs]
         if keep:
             return vrs.copy()
-        return list(set(self.var_names) - set(vrs))
+        vrs = [v for v in self.var_names if v not in vrs]
+        return vrs
 
     @abstractmethod
     def distance_from_vacuous(self):

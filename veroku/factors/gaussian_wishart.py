@@ -13,13 +13,10 @@ import numpy as np
 from scipy.special import multigammaln
 
 
+# TODO: deprecate
 def calculate_gaussian_wishart_normalising_constant(v, inv_V, lambda_0, mu_0):
-    # TODO: update to return log
-
     # 1D check
     #norm_check_1d = 2 ** (v / 2) * np.linalg.det(V)**(v/2)*gamma(v/2)*((2*np.pi)/lambda_0)**0.5
-
-    # real
     d = mu_0.shape[0]
     two_pow_vd_2 = 2 ** (v * d / 2)
     det_V_pow_v_2 = np.linalg.det(inv_V) ** (-v / 2)
@@ -28,6 +25,18 @@ def calculate_gaussian_wishart_normalising_constant(v, inv_V, lambda_0, mu_0):
     numerator = two_pow_vd_2 * det_V_pow_v_2 * multi_gamma_vd1__2 * pi2_pow_d_2
     Z = numerator / (lambda_0**0.5)
     return Z
+
+
+def calculate_gaussian_wishart_log_normalising_constant(v, inv_V, lambda_0, mu_0):
+    d = mu_0.shape[0]
+    log_two_pow_vd_2 = (v * d / 2) * np.log(2)
+    log_det_V_pow_v_2 = (-v / 2) * np.log(np.linalg.det(inv_V))
+    log_multi_gamma_vd1__2 = multigammaln((v - d + 1) / 2, d)
+    log_pi2_pow_d_2 = (d / 2) * np.log(2 * np.pi)
+    log_numerator = log_two_pow_vd_2 + log_det_V_pow_v_2 + log_multi_gamma_vd1__2 + log_pi2_pow_d_2
+    log_denominator = 0.5*np.log(lambda_0)
+    log_Z = log_numerator - log_denominator
+    return log_Z
 
 class GaussianWishart(Factor):
     def __init__(self, v, inv_V, lambda_0, mu_0, var_names, log_weight=None, log_weight_over_norm_const=None):
@@ -47,11 +56,38 @@ class GaussianWishart(Factor):
         elif log_weight is not None:
             assert log_weight_over_norm_const is None
             self.log_weight = log_weight
-            weight_over_norm_const = self._calculate_normalising_constant()
-            self.log_weight_over_norm_const = np.log(weight_over_norm_const)
+            log_norm_const = self._calculate_log_normalising_constant()
+            self.log_weight_over_norm_const = log_weight - log_norm_const
         else:
             raise ValueError()
 
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, GaussianWishart):
+            raise TypeError(f"Cannot compares GaussianWishart with factor of type {type(other)}")
+        if self.var_names != other.var_names:
+            raise ValueError(f"Cannot compare two GaussianWisharts with different variable scopes")
+        self_params = self.get_param_dict()
+        other_params = self.get_param_dict()
+        assert set(self_params.keys()) == set(other_params.keys())
+        for k in self_params.keys():
+            if not np.isclose(self_params[k], other_params[k]):
+                return False
+        return True
+
+
+    def get_param_dict(self):
+        param_dict = {
+        "v": self.v,
+        "inv_V": self.inv_V,
+        "lambda_0": self.lambda_0,
+        "mu_0": self.mu_0,
+        "log_weight": self.log_weight,
+        }
+        return param_dict
+    
     def get_normal_gamma_param_dict(self):
         normal_gamma_param_dict = {
             "mu_0": self.mu_0[0, 0],
@@ -65,15 +101,18 @@ class GaussianWishart(Factor):
     def __repr__(self):
         s = f"v = {self.v} \ninv_V = {self.inv_V} \nlambda_0 = {self.lambda_0}\nmu_0 = {self.mu_0} \n"
         s = s + f"log_weight = {self.log_weight}"
+        s = s + "var_names: " + str(self.var_names)
         return s
 
 
-    def get_norm_numeric(self):
-        result, error = dblquad(self.potential, 1e-10, 5, lambda x2: -20, lambda x2: 20)
-        return result
-
     def kl_divergence(self, other):
            raise NotImplementedError()
+
+    def mode(self):
+        V = np.linalg.inv(self.inv_V)
+        distribution_mode = np.array([self.mu_0, (self.v - self._dim)*V])
+        return distribution_mode
+
 
     def absorb(self, other):
         assert self._dim == other._dim
@@ -100,23 +139,29 @@ class GaussianWishart(Factor):
         lambda_ab_c_U = lambda_ab_c * U
         inv_V_c = inv_V_a_V_b_sum + lambda_ab_c_U
 
-        Z_a = self._calculate_normalising_constant()
-        Z_b = other._calculate_normalising_constant()
         Z_c = calculate_gaussian_wishart_normalising_constant(
             v=v_c, inv_V=inv_V_c, lambda_0=lambda_c, mu_0=mu_c
         )
-        log_weight = self.log_weight + other.log_weight + np.log(Z_c) - (np.log(Z_a) + np.log(Z_b))
+        log_weight = self.log_weight_over_norm_const + other.log_weight_over_norm_const + np.log(Z_c)
         product = GaussianWishart(
             v=v_c, inv_V=inv_V_c, lambda_0=lambda_c, mu_0=mu_c, log_weight=log_weight, var_names=var_names
         )
         return product
 
+    def multiply(self, other):
+        return self.absorb(other)
 
-    def _calculate_normalising_constant(self):
-        Z = calculate_gaussian_wishart_normalising_constant(
+    def marginalize(self, vrs, keep=True):
+        vars_to_keep = super().get_marginal_vars(vrs, keep)
+        if vars_to_keep == self.var_names:
+            return copy.deepcopy(self)
+        raise NotImplementedError()
+
+    def _calculate_log_normalising_constant(self):
+        log_Z = calculate_gaussian_wishart_log_normalising_constant(
             v=self.v, inv_V=self.inv_V, lambda_0=self.lambda_0, mu_0=self.mu_0
         )
-        return Z
+        return log_Z
 
 
     # TODO: make log_potential

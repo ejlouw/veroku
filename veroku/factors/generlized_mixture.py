@@ -48,6 +48,13 @@ class GeneralizedMixture(Factor):
             factor_copies.append(factor.copy())
         return GeneralizedMixture(factor_copies)
 
+    def __iter__(self):
+        yield from self.factors
+
+    def __repr__(self):
+        s = "\n\n".join([f.__repr__() for f in self])
+        return s
+
     def multiply(self, factor):
         """
         Multiply by another factor.
@@ -64,7 +71,8 @@ class GeneralizedMixture(Factor):
         result_mixture_factors = []
         for other_factor_component in other_mixture_factors:
             for factor_component in self.factors:
-                result_mixture_factors.append(other_factor_component.multiply(factor_component))
+                product_factor = other_factor_component.multiply(factor_component)
+                result_mixture_factors.append(product_factor)
         return GeneralizedMixture(result_mixture_factors)
 
     def divide(self, factor):

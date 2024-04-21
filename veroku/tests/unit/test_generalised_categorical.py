@@ -16,7 +16,7 @@ from veroku.factors.sparse_categorical import SparseCategorical
 # pylint: disable=no-self-use
 class TestGeneralisedCategorical(unittest.TestCase):
     """
-    Tests for the GaussianMixture class
+    Tests for the GeneralisedCategorical class
     """
 
     def setUp(self):

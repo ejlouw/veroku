@@ -136,6 +136,10 @@ class GaussianMixture(Factor):
             component_copies.append(comp.copy())
         return GaussianMixture(component_copies)
 
+    def __iter__(self):
+        yield from self.components
+
+
     def multiply(self, factor):
         """
         Multiply this GaussianMixture with another factor.
