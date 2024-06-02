@@ -21,10 +21,10 @@ from veroku.factors import _factor_utils
 import veroku.factors.gaussian as gauss
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
-# TODO: confirm that the different GaussianMixture divide methods have sufficient stability and accuracy in their
+# TODO: confirm that the different GaussianMixture cancel methods have sufficient stability and accuracy in their
 #  approximations.
-# TODO: Add tests for the divide methods.
-# TODO: move to factors (non-experimental) once the divide methods have been checked and tested properly.
+# TODO: Add tests for the cancel methods.
+# TODO: move to factors (non-experimental) once the cancel methods have been checked and tested properly.
 
 
 # pylint: disable=W0107
@@ -34,6 +34,90 @@ class OptimizationFailedError(Exception):
     """
     pass
 # pylint: enable=W0107
+
+def _compute_weight_entropy_sum(gm_a):
+    sum_w_a_H_f_a = 0.0
+    for f_a in gm_a.components:
+        w_a = f_a.get_weight()
+        pi2e_pow_d = (2 * np.pi * np.e) ** f_a._dim
+        det_fa_cov = np.linalg.det(f_a.get_cov())
+        H_f_a = 0.5 * np.log(pi2e_pow_d * det_fa_cov)
+        sum_w_a_H_f_a += w_a * H_f_a
+    return sum_w_a_H_f_a
+
+
+def gaussian_mixture_kl_divergence_lower_bound(gm_a, gm_b):
+    """
+    Compute the lower bound of the KL-divergence D_KL(self || factor) between
+     a normalized version of this Gaussian Mixture and the other Gaussian Mixture.
+     Reference: Eq. 19 in file:///home/ej/Downloads/durrieuThiranKelly_kldiv_icassp2012_R1.pdf
+
+    :param gm_a: The one Gaussian mixture.
+    :param gm_b: The other Gaussian mixture.
+    :return: The lower bound for the KL-divergence
+    """
+    # TODO: check the normalization terms here (see paper)
+    # first term (eq 20)
+    term_1_sum = 0.0
+    for f_a in gm_a.components:
+        # numerator
+        term_1_comp_numerator_sum = 0.0
+        for f_alpha in gm_a.components:
+            w_alpha = f_alpha.get_weight()
+            D_kl_fa_falpha = f_a.kl_divergence(f_alpha)
+            term_1_comp_numerator_sum += w_alpha * np.exp(-D_kl_fa_falpha)
+
+        # denominator
+        term_1_comp_denominator_sum = 0.0
+        for g_b in gm_b.components:
+            w_b = g_b.get_weight()
+            t_a_b = f_a.absorb(g_b).get_weight()
+            term_1_comp_denominator_sum += w_b * t_a_b
+
+        term_1_comp_log_quotient = np.log(term_1_comp_numerator_sum / term_1_comp_denominator_sum)
+        w_a = f_a.get_weight()
+        term_1_sum_comp = w_a * term_1_comp_log_quotient
+        term_1_sum += term_1_sum_comp
+
+    # second term
+    term_2_sum = _compute_weight_entropy_sum(gm_a)
+    D_kl_fa_gb_upper_bound = term_1_sum - term_2_sum
+    return D_kl_fa_gb_upper_bound
+
+def gaussian_mixture_kl_divergence_upper_bound(gm_a, gm_b):
+    """
+    Compute the upper bound of the KL-divergence D_KL(self || factor) between
+     a normalized version of this Gaussian Mixture and the other Gaussian Mixture.
+     Reference: Eq. 20 in file:///home/ej/Downloads/durrieuThiranKelly_kldiv_icassp2012_R1.pdf
+
+    :param gm_a: The one Gaussian mixture.
+    :param gm_b: The other Gaussian mixture.
+    :return: The upper bound for the KL-divergence
+    """
+    # TODO: check the normalization terms here (see paper)
+    # first term (eq 20)
+    term_1_sum = 0.0
+    for f_a in gm_a.components:
+        # numerator
+        term_1_comp_numerator = 0.0
+        for f_alpha in gm_a.components:
+            z_a_alpha = f_a.absorb(f_alpha).get_weight()
+            w_alpha = f_alpha.get_weight()
+            term_1_comp_numerator += w_alpha * z_a_alpha
+        # denominator
+        term_1_comp_denominator = 0.0
+        for g_b in gm_b.components:
+            w_b = g_b.get_weight()
+            D_kl_fa_gb = f_a.kl_divergence(g_b)
+            term_1_comp_denominator += w_b * np.exp(-D_kl_fa_gb)
+        term_comp_log_quotient = np.log(term_1_comp_numerator / term_1_comp_denominator)
+        w_a = f_a.get_weight()
+        term_comp = w_a * term_comp_log_quotient
+        term_1_sum += term_comp
+
+    term_2_comp = _compute_weight_entropy_sum(gm_a)
+    D_kl_fa_gb_upper_bound = term_1_sum + term_2_comp
+    return D_kl_fa_gb_upper_bound
 
 
 class GaussianMixture(Factor):
@@ -49,7 +133,7 @@ class GaussianMixture(Factor):
         :type factors: Gaussian list
         :param cancel_method: The method of performing approximate division.
                               This is only applicable if the factor is a Gaussian mixture with more than one component.
-                              0: moment match denominator to single Gaussian and divide
+                              0: moment match denominator to single Gaussian and cancel
                               1: approximate modes of quotient as Gaussians
                               2: Use complex moment matching on inverse mixture sets (s_im) and approximate the inverse
                                  of each s_im as a Gaussian
@@ -140,11 +224,11 @@ class GaussianMixture(Factor):
         yield from self.components
 
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this GaussianMixture with another factor.
 
-        :param factor: The factor to multiply with.
+        :param factor: The factor to absorb with.
         :type factor: Gaussian or Gaussian Mixture
         :return: The factor product.
         :rtype: GaussianMixture
@@ -152,20 +236,20 @@ class GaussianMixture(Factor):
         new_components = []
         if isinstance(factor, gauss.Gaussian):
             for comp in self.components:
-                new_components.append(comp.multiply(factor))
+                new_components.append(comp.absorb(factor))
         elif isinstance(factor, GaussianMixture):
             for comp_ai in self.components:
                 for comp_bi in factor.components:
-                    new_components.append(comp_ai.multiply(comp_bi))
+                    new_components.append(comp_ai.absorb(comp_bi))
         else:
             raise TypeError("unsupported factor type.")
         return GaussianMixture(new_components)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this GaussianMixture by another factor.
 
-        :param factor: The factor divide by.
+        :param factor: The factor cancel by.
         :type factor: Gaussian or Gaussian Mixture
         :return: The resulting factor quotient (approximate in the case of where both the numerator and denominator are
         GaussianMixtures with more than one component).
@@ -187,7 +271,7 @@ class GaussianMixture(Factor):
             raise TypeError("unsupported factor type.")
         new_components = []
         for comp in self.components:
-            new_components.append(comp.divide(single_gaussian))
+            new_components.append(comp.cancel(single_gaussian))
         return GaussianMixture(new_components)
 
     def reduce(self, vrs, values):
@@ -231,17 +315,24 @@ class GaussianMixture(Factor):
         """
         raise NotImplementedError('This function has not been implemented yet.')
 
-    def kl_divergence(self, factor):
+    def kl_divergence(self, other):
         """
-        NOTE: Not Implemented yet.
-        Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
 
-        :param factor: The other factor
-        :type factor: GaussianMixture
-        :return: The Kullback-Leibler divergence
+        This function returns the mean of the upper and lower bounds of the  KL-divergence
+         D_KL(self || other) between a normalized version of this Gaussian Mixture and the other
+         Gaussian Mixture.
+
+        Reference: Eq. 19 and 20 in file:///home/ej/Downloads/durrieuThiranKelly_kldiv_icassp2012_R1.pdf
+
+        :param other: The other factor
+        :type other: GaussianMixture
+        :return: The Kullback-Leibler divergence upper bound
         :rtype: float
         """
-        raise NotImplementedError('This function has not been implemented yet.')
+        dkl_lower_bound = gaussian_mixture_kl_divergence_lower_bound(self, other)
+        dkl_upper_bound = gaussian_mixture_kl_divergence_upper_bound(self, other)
+        dkl_bounds_mean = (dkl_lower_bound + dkl_upper_bound) / 2.0
+        return dkl_bounds_mean
 
     def log_potential(self, x_val, vrs=None):
         """
@@ -594,7 +685,7 @@ class GaussianMixture(Factor):
             inverse_components = []
             inverse_gaussian_mixtures = []
             for g_b in gaussian_mixture_b.components:
-                inverse_components.append(g_b.divide(g_a))
+                inverse_components.append(g_b.cancel(g_a))
             inverse_gaussian_mixture = GaussianMixture(inverse_components)
             inverse_gaussian_mixtures.append(inverse_gaussian_mixture)
 
@@ -680,7 +771,7 @@ class GaussianMixture(Factor):
         for gaussian_a in gma.components:
             inverse_components = []
             for gaussian_b in gmb.components:
-                conditional = gaussian_b.divide(gaussian_a)
+                conditional = gaussian_b.cancel(gaussian_a)
                 inverse_components.append(conditional)
             inverse_gaussian_mixture = GaussianMixture(inverse_components)
             inverse_gaussian_mixtures.append(inverse_gaussian_mixture)
