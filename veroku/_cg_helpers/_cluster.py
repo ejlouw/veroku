@@ -88,7 +88,9 @@ class Cluster:
         if self._special_evidence is not None:
             evidence_vrs = list(self._special_evidence.keys())
             evidence_values = list(self._special_evidence.values())
-            message_factor = message_factor.reduce(evidence_vrs, evidence_values)
+            assert len(evidence_vrs) == len(evidence_values)
+            if len(evidence_vrs) > 0:
+                message_factor = message_factor.reduce(evidence_vrs, evidence_values)
         message_factor = message_factor.marginalize(sepset_vars, keep=True)
         if neighbour_id in self._received_message_factors:
             prev_received_message_factor = self._received_message_factors[neighbour_id]
@@ -108,7 +110,7 @@ class Cluster:
         """
         # Absorb message
         assert message.receiver_id == self.cluster_id, "Error: Message not meant for this Cluster."
-        self._factor = self._factor.multiply(message.factor)
+        self._factor = self._factor.absorb(message.factor)
 
         # Cancel out any message previously received from sender cluster
         sender_id = message.sender_id
@@ -253,7 +255,8 @@ class Message:
 
         :return: The KL-divergence
         """
-        return self.factor.distance_from_vacuous()
+        dist_from_vacuous = self.factor.distance_from_vacuous()
+        return dist_from_vacuous
 
     def kl_divergence(self, message):
         """

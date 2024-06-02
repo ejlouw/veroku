@@ -90,7 +90,7 @@ def _absorb_subset_factors(factors):
             for j, factor_j in enumerate(factors):
                 if (i != j) and (not factor_processed_mask[j]):
                     if set(factor_j.var_names) < set(factor_product.var_names):
-                        factor_product = factor_product.multiply(factor_j)
+                        factor_product = factor_product.absorb(factor_j)
                         factors_absorbtion_dict[i].append(j)
                         factor_processed_mask[j] = 1
                         factor_processed_mask[i] = 1
@@ -141,17 +141,20 @@ class ClusterGraph:
             special_evidence = dict()
         self.special_evidence = special_evidence
         all_evidence_vars = set(self.special_evidence.keys())
-        if evidence is not None:
+        if evidence is None:
+            all_factors_copy = [factor.copy() for factor in factors]
+        else:
             evidence_vars = set(evidence.keys())
             all_evidence_vars = all_evidence_vars.union(evidence_vars)
-        all_factors_copy = _evidence_reduce_factors(factors, evidence)
+            all_factors_copy = _evidence_reduce_factors(factors, evidence)
+
         final_graph_cluster_factors = _absorb_subset_factors(all_factors_copy)
 
         clusters = [
             Cluster(factor, cluster_name_prefix=f"c{i}#")
             for i, factor in enumerate(final_graph_cluster_factors)
         ]
-
+        # TODO: check for clusters with no neighbours here?
         self._set_non_rip_sepsets_dict(clusters, all_evidence_vars)
         self._clusters = clusters
 
@@ -290,7 +293,7 @@ class ClusterGraph:
         mp_max_dists = np.tile(mp_max_dists, [2, 1]).flatten(order="F")
         num_iterations = len(mp_max_dists)
 
-        iterations = np.array(list(range(num_iterations))) / 2  # divide by 2 to correct for tile and flatten
+        iterations = np.array(list(range(num_iterations))) / 2  # cancel by 2 to correct for tile and flatten
         non_inf_max_distances = [d for d in mp_max_dists if d != np.inf]
         max_non_inf = max(non_inf_max_distances)
         new_inf_value = max_non_inf * 1.5
@@ -402,7 +405,7 @@ class ClusterGraph:
         #  the get_marginal function above.
         cluster_product = self._clusters[0]._factor.joint_distribution
         for cluster in self._clusters[1:]:
-            cluster_product = cluster_product.multiply(cluster._factor.joint_distribution)
+            cluster_product = cluster_product.absorb(cluster._factor.joint_distribution)
         last_passed_message_factors = self._last_passed_message_factors
         if len(last_passed_message_factors) == 0:
             assert self.num_messages_passed == 0
@@ -410,7 +413,7 @@ class ClusterGraph:
         else:
             message_product = last_passed_message_factors[0]
             for message_factor in last_passed_message_factors[1:]:
-                message_product = message_product.multiply(message_factor)
+                message_product = message_product.absorb(message_factor)
             joint = cluster_product.cancel(message_product)
         return joint
 
