@@ -11,9 +11,9 @@ import numpy as np
 import mockito
 
 # Local imports
-from veroku.dev_utils.random_factors import get_random_gaussian_mixture
+from veroku.dev_utils.random_factors import get_random_gaussian_mixture_1d
 from veroku.factors.gaussian import Gaussian
-from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+from veroku.factors.gaussian_mixture import GaussianMixture
 
 # pylint: disable=no-self-use
 
@@ -55,7 +55,7 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the equals function returns false when the factor comparing with is not a GaussianMixture.
         """
         not_a_gm_factor = mockito.mock()
-        gmix = get_random_gaussian_mixture()
+        gmix = get_random_gaussian_mixture_1d()
         with self.assertRaises(TypeError):
             gmix.equals(not_a_gm_factor)
 
@@ -75,47 +75,47 @@ class TestGaussianMixture(unittest.TestCase):
         """
         Test that the equals function returns false for a GaussianMixture with a different number of components.
         """
-        gm3 = get_random_gaussian_mixture(num_components=3)
+        gm3 = get_random_gaussian_mixture_1d(num_components=3)
         gm4_components = gm3.copy().components + [gm3.components[0].copy()]
         gm4 = GaussianMixture(gm4_components)
         self.assertFalse(gm3.equals(gm4))
 
     def test_multiply_gm(self):
         """
-        Test that the multiply function results in the correct components.
+        Test that the absorb function results in the correct components.
         """
         expected_product_components = [
-            self.gaussian_ab_1.multiply(self.gaussian_ab_3),
-            self.gaussian_ab_1.multiply(self.gaussian_ab_4),
-            self.gaussian_ab_2.multiply(self.gaussian_ab_3),
-            self.gaussian_ab_2.multiply(self.gaussian_ab_4),
+            self.gaussian_ab_1.absorb(self.gaussian_ab_3),
+            self.gaussian_ab_1.absorb(self.gaussian_ab_4),
+            self.gaussian_ab_2.absorb(self.gaussian_ab_3),
+            self.gaussian_ab_2.absorb(self.gaussian_ab_4),
         ]
         expected_gm = GaussianMixture(expected_product_components)
 
-        actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_mixture_ab_34)
+        actual_gm = self.gaussian_mixture_ab_12.absorb(self.gaussian_mixture_ab_34)
         self.assertTrue(actual_gm.equals(expected_gm))
 
     def test_multiply_guassian(self):
         """
-        Test that the multiply function results in the correct components.
+        Test that the absorb function results in the correct components.
         """
         expected_product_components = [
-            self.gaussian_ab_1.multiply(self.gaussian_ab_3),
-            self.gaussian_ab_2.multiply(self.gaussian_ab_3),
+            self.gaussian_ab_1.absorb(self.gaussian_ab_3),
+            self.gaussian_ab_2.absorb(self.gaussian_ab_3),
         ]
         expected_gm = GaussianMixture(expected_product_components)
 
-        actual_gm = self.gaussian_mixture_ab_12.multiply(self.gaussian_ab_3)
+        actual_gm = self.gaussian_mixture_ab_12.absorb(self.gaussian_ab_3)
         self.assertTrue(actual_gm.equals(expected_gm))
 
     def test_multiply_invalid_type_fails(self):
         """
-        Test that the multiply function fails with invalid type.
+        Test that the absorb function fails with invalid type.
         """
         not_a_gm = mockito.mock()
-        gma = get_random_gaussian_mixture()
+        gma = get_random_gaussian_mixture_1d()
         with self.assertRaises(TypeError):
-            gma.multiply(not_a_gm)
+            gma.absorb(not_a_gm)
 
     def test_marginalise(self):
         """
@@ -161,12 +161,12 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the _gm_division_m2 function returns
         """
         # TODO: improve this test.
-        gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
-        gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
-        gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)
+        gaussian_mixture_1 = get_random_gaussian_mixture_1d(cov_coeff=10, seed=1)
+        gaussian_mixture_2 = get_random_gaussian_mixture_1d(cov_coeff=10, seed=2)
+        gaussian_mixture_12 = gaussian_mixture_1.absorb(gaussian_mixture_2)
 
         gaussian_mixture_12.cancel_method = 1
-        gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
+        gaussian_mixture_quotient_approximation = gaussian_mixture_12.cancel(gaussian_mixture_2)
         self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 1)
 
     def test_cancel_method_2(self):
@@ -174,12 +174,12 @@ class TestGaussianMixture(unittest.TestCase):
         Test that the _gm_division_m2 function returns.
         """
         # TODO: improve this test.
-        gaussian_mixture_1 = get_random_gaussian_mixture(cov_coeff=10, seed=1)
-        gaussian_mixture_2 = get_random_gaussian_mixture(cov_coeff=10, seed=2)
-        gaussian_mixture_12 = gaussian_mixture_1.multiply(gaussian_mixture_2)
+        gaussian_mixture_1 = get_random_gaussian_mixture_1d(cov_coeff=10, seed=1)
+        gaussian_mixture_2 = get_random_gaussian_mixture_1d(cov_coeff=10, seed=2)
+        gaussian_mixture_12 = gaussian_mixture_1.absorb(gaussian_mixture_2)
 
         gaussian_mixture_12.cancel_method = 2
-        gaussian_mixture_quotient_approximation = gaussian_mixture_12.divide(gaussian_mixture_2)
+        gaussian_mixture_quotient_approximation = gaussian_mixture_12.cancel(gaussian_mixture_2)
         self.assertEqual(gaussian_mixture_quotient_approximation.num_components, 9)
 
     def test_from_sklearn_gmm(self):

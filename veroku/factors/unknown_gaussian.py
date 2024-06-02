@@ -48,5 +48,9 @@ class UnknownGaussian(Factor):
             log_weight_over_norm_const=log_weight_over_norm_const)
         return reduced_result
 
+    def copy(self):
+        factor_copy = UnknownGaussian(var_names=self.var_names)
+        return factor_copy
+
 
 

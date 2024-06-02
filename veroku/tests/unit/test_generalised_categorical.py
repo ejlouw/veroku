@@ -33,9 +33,9 @@ class TestGeneralisedCategorical(unittest.TestCase):
             cov=np.eye(2), mean=[3, 3], log_weight=np.log(0.3), var_names=["a", "b"]
         )
 
-        gaussian_1_pow_2 = self.gaussian_0.multiply(self.gaussian_0)
-        gaussian_2_pow_2 = self.gaussian_1.multiply(self.gaussian_1)
-        gaussian_3_pow_2 = self.gaussian_2.multiply(self.gaussian_2)
+        gaussian_1_pow_2 = self.gaussian_0.absorb(self.gaussian_0)
+        gaussian_2_pow_2 = self.gaussian_1.absorb(self.gaussian_1)
+        gaussian_3_pow_2 = self.gaussian_2.absorb(self.gaussian_2)
 
         factors_table = {
             (0,):self.gaussian_0,
@@ -90,6 +90,6 @@ class TestGeneralisedCategorical(unittest.TestCase):
         """
         Test that constructor fails with inconsistent scope Gaussian.
         """
-        product_factor = self.generalised_categorical.multiply(self.generalised_categorical)
+        product_factor = self.generalised_categorical.absorb(self.generalised_categorical)
         assert product_factor.equals(self.expected_product_factor)
 

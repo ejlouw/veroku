@@ -35,7 +35,7 @@ class TestNonLinearGaussian(unittest.TestCase):
 
     def test_multiply(self):
         """
-        Test that the multiply function results in the correct joint distribution when the absorbed factor has the same
+        Test that the absorb function results in the correct joint distribution when the absorbed factor has the same
         scope as the conditioning scope.
         """
         a_mat = np.array([[2, 0], [0, 1]])
@@ -65,13 +65,13 @@ class TestNonLinearGaussian(unittest.TestCase):
             cov=expected_joint_cov, mean=expected_joint_mean, log_weight=0.0, var_names=["a", "b", "c", "d"]
         )
 
-        nlg_factor = nlg_factor.multiply(conditioning_gaussian)
+        nlg_factor = nlg_factor.absorb(conditioning_gaussian)
         actual_joint = nlg_factor.joint_distribution
         self.assertTrue(expected_joint.equals(actual_joint))
 
     def test_multiply_both_sides(self):
         """
-        Test that the multiply function results in the correct joint distribution when a factor with the conditional scope
+        Test that the absorb function results in the correct joint distribution when a factor with the conditional scope
         is received first and a conditioning scope factor is received afterwards.
         """
 
@@ -105,10 +105,10 @@ class TestNonLinearGaussian(unittest.TestCase):
         expected_joint = Gaussian(
             cov=joint_cov, mean=joint_mean, log_weight=0.0, var_names=["a", "b", "c", "d"]
         )
-        expected_joint = expected_joint.multiply(conditional_update_factor.copy())
+        expected_joint = expected_joint.absorb(conditional_update_factor.copy())
 
-        nlg_factor = nlg_factor.multiply(conditional_update_factor)
-        nlg_factor = nlg_factor.multiply(conditioning_gaussian)
+        nlg_factor = nlg_factor.absorb(conditional_update_factor)
+        nlg_factor = nlg_factor.absorb(conditioning_gaussian)
         conditional_update_factor.show()
         self.assertTrue(expected_joint.equals(nlg_factor.joint_distribution))
 
@@ -191,7 +191,7 @@ class TestNonLinearGaussian(unittest.TestCase):
         mean = np.array([[2], [1]])
         conditioning_gaussian = Gaussian(cov=cov, mean=mean, log_weight=0.0, var_names=ab_vars)
 
-        nlg_factor = nlg_factor.multiply(conditioning_gaussian)
+        nlg_factor = nlg_factor.absorb(conditioning_gaussian)
 
         actual_ab_marginal = nlg_factor.marginalize(vrs=ab_vars, keep=True)
         expected_ab_marginal = conditioning_gaussian.copy()
@@ -216,7 +216,7 @@ class TestNonLinearGaussian(unittest.TestCase):
         mean = np.array([[2], [1]])
         conditional_gaussian = Gaussian(cov=cov, mean=mean, log_weight=0.0, var_names=cd_vars)
 
-        nlg_factor = nlg_factor.multiply(conditional_gaussian)
+        nlg_factor = nlg_factor.absorb(conditional_gaussian)
 
         actual_cd_marginal = nlg_factor.marginalize(vrs=cd_vars, keep=True)
         expected_cd_marginal = conditional_gaussian.copy()

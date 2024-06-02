@@ -14,7 +14,7 @@ from veroku.factors import _factor_utils
 from veroku.factors._sigma_points import get_sigma_points_array, sigma_points_array_to_joint_params
 from veroku.factors._factor import Factor
 from veroku.factors.gaussian import Gaussian
-from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+from veroku.factors.gaussian_mixture import GaussianMixture
 from veroku.factors._factor_utils import (
     make_square_matrix,
     indexed_square_matrix_operation,
@@ -112,13 +112,12 @@ class NonLinearGaussian(Factor):
         """
         raise NotImplementedError('This function has not been implemented yet.')
 
-    def kl_divergence(self, factor):
+    def kl_divergence(self, other):
         """
         NOTE: Not Implemented yet.
         Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
 
-        :param factor: The other factor
-        :type factor: GaussianMixture
+        :param other: The other factor
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
@@ -301,7 +300,7 @@ class NonLinearGaussian(Factor):
                                             var_names=joint_vars,
         )
         if self.conditional_update_factor is not None:
-            self._joint_distribution = self._joint_distribution.multiply(self.conditional_update_factor)
+            self._joint_distribution = self._joint_distribution.absorb(self.conditional_update_factor)
         if len(conditional_observed_vars) > 0:
             self._joint_distribution = self._joint_distribution.reduce(
                 conditional_observed_vars, conditional_observed_values
@@ -317,11 +316,11 @@ class NonLinearGaussian(Factor):
         # TODO: make this more efficient
         return self.joint_distribution.normalize()
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this factor with another factor.
 
-        :param factor: the factor to multiply with
+        :param factor: the factor to absorb with
         :return: the resulting factor
         :rtype: NonLinearGaussian
         """
@@ -329,7 +328,7 @@ class NonLinearGaussian(Factor):
         if isinstance(factor, GaussianMixture):
             nlgs = []
             for gaussian_factor in factor.components:
-                nlgs.append(self.multiply(gaussian_factor))
+                nlgs.append(self.absorb(gaussian_factor))
             return NonLinearGaussianMixture(nlgs)
 
         self_copy = self.copy()
@@ -348,12 +347,12 @@ class NonLinearGaussian(Factor):
             if self_copy.conditional_update_factor is None:
                 self_copy.conditional_update_factor = factor.copy()
             else:
-                self_copy.conditional_update_factor = self_copy.conditional_update_factor.multiply(factor)
+                self_copy.conditional_update_factor = self_copy.conditional_update_factor.absorb(factor)
         elif set(factor.var_names) <= set(self_copy.conditioning_vars):
             if self_copy.conditioning_factor is None:
                 self_copy.conditioning_factor = factor.copy()
             else:
-                self_copy.conditioning_factor = self_copy.conditioning_factor.multiply(factor)
+                self_copy.conditioning_factor = self_copy.conditioning_factor.absorb(factor)
         else:
             raise ValueError(
                 f"cannot absorb factor with scope ({factor.var_names}) \n "
@@ -362,11 +361,11 @@ class NonLinearGaussian(Factor):
             )
         return self_copy
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this factor by another factor.
 
-        :param factor: the factor divide by
+        :param factor: the factor cancel by
         :return: the resulting factor
         :rtype: NonLinearGaussian
         """
@@ -379,11 +378,11 @@ class NonLinearGaussian(Factor):
             raise ValueError("factor must be Gaussian.")
 
         if set(factor.var_names) <= set(self_copy.conditional_vars):
-            self_copy.conditional_update_factor = self_copy.conditional_update_factor.divide(factor)
+            self_copy.conditional_update_factor = self_copy.conditional_update_factor.cancel(factor)
         elif set(factor.var_names) <= set(self_copy.conditioning_vars):
             if self_copy.conditioning_factor is None:
                 raise NotImplementedError()
-            self_copy.conditioning_factor = self_copy.conditioning_factor.divide(factor)
+            self_copy.conditioning_factor = self_copy.conditioning_factor.cancel(factor)
         else:
             raise ValueError(
                 f"cannot cancel factor with scope ({factor.var_names}) \n "
@@ -539,11 +538,11 @@ class NonLinearGaussianMixture(Factor):
             gaussian_joints.append(nlg.joint_distribution)
         return GaussianMixture(gaussian_joints)
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this factor with another factor.
 
-        :param factor: the factor to multiply with
+        :param factor: the factor to absorb with
         :return: the resulting factor
         :rtype: NonLinearGaussianMixture
         """
@@ -563,14 +562,14 @@ class NonLinearGaussianMixture(Factor):
         new_nlgs = []
         for gauss in gm_factor.components:
             for nlg in self.nlgs:
-                new_nlgs.append(nlg.multiply(gauss))
+                new_nlgs.append(nlg.absorb(gauss))
         return NonLinearGaussianMixture(new_nlgs)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this factor by another factor.
 
-        :param factor: the factor divide by
+        :param factor: the factor cancel by
         :return: the resulting factor
         :rtype: NonLinearGaussianMixture
         """
@@ -580,10 +579,10 @@ class NonLinearGaussianMixture(Factor):
             # TODO: Add better Gaussian mixture division approximation
             gaussian_factor = factor.moment_match_to_single_gaussian()
         else:
-            raise NotImplementedError("cannot divide NonLinearGaussianMixture by {type(factor)}.")
+            raise NotImplementedError("cannot cancel NonLinearGaussianMixture by {type(factor)}.")
         new_nlgs = []
         for nlg in self.nlgs:
-            new_nlgs.append(nlg.divide(gaussian_factor))
+            new_nlgs.append(nlg.cancel(gaussian_factor))
         return NonLinearGaussianMixture(new_nlgs)
 
     def reduce(self, vrs, values):

@@ -121,7 +121,7 @@ class Categorical(Factor):
                     error_message = f"assignment {assignment} is not consistent with the cardinalities ({cardinalities}) provided"
                     raise IndexError(error_message) from index_error
             with warnings.catch_warnings():
-                # prevents 'divide by zero encountered in log' from displaying
+                # prevents 'cancel by zero encountered in log' from displaying
                 warnings.simplefilter("ignore")
                 self.log_probs_tensor = np.log(probs_tensor)
         else:
@@ -317,11 +317,11 @@ class Categorical(Factor):
                 )
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this factor with another factor and return the result.
 
-        :param factor: The factor to multiply with.
+        :param factor: The factor to absorb with.
         :type factor: Categorical
         :return: The factor product.
         :rtype: Categorical
@@ -345,13 +345,13 @@ class Categorical(Factor):
 
     def cancel(self, factor):
         """
-        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros. When
+        Almost like cancel, but with a special rule that ensures that division of zeros by zeros results in zeros. When
         categorical message factors with zero probabilities are used in Belief Update algorithms, multiplication by the
         zero probabilities cause zeros in the cluster potentials, when these messages need to be divided out again, this
         results in 0/0 operations. Since, in such cases, we know (from the information in the message) that the
         probability value should be zero, it makes sense to set the result of 0/0 operations to 0 in these cases.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: Categorical
         :return: The factor quotient.
         :rtype: Categorical
@@ -375,11 +375,11 @@ class Categorical(Factor):
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
                            variables_assignment_names=vars_assignment_names)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this factor by another factor and return the result.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: Categorical
         :return: The factor quotient.
         :rtype: Categorical
@@ -458,26 +458,27 @@ class Categorical(Factor):
         kld = np.sum(kl_array)
         return kld
 
-    def kl_divergence(self, factor, normalize_factor=True):
+    def kl_divergence(self, other, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P || Q) = D_KL(self || factor) between a normalized version of this factor and
         another factor.
 
-        :param factor: The other factor
-        :type factor: Categorical
+        :param other: The other factor
+        :type other: Categorical
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
         _check_consistent_assignment_names(self.vars_assignments_names_dict,
-                                           factor.vars_assignments_names_dict)
+                                           other.vars_assignments_names_dict)
         normalized_self = self.normalize()
-        normalized_self = normalized_self.reorder(factor.var_names)
+        normalized_self = normalized_self.reorder(other.var_names)
         log_p = normalized_self.log_probs_tensor
-        factor_ = factor
+        factor_ = other
         if normalize_factor:
-            factor_ = factor.normalize()
+            # TODO: normalize self copy here as well?
+            factor_ = other.normalize()
         log_q = factor_.log_probs_tensor
         kld = self._raw_kld(log_p, log_q)
         if kld < 0.0:

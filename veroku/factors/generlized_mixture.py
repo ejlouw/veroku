@@ -6,6 +6,8 @@ import numpy as np
 from veroku.factors._factor import Factor
 from veroku.factors._factor_utils import get_subset_evidence
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
+from veroku.factors.constant_factor import ConstantFactor
+
 
 # pylint: disable=protected-access
 
@@ -27,14 +29,18 @@ class GeneralizedMixture(Factor):
         assert all([not isinstance(factor, GeneralizedMixture) for factor in factors])
         var_names = factors[0].var_names
         for factor in factors:
-            assert set(var_names) == set(factor.var_names)
+            var_names_set = set(var_names)
+            if not isinstance(factor, ConstantFactor):
+                factor_var_names_set = set(factor.var_names)
+                assert var_names_set == factor_var_names_set
+
         super().__init__(var_names=var_names)
-        self.factors = []
+        self.components = []
         for factor in factors:
             if isinstance(factor, GeneralizedMixture):
-                self.factors += [f.copy() for f in factor.factors]
+                self.components += [f.copy() for f in factor.components]
             else:
-                self.factors.append(factor.copy())
+                self.components.append(factor.copy())
 
     def copy(self):
         """
@@ -44,18 +50,18 @@ class GeneralizedMixture(Factor):
         :rtype: GeneralizedMixture
         """
         factor_copies = []
-        for factor in self.factors:
+        for factor in self.components:
             factor_copies.append(factor.copy())
         return GeneralizedMixture(factor_copies)
 
     def __iter__(self):
-        yield from self.factors
+        yield from self.components
 
     def __repr__(self):
         s = "\n\n".join([f.__repr__() for f in self])
         return s
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply by another factor.
 
@@ -70,12 +76,12 @@ class GeneralizedMixture(Factor):
             other_mixture_factors = [factor]
         result_mixture_factors = []
         for other_factor_component in other_mixture_factors:
-            for factor_component in self.factors:
-                product_factor = other_factor_component.multiply(factor_component)
+            for factor_component in self.components:
+                product_factor = other_factor_component.absorb(factor_component)
                 result_mixture_factors.append(product_factor)
         return GeneralizedMixture(result_mixture_factors)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide out a general factor.
 
@@ -93,10 +99,10 @@ class GeneralizedMixture(Factor):
         :return: The result of the check.
         :rtype: Bool
         """
-        all_vacuous = all([factor._is_vacuous for factor in self.factors])
+        all_vacuous = all([factor._is_vacuous for factor in self.components])
         if all_vacuous:
             return True
-        none_vacuous = all([not factor._is_vacuous for factor in self.factors])
+        none_vacuous = all([not factor._is_vacuous for factor in self.components])
         if none_vacuous:
             return False
         # TODO: implement this
@@ -111,12 +117,12 @@ class GeneralizedMixture(Factor):
         """
         raise NotImplementedError()
 
-    def kl_divergence(self, factor):
+    def kl_divergence(self, other):
         """
         Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
 
-        :param factor: The other factor
-        :type factor: Factor
+        :param other: The other factor
+        :type other: Factor
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
@@ -130,11 +136,11 @@ class GeneralizedMixture(Factor):
         :return: The number of factors.
         :rtype: int
         """
-        return len(self.factors)
+        return len(self.components)
 
     def add_log_weight(self, log_weight):
-        split_log_weight = log_weight - np.log(len(self.factors))
-        for factor_i in self.factors:
+        split_log_weight = log_weight - np.log(len(self.components))
+        for factor_i in self.components:
             factor_i.log_weight += split_log_weight
 
     def normalize(self):
@@ -145,9 +151,9 @@ class GeneralizedMixture(Factor):
         """
         # TODO: check this
         combined_log_weight = 0
-        for factor_i in self.factors:
+        for factor_i in self.components:
             combined_log_weight += factor_i.log_weight
-        factor_copies = [f.copy() for f in self.factors]
+        factor_copies = [f.copy() for f in self.components]
         normalized_factor = GeneralizedMixture(factor_copies)
         normalized_factor.add_log_weight(combined_log_weight)
         return normalized_factor
@@ -164,7 +170,7 @@ class GeneralizedMixture(Factor):
         vars_to_keep = super().get_marginal_vars(vrs, keep)
         vars_to_integrate_out_set = set(self.var_names) - set(vars_to_keep)
         factor_marginals = []
-        for factor in self.factors:
+        for factor in self.components:
             factor_vars_to_integrate_out_set = set(factor.var_names).intersection(vars_to_integrate_out_set)
             if factor_vars_to_integrate_out_set == set(factor.var_names):
                 raise NotImplementedError()
@@ -189,7 +195,7 @@ class GeneralizedMixture(Factor):
         """
         all_evidence_dict = dict(zip(vrs, values))
         reduced_factors = []
-        for factor in self.factors:
+        for factor in self.components:
             factor_var_names = factor.var_names
             if set(vrs) == set(factor_var_names):
                 raise NotImplementedError()
@@ -219,15 +225,15 @@ class GeneralizedMixture(Factor):
             return self.equals(GeneralizedMixture([factor]))
         if set(factor.var_names) != set(self.var_names):
             return False
-        if len(self.factors) != len(factor.factors):
+        if len(self.components) != len(factor.components):
             return False
 
         num_matches = 0
-        for self_factor_i in self.factors:
-            for other_factor_j in factor.factors:
+        for self_factor_i in self.components:
+            for other_factor_j in factor.components:
                 if self_factor_i.equals(other_factor_j):
                         num_matches += 1
-        if num_matches == len(self.factors):
+        if num_matches == len(self.components):
             return True
         return False
 
@@ -235,6 +241,6 @@ class GeneralizedMixture(Factor):
         """
         Print this factorised factor.
         """
-        for i, factor in self.factors:
-            print(f"\n factor {i}/{len(self.factors)}:")
+        for i, factor in self.components:
+            print(f"\n factor {i}/{len(self.components)}:")
             factor.show()

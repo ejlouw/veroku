@@ -578,11 +578,11 @@ class SparseCategorical(Factor):
                 error_msg = f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this factor with another factor and return the result.
 
-        :param factor: The factor to multiply with.
+        :param factor: The factor to absorb with.
         :type factor: SparseCategorical
         :return: The factor product.
         :rtype: SparseCategorical
@@ -593,9 +593,9 @@ class SparseCategorical(Factor):
 
     def cancel(self, factor):
         """
-        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
+        Almost like cancel, but with a special rule that ensures that division of zeros by zeros results in zeros.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: SparseCategorical
         :return: The factor quotient.
         :rtype: SparseCategorical
@@ -608,11 +608,11 @@ class SparseCategorical(Factor):
 
         return self._apply_binary_operator(factor, special_divide, default_rules="any")
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this factor by another factor and return the result.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: SparseCategorical
         :return: The factor quotient.
         :rtype: SparseCategorical
@@ -778,22 +778,23 @@ class SparseCategorical(Factor):
         kld = np.sum(klds)
         return kld
 
-    def kl_divergence(self, factor, normalize_factor=True):
+    def kl_divergence(self, other, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another
         factor.
 
-        :param factor: The other factor
-        :type factor: SparseCategorical
+        :param other: The other factor
+        :type other: SparseCategorical
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
         log_p = self.normalize()
-        log_q = factor
+        log_q = other
         if normalize_factor:
-            log_q = factor.normalize()
+            # TODO: normalize self copy here as well?
+            log_q = other.normalize()
 
         kld = self._raw_kld(log_p, log_q)
 
@@ -804,7 +805,7 @@ class SparseCategorical(Factor):
             kld_msg_details = "Categorical:\n" + log_p.__repr__() + "\nfactor:" + log_q.__repr__()
 
             raise ValueError(f"Negative KLD: {kld}. Details:\n{kld_msg_details}. "
-                             f"weights: {self.weight}, {factor.weight}\n")
+                             f"weights: {self.weight}, {other.weight}\n")
         return kld
 
     def distance_from_vacuous(self):

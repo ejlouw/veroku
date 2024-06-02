@@ -275,7 +275,7 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         gaussian_a = Gaussian(prec=5.0, h_vec=4.0, g_val=3.0, var_names=["a"])
         gaussian_b = Gaussian(prec=3.0, h_vec=2.0, g_val=1.0, var_names=["a"])
         expected_product = Gaussian(prec=8.0, h_vec=6.0, g_val=4.0, var_names=["a"])
-        actual_product = gaussian_a.multiply(gaussian_b)
+        actual_product = gaussian_a.absorb(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
     def test_cancel_1d(self):
@@ -285,7 +285,7 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         gaussian_a = Gaussian(prec=6.0, h_vec=4.0, g_val=2.0, var_names=["a"])
         gaussian_b = Gaussian(prec=3.0, h_vec=2.0, g_val=1.0, var_names=["a"])
         expected_quotient = Gaussian(prec=3.0, h_vec=2.0, g_val=1.0, var_names=["a"])
-        actual_quotient = gaussian_a.divide(gaussian_b)
+        actual_quotient = gaussian_a.cancel(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
     def test_multiply_2d(self):
@@ -295,7 +295,7 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         gaussian_a = Gaussian(prec=[[5.0, 2.0], [2.0, 6.0]], h_vec=[1.0, 2.0], g_val=3.0, var_names=["a", "b"])
         gaussian_b = Gaussian(prec=[[4.0, 1.0], [1.0, 4.0]], h_vec=[2.0, 3.0], g_val=2.0, var_names=["a", "b"])
         expected_product = Gaussian(prec=[[9.0, 3.0], [3.0, 10.0]], h_vec=[3.0, 5.0], g_val=5.0, var_names=["a", "b"])
-        actual_product = gaussian_a.multiply(gaussian_b)
+        actual_product = gaussian_a.absorb(gaussian_b)
         self.assertTrue(expected_product.equals(actual_product))
 
     def test_cancel_2d(self):
@@ -306,12 +306,12 @@ class TestGaussian(unittest.TestCase):  # pylint: disable=protected-access
         gaussian_b = Gaussian(prec=[[4.0, 1.0], [1.0, 4.0]], h_vec=[1.0, 2.0], g_val=2.0, var_names=["a", "b"])
 
         expected_quotient = Gaussian(prec=[[3.0, 1.0], [1.0, 2.0]], h_vec=[3.0, 1.0], g_val=1.0, var_names=["a", "b"])
-        actual_quotient = gaussian_a.divide(gaussian_b)
+        actual_quotient = gaussian_a.cancel(gaussian_b)
         self.assertTrue(expected_quotient.equals(actual_quotient))
 
         gaussian_a_reordered = Gaussian(prec=[[6.0, 2.0], [2.0, 7.0]], h_vec=[3.0, 4.0], g_val=3.0,
                                         var_names=["b", "a"])
-        actual_quotient = gaussian_a_reordered.divide(gaussian_b)
+        actual_quotient = gaussian_a_reordered.cancel(gaussian_b)
 
         actual_quotient._reorder_parameters(["a", "b"])
 

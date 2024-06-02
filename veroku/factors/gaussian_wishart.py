@@ -1,10 +1,5 @@
 import copy
 
-import numpy as np
-from matplotlib import pyplot as plt
-from scipy.special import gamma, multigammaln
-from scipy.integrate import dblquad
-
 from veroku.factors import _factor_utils
 from veroku.factors._factor import Factor
 
@@ -12,19 +7,7 @@ from veroku.factors._factor import Factor
 import numpy as np
 from scipy.special import multigammaln
 
-
-# TODO: deprecate
-def calculate_gaussian_wishart_normalising_constant(v, inv_V, lambda_0, mu_0):
-    # 1D check
-    #norm_check_1d = 2 ** (v / 2) * np.linalg.det(V)**(v/2)*gamma(v/2)*((2*np.pi)/lambda_0)**0.5
-    d = mu_0.shape[0]
-    two_pow_vd_2 = 2 ** (v * d / 2)
-    det_V_pow_v_2 = np.linalg.det(inv_V) ** (-v / 2)
-    multi_gamma_vd1__2 = np.exp(multigammaln((v - d + 1) / 2, d))
-    pi2_pow_d_2 = (2 * np.pi) ** (d / 2)
-    numerator = two_pow_vd_2 * det_V_pow_v_2 * multi_gamma_vd1__2 * pi2_pow_d_2
-    Z = numerator / (lambda_0**0.5)
-    return Z
+from veroku.factors.constant_factor import ConstantFactor
 
 
 def calculate_gaussian_wishart_log_normalising_constant(v, inv_V, lambda_0, mu_0):
@@ -87,16 +70,6 @@ class GaussianWishart(Factor):
         "log_weight": self.log_weight,
         }
         return param_dict
-    
-    def get_normal_gamma_param_dict(self):
-        normal_gamma_param_dict = {
-            "mu_0": self.mu_0[0, 0],
-            "kappa_0": self.lambda_0,
-            "alpha": self.v / 2,
-            "beta": (1 *self.inv_V[0, 0]) / 2,
-            "log_weight": self.log_weight,
-        }
-        return normal_gamma_param_dict
 
     def __repr__(self):
         s = f"v = {self.v} \ninv_V = {self.inv_V} \nlambda_0 = {self.lambda_0}\nmu_0 = {self.mu_0} \n"
@@ -139,22 +112,22 @@ class GaussianWishart(Factor):
         lambda_ab_c_U = lambda_ab_c * U
         inv_V_c = inv_V_a_V_b_sum + lambda_ab_c_U
 
-        Z_c = calculate_gaussian_wishart_normalising_constant(
+        log_Z_c = calculate_gaussian_wishart_log_normalising_constant(
             v=v_c, inv_V=inv_V_c, lambda_0=lambda_c, mu_0=mu_c
         )
-        log_weight = self.log_weight_over_norm_const + other.log_weight_over_norm_const + np.log(Z_c)
+        log_weight = self.log_weight_over_norm_const + other.log_weight_over_norm_const + log_Z_c
         product = GaussianWishart(
             v=v_c, inv_V=inv_V_c, lambda_0=lambda_c, mu_0=mu_c, log_weight=log_weight, var_names=var_names
         )
         return product
 
-    def multiply(self, other):
-        return self.absorb(other)
 
     def marginalize(self, vrs, keep=True):
         vars_to_keep = super().get_marginal_vars(vrs, keep)
+        if len(vars_to_keep) == 0:
+            return ConstantFactor(log_constant_value=self.log_weight_over_norm_const)
         if vars_to_keep == self.var_names:
-            return copy.deepcopy(self)
+            return self.copy()
         raise NotImplementedError()
 
     def _calculate_log_normalising_constant(self):

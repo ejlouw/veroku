@@ -7,7 +7,7 @@ from veroku.factors._factor_utils import get_subset_evidence
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
 
 # TODO: This class in very much a work in progress. This needs to be completed. We must think especially carefully about
-#   how we multiply factors when we have special factors such as nonlinear Gaussian factors in the factorised factor.
+#   how we absorb factors when we have special factors such as nonlinear Gaussian factors in the factorised factor.
 #   Currently this class is mostly focussed on factorised Gaussians.
 
 # pylint: disable=protected-access
@@ -47,7 +47,7 @@ class FactorizedFactor(Factor):
             raise ValueError("FactorisedFactor has no factors.")
         joint_distribution = self.factors[0].copy()
         for factor in self.factors[1:]:
-            joint_distribution = joint_distribution.multiply(factor)
+            joint_distribution = joint_distribution.absorb(factor)
         return joint_distribution
 
     def copy(self):
@@ -62,7 +62,7 @@ class FactorizedFactor(Factor):
             factor_copies.append(factor.copy())
         return FactorizedFactor(factor_copies)
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply by another factor.
 
@@ -75,12 +75,12 @@ class FactorizedFactor(Factor):
         factorised_factor_copy = self.copy()
         index = factorised_factor_copy._first_factor_with_vars_index(factor.var_names)
         if index is not None:
-            factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].multiply(factor)
+            factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].absorb(factor)
         else:
             factorised_factor_copy.factors.append(factor)
         return factorised_factor_copy
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide out a general factor.
 
@@ -98,9 +98,9 @@ class FactorizedFactor(Factor):
                     return factorised_factor_copy
                 # TODO: add else to make general vacuous factor (wont necessarily be Gaussian)
         if index is not None:
-            factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].divide(factor)
+            factorised_factor_copy.factors[index] = factorised_factor_copy.factors[index].cancel(factor)
         else:
-            raise Exception("Error: Cannot divide factor with disjoint scope.")
+            raise Exception("Error: Cannot cancel factor with disjoint scope.")
         return factorised_factor_copy
 
     @property
@@ -130,17 +130,17 @@ class FactorizedFactor(Factor):
         # TODO: improve this
         return self.joint_distribution.distance_from_vacuous()
 
-    def kl_divergence(self, factor):
+    def kl_divergence(self, other):
         """
         Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
 
-        :param factor: The other factor
-        :type factor: Factor
+        :param other: The other factor
+        :type other: Factor
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
         # TODO: Make this more efficient.
-        return self.joint_distribution.kl_divergence(factor)
+        return self.joint_distribution.kl_divergence(other)
 
     @property
     def num_factors(self):
@@ -238,7 +238,7 @@ class FactorizedFactor(Factor):
                 factor_j = self.factors[j]
                 if j not in already_merged_factor_indices:
                     if set(factor_i.var_names).intersection(set(factor_j.varnames)) > 0:
-                        factor_i_merged = factor_i_merged.multiply(factor_j)
+                        factor_i_merged = factor_i_merged.absorb(factor_j)
                         already_merged_factor_indices.append(j)
             merged_factors.append(factor_i_merged)
         return FactorizedFactor(merged_factors)
@@ -268,7 +268,7 @@ class FactorizedFactor(Factor):
                     observed_factor_j_vars = observed_factor_vars_list[j]
                     if j not in merged_factors_indices:
                         if len(observed_factor_i_vars.intersection(observed_factor_j_vars)) > 0:
-                            merged_factor = merged_factor.multiply(self.factors[j])
+                            merged_factor = merged_factor.absorb(self.factors[j])
                             merged_factors_indices.append(j)
                 merged_factors.append(merged_factor)
         self.factors = merged_factors

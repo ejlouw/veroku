@@ -207,7 +207,7 @@ class TestCategorical(unittest.TestCase):
 
     def test_multiply_same_scope(self):
         """
-        Test that the multiply function returns the correct result.
+        Test that the absorb function returns the correct result.
         """
         vars_ex = ["a", "b"]
         probs_ex = {(0, 0): 0.01, (0, 1): 0.04, (1, 0): 0.09, (1, 1): 0.16}
@@ -218,24 +218,24 @@ class TestCategorical(unittest.TestCase):
         expected_resulting_factor = self.cat_class(
             var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2]
         )
-        actual_resulting_factor = sp_table_b.multiply(sp_table_b)
+        actual_resulting_factor = sp_table_b.absorb(sp_table_b)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_multiply_fails_invalid_factor(self):
         """
-        Test that the multiply function fails when attempting to multiply with a non-categorical factor type.
+        Test that the absorb function fails when attempting to absorb with a non-categorical factor type.
         """
         categorical_a = make_abc_factor_1(cat_class=self.cat_class)
         with self.assertRaises(TypeError):
-            categorical_a.multiply(self.not_a_categorical_factor)
+            categorical_a.absorb(self.not_a_categorical_factor)
 
     def test_divide_fails_invalid_factor(self):
         """
-        Test that the divide function fails when attempting to multiply with a non-categorical factor type.
+        Test that the cancel function fails when attempting to absorb with a non-categorical factor type.
         """
         categorical_a = make_abc_factor_1(cat_class=self.cat_class)
         with self.assertRaises(TypeError):
-            categorical_a.divide(self.not_a_categorical_factor)
+            categorical_a.cancel(self.not_a_categorical_factor)
 
     def test_argmax(self):
         """
@@ -292,7 +292,7 @@ class TestCategorical(unittest.TestCase):
 
     def test_multiply_subset_scope(self):
         """
-        Test that the multiply function returns the correct result.
+        Test that the absorb function returns the correct result.
         """
         vars_ex = ["a", "b", "c"]
         probs_ex = {
@@ -314,7 +314,7 @@ class TestCategorical(unittest.TestCase):
         vars_b = ["a", "b"]
         probs_b = {(0, 0): np.exp(0.1), (0, 1): np.exp(0.2), (1, 0): np.exp(0.3), (1, 1): np.exp(0.4)}
         sp_table_ab = self.cat_class(var_names=vars_b, probs_table=probs_b, cardinalities=[2, 2])
-        actual_resulting_factor = sp_table_abc.multiply(sp_table_ab)
+        actual_resulting_factor = sp_table_abc.absorb(sp_table_ab)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_absorb_partially_overlapping(self):
@@ -363,7 +363,7 @@ class TestCategorical(unittest.TestCase):
 
     def test_multiply_different_scope(self):
         """
-        Test that the multiply function returns the correct result.
+        Test that the absorb function returns the correct result.
         """
         vars_ex = ["c", "d", "a", "b"]
         probs_ex = {
@@ -396,12 +396,12 @@ class TestCategorical(unittest.TestCase):
             var_names=vars_ex, probs_table=probs_ex, cardinalities=[2, 2, 2, 2]
         )
         sp_table_ab = self.cat_class(var_names=vars_ab, probs_table=probs_ab, cardinalities=[2, 2])
-        actual_resulting_factor = sp_table_cd.multiply(sp_table_ab)
+        actual_resulting_factor = sp_table_cd.absorb(sp_table_ab)
         self.assertTrue(actual_resulting_factor.equals(expected_resulting_factor))
 
     def test_cancel_divide_different_scope(self):
         """
-        Test that the cancel and divide functions return the correct result when the factors have different scopes.
+        Test that the cancel and cancel functions return the correct result when the factors have different scopes.
         """
         # TODO: split this into two tests.
 
@@ -420,7 +420,7 @@ class TestCategorical(unittest.TestCase):
 
         factor_ab_actual = factor_ab.cancel(factor_b)
         self.assertTrue(factor_ab_expected.equals(factor_ab_actual))
-        factor_ab_actual = factor_ab.divide(factor_b)
+        factor_ab_actual = factor_ab.cancel(factor_b)
         self.assertTrue(factor_ab_expected.equals(factor_ab_actual))
 
     def test_cancel_same_scope(self):
@@ -604,7 +604,7 @@ class TestCategorical(unittest.TestCase):
 
     def test_divide_fails_cards(self):
         """
-        Test that the divide function fails on inconsistent cardinalities.
+        Test that the cancel function fails on inconsistent cardinalities.
         """
         var_names = ["a"]
         probs = {(0,): 1.0}
@@ -615,7 +615,7 @@ class TestCategorical(unittest.TestCase):
         factor_2 = self.cat_class(var_names=var_names, probs_table=probs, cardinalities=[3])
 
         with self.assertRaises(AssertionError):
-            factor_1.divide(factor_2)
+            factor_1.cancel(factor_2)
 
     def test_kld_2d_factor(self):
         """

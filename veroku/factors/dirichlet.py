@@ -80,16 +80,16 @@ class Dirichlet(Factor):
         return samples
 
 
-    def kl_divergence(self, factor, normalize_factor=True):
+    def kl_divergence(self, other, normalize_factor=True):
         #https://statproofbook.github.io/P/dir-kl.html
         if not normalize_factor:
             raise NotImplementedError()
         sum_alpha_pi = np.sum(self.alphas)
-        term_a = np.log(gamma(np.sum(self.alphas)) / gamma(np.sum(factor.alpha_vec)))
-        term_b = np.sum([np.log(gamma(alpha_qi)/gamma(alpha_pi)) for alpha_pi, alpha_qi in zip(self.alphas, factor.alpha_vec)])
+        term_a = np.log(gamma(np.sum(self.alphas)) / gamma(np.sum(other.alpha_vec)))
+        term_b = np.sum([np.log(gamma(alpha_qi)/gamma(alpha_pi)) for alpha_pi, alpha_qi in zip(self.alphas, other.alpha_vec)])
         term_c = np.sum([(alpha_pi - alpha_qi) * (
                     di_gamma_func(alpha_pi) - di_gamma_func(sum_alpha_pi))
-                         for alpha_pi, alpha_qi in zip(self.alphas, factor.alpha_vec)])
+                         for alpha_pi, alpha_qi in zip(self.alphas, other.alpha_vec)])
         KL_pq = term_a + term_b + term_c
         return KL_pq
 

@@ -54,7 +54,7 @@ class TestGeneralisedMixture(unittest.TestCase):
 
             actual_product_factor = factor_a.absorb(factor_b)
             assert actual_product_factor == expected_product_factor
-            
+
     #def test_normalized(self):
     #    """
     #    Test that a normalized GaussianWishart factor integrates to 1.0.

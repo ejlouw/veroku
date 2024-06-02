@@ -39,4 +39,4 @@ class TestGeneralisedMixture(unittest.TestCase):
                                     factors_table=factors_table)
         a = gc.marginalize(vrs=["a"], keep=False)
         b = gc.marginalize(vrs=["a"], keep=False)
-        a.multiply(b)
+        a.absorb(b)

@@ -1,10 +1,10 @@
 import numpy as np
 
-from veroku.factors.experimental.gaussian_mixture import GaussianMixture
+from veroku.factors.gaussian_mixture import GaussianMixture
 from veroku.factors.gaussian import Gaussian
 
 
-def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
+def get_random_gaussian_1d(cov_coeff, mean_coeff=1.0, seed=None):
     """
     A test helper function that generates random Gaussian factors.
 
@@ -21,7 +21,8 @@ def get_random_gaussian(cov_coeff, mean_coeff=1.0, seed=None):
     return random_gaussian
 
 
-def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3, seed=0):
+
+def get_random_gaussian_mixture_1d(cov_coeff=1.0, mean_coeff=1.0, num_components=3, seed=0):
     """
     A test helper function that generates random Gaussian factors.
 
@@ -34,5 +35,5 @@ def get_random_gaussian_mixture(cov_coeff=1.0, mean_coeff=1.0, num_components=3,
     random_gaussians = []
     for i in range(num_components):
         comp_seed = (seed + 1) * i
-        random_gaussians.append(get_random_gaussian(cov_coeff, mean_coeff, seed=comp_seed))
+        random_gaussians.append(get_random_gaussian_1d(cov_coeff, mean_coeff, seed=comp_seed))
     return GaussianMixture(random_gaussians)

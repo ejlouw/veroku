@@ -59,8 +59,8 @@ class TestFactorisedFactor(unittest.TestCase):
             cov=expected_cov, mean=expected_mean, log_weight=0.0, var_names=["a", "b", "c", "d", "e", "f"]
         )
         actual_joint_ff = FactorizedFactor([self.gab])
-        actual_joint_ff = actual_joint_ff.multiply(self.gcd)
-        actual_joint_ff = actual_joint_ff.multiply(self.gef)
+        actual_joint_ff = actual_joint_ff.absorb(self.gcd)
+        actual_joint_ff = actual_joint_ff.absorb(self.gef)
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertEqual(len(actual_joint_ff.factors), 3)
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
@@ -76,7 +76,7 @@ class TestFactorisedFactor(unittest.TestCase):
             cov=expected_cov, mean=expected_mean, log_weight=expected_log_weight, var_names=["a", "b", "c"]
         )
         actual_joint_ff = FactorizedFactor([self.gab2])
-        actual_joint_ff = actual_joint_ff.multiply(self.gbc2)
+        actual_joint_ff = actual_joint_ff.absorb(self.gbc2)
         self.assertEqual(len(actual_joint_ff.factors), 2)
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
@@ -92,7 +92,7 @@ class TestFactorisedFactor(unittest.TestCase):
 
         expected_joint = Gaussian(prec=expected_prec, h_vec=expected_h, g_val=expected_g, var_names=["a", "b"])
         actual_joint_ff = FactorizedFactor([self.gab])
-        actual_joint_ff = actual_joint_ff.multiply(self.gab2)
+        actual_joint_ff = actual_joint_ff.absorb(self.gab2)
         self.assertEqual(len(actual_joint_ff.factors), 1)
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
@@ -107,7 +107,7 @@ class TestFactorisedFactor(unittest.TestCase):
 
         expected_joint = Gaussian(prec=expected_prec, h_vec=expected_h, g_val=expected_g, var_names=["a", "b"])
         actual_joint_ff = FactorizedFactor([self.gab3])
-        actual_joint_ff = actual_joint_ff.multiply(self.ga3)
+        actual_joint_ff = actual_joint_ff.absorb(self.ga3)
         self.assertEqual(len(actual_joint_ff.factors), 1)
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(expected_joint))
@@ -117,8 +117,8 @@ class TestFactorisedFactor(unittest.TestCase):
         Test that the joint distribution has been correctly calculated.
         """
         actual_joint_ff = FactorizedFactor([self.gab])
-        actual_joint_ff = actual_joint_ff.multiply(self.gcd)
-        actual_joint_ff = actual_joint_ff.divide(self.gcd)
+        actual_joint_ff = actual_joint_ff.absorb(self.gcd)
+        actual_joint_ff = actual_joint_ff.cancel(self.gcd)
         self.assertEqual(len(actual_joint_ff.factors), 1)
         actual_joint_distribution = actual_joint_ff.joint_distribution
         self.assertTrue(actual_joint_distribution.equals(self.gab))

@@ -114,43 +114,25 @@ class Factor:
         """
 
     @abstractmethod
-    def multiply(self, factor):
-        """
-        An abstract function for performing factor multiplication that should be implemented in the base class.
-
-        :param factor: The factor to be multiplied with.
-        :return: The resulting product
-        """
-
     def absorb(self, factor):
         """
-        (Alias for multiply) An abstract function for performing factor multiplication that should be implemented in the base class.
+        An abstract function for performing factor multiplication (with the same type of factor)
+        that should be implemented in the base class.
 
         :param factor: The factor to be multiplied with.
         :return: The resulting product
         """
 
-        return self.multiply(factor)
-
     @abstractmethod
-    def divide(self, factor):
+    def cancel(self, factor):
         """
-        An abstract function for performing factor division that should be implemented in the base class.
+        An abstract function for performing factor division (by the same type of factor) that should
+        be implemented in the base class.
 
         :param factor: The factor to be divided by.
         :return: The resulting quotient
         """
 
-    def cancel(self, factor):
-        """
-        (Alias for divide by default - but can differ in certain cases) An abstract function for performing factor
-        division (or division-like operarations - see Categorical cancel for example) that can be implemented in the
-        base class.
-
-        :param factor: The factor to be divided by.
-        :return: The resulting factor
-        """
-        return self.divide(factor)
 
     @abstractmethod
     def reduce(self, vrs, values):
@@ -202,7 +184,7 @@ class Factor:
         :param other: The other factor.
         :return: The result.
         """
-        return self.multiply(other)
+        return self.absorb(other)
 
     def __truediv__(self, other):
         """
@@ -211,7 +193,7 @@ class Factor:
         :param other: The other factor.
         :return: The result.
         """
-        return self.divide(other)
+        return self.cancel(other)
 
     def __eq__(self, other):
         """

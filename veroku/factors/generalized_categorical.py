@@ -16,8 +16,6 @@ import pandas as pd
 # Local imports
 from veroku.factors._factor import Factor
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
-from veroku.factors.experimental.gaussian_mixture import GaussianMixture
-from veroku.factors.gaussian import Gaussian
 from veroku.factors.generlized_mixture import GeneralizedMixture
 from veroku.factors.constant_factor import ConstantFactor
 from veroku.factors.sparse_categorical import SparseCategorical
@@ -453,11 +451,11 @@ class GeneralizedCategorical(Factor):
                 error_msg = f"Error: inconsistent variable cardinalities: {factor.var_cards}, {self.var_cards}"
                 assert self.var_cards[var] == factor.var_cards[var], error_msg
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this factor with another factor and return the result.
 
-        :param factor: The factor to multiply with.
+        :param factor: The factor to absorb with.
         :type factor: GeneralizedCategorical
         :return: The factor product.
         :rtype: GeneralizedCategorical
@@ -468,9 +466,9 @@ class GeneralizedCategorical(Factor):
 
     def cancel(self, factor):
         """
-        Almost like divide, but with a special rule that ensures that division of zeros by zeros results in zeros.
+        Almost like cancel, but with a special rule that ensures that division of zeros by zeros results in zeros.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: GeneralizedCategorical
         :return: The factor quotient.
         :rtype: GeneralizedCategorical
@@ -479,11 +477,11 @@ class GeneralizedCategorical(Factor):
             raise TypeError(f"factor must be of GeneralisedSparseCategorical type but has type {type(factor)}")
         return self._apply_binary_operator(factor, operator.truediv)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this factor by another factor and return the result.
 
-        :param factor: The factor to divide by.
+        :param factor: The factor to cancel by.
         :type factor: GeneralizedCategorical
         :return: The factor quotient.
         :rtype: GeneralizedCategorical
@@ -611,13 +609,13 @@ class GeneralizedCategorical(Factor):
         """
         raise NotImplementedError()
 
-    def kl_divergence(self, factor, normalize_factor=True):
+    def kl_divergence(self, other, normalize_factor=True):
         """
         Get the KL-divergence D_KL(P || Q) = D_KL(self||factor) between a normalized version of this factor and another
         factor.
 
-        :param factor: The other factor
-        :type factor: GeneralizedCategorical
+        :param other: The other factor
+        :type other: GeneralizedCategorical
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence

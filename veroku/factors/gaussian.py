@@ -22,7 +22,7 @@ from veroku.factors._factor import Factor
 from veroku.factors import _factor_utils
 from veroku.factors._factor_template import FactorTemplate
 from veroku._constants import DEFAULT_FACTOR_RTOL, DEFAULT_FACTOR_ATOL
-import veroku.factors.experimental.gaussian_mixture as gm
+import veroku.factors.gaussian_mixture as gm
 from veroku.factors.constant_factor import ConstantFactor
 
 
@@ -589,26 +589,26 @@ class Gaussian(Factor):
         self.log_weight = _factor_utils.make_scalar(log_weight_)
         self.covform = True
 
-    def multiply(self, factor):
+    def absorb(self, factor):
         """
         Multiply this Gaussian with another factor.
 
-        :param Gaussian factor: the factor to multiply with
+        :param Gaussian factor: the factor to absorb with
         :return: the resulting factor
         """
         # if isinstance(factor, NonLinearGaussian):
-        #    return factor.multiply(self)
+        #    return factor.absorb(self)
         # TODO: rather use general factor multiplier here
         if isinstance(factor, ConstantFactor):
-            return ConstantFactor.multiply(self)
+            return ConstantFactor.absorb(self)
 
         return self._absorb_or_cancel(factor, operator.add)
 
-    def divide(self, factor):
+    def cancel(self, factor):
         """
         Divide this Gaussian by another factor.
 
-        :param Gaussian factor: the factor to divide by
+        :param Gaussian factor: the factor to cancel by
         :return: the resulting factor
         """
         return self._absorb_or_cancel(factor, operator.sub)
@@ -617,7 +617,7 @@ class Gaussian(Factor):
         """
         A general function which can either perform Gaussian multiplication or division (which are very similar).
 
-        :param factor: the gaussian to multiply or divide by
+        :param factor: the gaussian to absorb or cancel by
         :param operator_function: the operator to use one the Gaussian canonical parameters
                         ('+' for multiplication and '-' for division)
         :return: the resulting Gaussian
@@ -726,33 +726,33 @@ class Gaussian(Factor):
             return 0.0
         return float("inf")
 
-    def kl_divergence(self, factor, normalize_factor=True):
+    def kl_divergence(self, other, normalize_factor=True):
         """
         Get the KL-divergence D_KL(self || factor) between a normalized version of this factor and another factor.
 
-        :param factor: The other factor
-        :type factor: Gaussian
+        :param other: The other factor
+        :type other: Gaussian
         :param normalize_factor: Whether or not to normalize the other factor before computing the KL-divergence.
         :type normalize_factor: bool
         :return: The Kullback-Leibler divergence
         :rtype: float
         """
-        if self.dim != factor.dim:
+        if self.dim != other.dim:
             raise ValueError(
                 "cannot calculate KL-divergence between Gaussians of different dimensionalities."
             )
-        if self._is_vacuous and factor._is_vacuous:
+        if self._is_vacuous and other._is_vacuous:
             return 0.0
-        if self._is_vacuous or factor._is_vacuous:
+        if self._is_vacuous or other._is_vacuous:
             return np.inf
 
-        if self.equals(factor):
+        if self.equals(other):
             return 0.0
         # TODO: can we compute the correct ('normalised') KL divergence without explicitly normalizing?
         normalized_self = self.normalize()
-        factor_ = factor
+        factor_ = other
         if normalize_factor:
-            factor_ = factor.normalize()
+            factor_ = other.normalize()
         inv_cov_q = factor_.get_prec()
         inv_cov_p = normalized_self.get_prec()
         cov_p = normalized_self.get_cov()
