@@ -11,7 +11,7 @@ GAUS_MIX_CLASS_NAME = GaussianMixture.__class__.__name__
 GUAS_WISH_CLASS_NAME = GaussianWishart.__class__.__name__
 GEN_MIX_CLASS_NAME = GeneralizedMixture.__class__.__name__
 
-def multiply():
+def multiply(factor_a, factor_b):
     product = multiply_or_divide(factor_a, factor_b, operation_type="mulitply")
     return product
 def multiply_or_divide(factor_a, factor_b, operation_type):

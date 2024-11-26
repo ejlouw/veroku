@@ -58,7 +58,10 @@ Example notebooks:
 * [Kalman filter](https://github.com/ejlouw/veroku/blob/master/examples/Kalman_filter.ipynb)
 * [Sudoku](https://github.com/ejlouw/veroku/blob/master/examples/sudoku.ipynb)
 
-
+### Related Theory and Derivations
+For some related theory about the functionality contained in this project see the theory directory 
+and the following links:
+* [Conjugate Bayesian analysis of the Gaussian distribution](https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf)
 
 ### On the Roadmap
 The following distributions, models and features are on the roadmap to be added to veroku:

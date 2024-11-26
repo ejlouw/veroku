@@ -361,36 +361,6 @@ class NonLinearGaussian(Factor):
             )
         return self_copy
 
-    def cancel(self, factor):
-        """
-        Divide this factor by another factor.
-
-        :param factor: the factor cancel by
-        :return: the resulting factor
-        :rtype: NonLinearGaussian
-        """
-        self_copy = self.copy()
-        if factor._is_vacuous:
-            # TODO: check this (esp to see what to do with)
-            return self_copy
-        # TODO: change to 'update conditional model and re-transform model' (if correct)
-        if not isinstance(factor, Gaussian):
-            raise ValueError("factor must be Gaussian.")
-
-        if set(factor.var_names) <= set(self_copy.conditional_vars):
-            self_copy.conditional_update_factor = self_copy.conditional_update_factor.cancel(factor)
-        elif set(factor.var_names) <= set(self_copy.conditioning_vars):
-            if self_copy.conditioning_factor is None:
-                raise NotImplementedError()
-            self_copy.conditioning_factor = self_copy.conditioning_factor.cancel(factor)
-        else:
-            raise ValueError(
-                f"cannot cancel factor with scope ({factor.var_names}) \n "
-                f"           which has neither conditional ({self_copy.conditioning_vars}) \n "
-                f"           nor conditioning ({self_copy.conditional_vars}) scope."
-            )
-        self_copy._recompute_joint()
-        return self_copy
 
     def reduce(self, vrs, values):
         """
@@ -584,6 +554,37 @@ class NonLinearGaussianMixture(Factor):
         for nlg in self.nlgs:
             new_nlgs.append(nlg.cancel(gaussian_factor))
         return NonLinearGaussianMixture(new_nlgs)
+
+    def divide(self, factor):
+        """
+        Divide this factor by another factor.
+
+        :param factor: the factor cancel by
+        :return: the resulting factor
+        :rtype: NonLinearGaussian
+        """
+        self_copy = self.copy()
+        if factor._is_vacuous:
+            # TODO: check this (esp to see what to do with)
+            return self_copy
+        # TODO: change to 'update conditional model and re-transform model' (if correct)
+        if not isinstance(factor, Gaussian):
+            raise ValueError("factor must be Gaussian.")
+
+        if set(factor.var_names) <= set(self_copy.conditional_vars):
+            self_copy.conditional_update_factor = self_copy.conditional_update_factor.cancel(factor)
+        elif set(factor.var_names) <= set(self_copy.conditioning_vars):
+            if self_copy.conditioning_factor is None:
+                raise NotImplementedError()
+            self_copy.conditioning_factor = self_copy.conditioning_factor.cancel(factor)
+        else:
+            raise ValueError(
+                f"cannot cancel factor with scope ({factor.var_names}) \n "
+                f"           which has neither conditional ({self_copy.conditioning_vars}) \n "
+                f"           nor conditioning ({self_copy.conditional_vars}) scope."
+            )
+        self_copy._recompute_joint()
+        return self_copy
 
     def reduce(self, vrs, values):
         """

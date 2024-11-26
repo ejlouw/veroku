@@ -73,7 +73,7 @@ class TestNotebooks(unittest.TestCase):
             import examples.Kalman_filter
 
             position_posteriors = examples.Kalman_filter.position_posteriors
-            factors = examples.Kalman_filter.components
+            factors = examples.Kalman_filter.factors
             evidence_dict = examples.Kalman_filter.evidence_dict
 
             marginal_vars = [p.var_names for p in position_posteriors]

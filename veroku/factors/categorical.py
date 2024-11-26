@@ -356,6 +356,10 @@ class Categorical(Factor):
         :return: The factor quotient.
         :rtype: Categorical
         """
+        if not isinstance(factor, Categorical):
+            raise TypeError(f"factor must be of Categorical type but has type {type(factor)}")
+        self._assert_consistent_cardinalities(factor)
+
         augmented_factor_tensor = factor.log_probs_tensor.copy()
         special_case_indices = np.where(
             (augmented_factor_tensor == -np.inf) & (self.log_probs_tensor == -np.inf)
@@ -375,7 +379,7 @@ class Categorical(Factor):
         return Categorical(var_names=result_vars, log_probs_tensor=result_tensor,
                            variables_assignment_names=vars_assignment_names)
 
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         Divide this factor by another factor and return the result.
 

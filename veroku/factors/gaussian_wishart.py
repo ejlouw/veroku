@@ -1,5 +1,7 @@
 import copy
 
+import scipy
+
 from veroku.factors import _factor_utils
 from veroku.factors._factor import Factor
 
@@ -8,6 +10,7 @@ import numpy as np
 from scipy.special import multigammaln
 
 from veroku.factors.constant_factor import ConstantFactor
+from veroku.factors.student_t import StudentT
 
 
 def calculate_gaussian_wishart_log_normalising_constant(v, inv_V, lambda_0, mu_0):
@@ -20,6 +23,7 @@ def calculate_gaussian_wishart_log_normalising_constant(v, inv_V, lambda_0, mu_0
     log_denominator = 0.5*np.log(lambda_0)
     log_Z = log_numerator - log_denominator
     return log_Z
+
 
 class GaussianWishart(Factor):
     def __init__(self, v, inv_V, lambda_0, mu_0, var_names, log_weight=None, log_weight_over_norm_const=None):
@@ -128,6 +132,7 @@ class GaussianWishart(Factor):
             return ConstantFactor(log_constant_value=self.log_weight_over_norm_const)
         if vars_to_keep == self.var_names:
             return self.copy()
+
         raise NotImplementedError()
 
     def _calculate_log_normalising_constant(self):
@@ -174,3 +179,23 @@ class GaussianWishart(Factor):
         # Put it all together
         potential = first_term * second_term * third_term * fourth_term
         return potential
+
+    def sample(self, n):
+
+        mean_marginal = StudentT(self.mu_0m, self.v, self.inv_V)
+        mean_sample = mean_marginal.sample(n)
+
+        rv = scipy.stats.wishart.rvs(df=1, scale=1)
+        self.v = v
+        self.inv_V = _factor_utils.make_square_matrix(inv_V)
+        self.lambda_0 = lambda_0
+        self.mu_0 = _factor_utils.make_column_vector(mu_0)
+        self._dim = self.mu_0.shape[0]
+
+        precision_matrix = wishart.rvs(df=nu_0, scale=W_0)
+
+        # Sample covariance matrix as the inverse of the precision matrix
+        covariance_matrix = np.linalg.inv(precision_matrix)
+
+        # Sample mean vector from multivariate normal distribution
+        mean_vector = np.random.multivariate_normal(mu_0, covariance_matrix / kappa_0)

@@ -641,6 +641,12 @@ class Gaussian(Factor):
         assert new_vars_0 == new_vars_1
         return Gaussian(prec=prec_c, h_vec=h_c, g_val=g_c, var_names=new_vars_0)
 
+    def max(self):
+        return self.potential(self.get_mean())
+
+    def log_max(self):
+        return self.log_potential(self.get_mean())
+
     def sample(self, num_samples):
         """
         Draw samples from the Gaussian distribution.

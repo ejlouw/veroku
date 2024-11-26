@@ -582,7 +582,7 @@ class SparseCategorical(Factor):
         """
         Multiply this factor with another factor and return the result.
 
-        :param factor: The factor to absorb with.
+        :param factor: The factor to absorb.
         :type factor: SparseCategorical
         :return: The factor product.
         :rtype: SparseCategorical
@@ -608,7 +608,7 @@ class SparseCategorical(Factor):
 
         return self._apply_binary_operator(factor, special_divide, default_rules="any")
 
-    def cancel(self, factor):
+    def divide(self, factor):
         """
         Divide this factor by another factor and return the result.
 

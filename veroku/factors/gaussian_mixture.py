@@ -14,6 +14,7 @@ import numdifftools as nd
 from matplotlib import pyplot as plt
 from scipy.optimize import minimize
 from scipy import special
+from scipy.special import logsumexp
 
 # Local imports
 from veroku.factors._factor import Factor
@@ -460,14 +461,40 @@ class GaussianMixture(Factor):
         :rtype: float list
         """
         weights = self._get_weights()
+        unique_component_indices = range(len(weights))
         component_choice_samples = np.random.choice(
-            range(len(weights)), size=num_samples, p=weights / np.sum(weights)
+            unique_component_indices, size=num_samples, p=weights / np.sum(weights)
         )
+        component_indices, num_samples = np.unique(component_choice_samples, return_counts=True)
+
+        component_samples_list = []
+        for comp_index, num_samples in zip(component_indices, num_samples):
+            component_samples = self.components[comp_index].sample(num_samples)
+            component_samples_list.append(component_samples)
+        return np.concatenate(component_samples_list, axis=1)
+
+    # TODO: fix
+    def sample_prototype(self, num_samples):
+        """
+        Sample from this Gaussian mixture
+
+        :param num_samples: The number of sample to draw.
+        :type num_samples: int
+        :return: The samples
+        :rtype: float list
+        """
+        weights_ = self._get_weights()
+        weights = np.array(weights_ / logsumexp(weights_))
+        num_samples_per_component = np.round(num_samples*weights).astype(int)
+
         samples = []
         # TODO: make this more efficient.
-        for comp_index in component_choice_samples:
-            samples.append(self.components[comp_index].sample(1))
+        for gaussian, n in zip(self.components, num_samples_per_component):
+            comp_samples = gaussian.sample(n)
+            if len(comp_samples) > 0:
+                samples.append(comp_samples)
         return np.concatenate(samples, axis=1)
+
 
     def _get_sensible_xlim(self):
         """
@@ -572,7 +599,7 @@ class GaussianMixture(Factor):
 
         for comp in self.components:
             res = minimize(neg_gmm_log_pot,
-                           x0=comp.get_mean(),
+                           x0=comp.get_mean().ravel(),
                            method=self.optimization_alg,
                            options={"disp": False})
             x_local_max = res.x
@@ -585,6 +612,12 @@ class GaussianMixture(Factor):
         if not success:
             raise OptimizationFailedError("Could not find optimum")
         return global_argmax
+
+    def max(self):
+        return self.potential(self.argmax())
+
+    def log_max(self):
+        return self.log_potential(self.argmax())
 
     def _argmin(self):
         """
