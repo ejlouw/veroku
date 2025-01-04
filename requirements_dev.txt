@@ -1,12 +1,10 @@
-# documentation
-Sphinx>=4.3.0,<5.0.0
+Sphinx>=6.0.0,<7.0.0
 autodoc>=0.5.0,<1.0.0
 m2r2>=0.2.7,<1.0.0
-
-# development
 coverage==5.3
 mockito==1.2.2
+mistune>=2.0.3,<4.0.0
 mock==4.0.2
-importnb==0.6.2
+importnb==2023.11.1
 black==20.8b1
 pylint==2.6.0

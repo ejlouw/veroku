@@ -364,7 +364,7 @@ class Categorical(Factor):
         indices_are_empty = [a.size == 0 for a in special_case_indices]
 
         if not all(indices_are_empty):
-            augmented_factor_tensor[special_case_indices] = np.float(0.0)
+            augmented_factor_tensor[special_case_indices] = np.float64(0.0)
         result_tensor, result_vars = self.tensor_operation(
             self.log_probs_tensor, augmented_factor_tensor, self.var_names, factor.var_names, operator.sub
         )
